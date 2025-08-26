@@ -165,3 +165,5 @@ df_cost = pd.DataFrame({
 })
 df_cost["Wert"] = pd.to_numeric(df_cost["Wert"], errors="coerce").fillna(0.0)
 st.bar_chart(df_cost, x="Szenario", y="Wert")
+
+st.write("## Hier könnte die Amortisierung stehen.")
