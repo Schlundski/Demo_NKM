@@ -15,3 +15,4 @@ pg = st.navigation([
     st.Page("pages/Auswertung.py", title="Auswertung", icon="📊"),
 ])
 pg.run()
+
