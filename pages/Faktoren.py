@@ -3,115 +3,194 @@ import pandas as pd
 import time
 
 st.title("🔧 Faktoren eingeben")
+st.write("\n\n\n\n\n\n")
 
-#(Komma/Punkt) in float wandeln
+# (Komma/Punkt) in float wandeln
 def to_float(x, default=None):
     try:
         return float(str(x).replace(",", "."))
-    except:
+    except Exception:
         return default
 
 ## Faktorenuswahl
-
-# Lastplan
-auswahl_ablauf = st.selectbox("Lastplan der Anlage", ["Standard", "Individuell"])
-if auswahl_ablauf == "Individuell":
-    auswahl_ablauf_menge         = st.text_input("Müllmenge in t pro Woche")
-    auswahl_ablauf_greif_zyklen  = st.text_input("Anzahl der Greifzyklen pro Woche")
-    auswahl_ablauf_standby       = st.text_input("Standby-Zeit in h")
-
-#Anlagendimensionen
-auswahl_dimension_länge   = st.number_input("Anlagendimensionen Länge in m")
-auswahl_dimension_breite  = st.number_input("Anlagendimensionen Breite in m")
-auswahl_dimension_höhe    = st.number_input("Anlagendimensionen Höhe in m")
-auswahl_dimension_gewicht = st.number_input("Krangewicht in t")
-
-auswahl_umgebung_temperatur = st.text_input("Durchschnittliche Umgebungstemperatur in °C")
-auswahl_umgebung_korrosion  = st.selectbox("Korrosionsbelastung", ["Normal","Erhöht","Stark"])
-
-#Stromauswahl
-auswahl_strom = st.selectbox(
-    "Strommix Standard oder individuelle Eingabe?",
-    ["Standard","Individuell Erneuerbare oder Fossile", "Individuell Exakt"]
+auswahl_standard = st.selectbox(
+    "Daten manuell eingeben oder Bestandsanlagenvorlagen verwenden?",
+    ["Manuell", "AVG Köln"],
+    key="std_preset"
 )
-if auswahl_strom == "Standard":
-    auswahl_land = st.selectbox("Land", ["Belgien","Bulgarien","Dänemark","Deutschland","Estland","Finnland","Frankreich","Griechenland","Irland","Italien","Kroatien","Lettland","Litauen","Luxemburg","Malta","Niederlande","Norwegen","Österreich","Polen","Portugal","Rumänien","Schweden","Slowakei","Slowenien","Spanien","Zypern"])
-elif auswahl_strom == "Individuell Erneuerbare oder Fossile":
-    auswahl_strommix_ee = st.number_input("Prozentualer Anteil Erneuerbare Energien")
-    auswahl_strommix_fe = st.number_input("Prozentualer Anteil Fossile Energien")
-elif auswahl_strom == "Individuell Exakt":
-    auswahl_strommix_preis  = st.number_input("Preis pro kWh in Cent")
-    auswahl_strommix_wasser = st.number_input("Anteil Wasserkraft [%]")
-    auswahl_strommix_solar  = st.number_input("Anteil Solar [%]")
-    auswahl_strommix_wind   = st.number_input("Anteil Windkraft [%]")
-    auswahl_strommix_bio    = st.number_input("Anteil Biomasse [%]")
-    auswahl_strommix_atom   = st.number_input("Anteil Atomkraft [%]")
-    auswahl_strommix_erdgas = st.number_input("Anteil Erdgas [%]")
-    auswahl_strommix_kohle  = st.number_input("Anteil Kohle [%]")
-    auswahl_strommix_geo    = st.number_input("Anteil Geothermie [%]")
-    auswahl_strommix_öl     = st.number_input("Anteil Öl [%]")
+if auswahl_standard == "AVG Köln":
+    pass
 
-#Zu modernisierende Faktoren
-auswahl_greifer_alt = st.selectbox("Bauart der Greifer", ["-","Vier-Seil-Greifer","Hydraulik-Greifer"], index=1, key="greifer_alt")
-auswahl_steuerung_alt = st.selectbox("Steuerung", ["-","Manuell","Automatisch"], key="steuerung_alt")
-auswahl_hubmotor_leistung_alt  = st.number_input("Hubmotor kW (alt)", key="hub_kw_alt")
-auswahl_fahrmotor_leistung_alt = st.number_input("Fahrmotor kW (alt)", key="fahr_kw_alt")
-auswahl_fu_alt = st.selectbox("Frequenzumrichter", ["Standard","ABB AC880","Siemens S120","Siemens Masterdrive"], key="fu_alt")
-auswahl_geschwindigkeit_alt = st.number_input("Geschwindigkeit m/s", key="v_alt")
+# Allgemeines & Müllmengen
+st.write("# :blue[Allgemeines & Müllmengen]")
+st.write(":grey[Allgemeines]")
+auswahl_kranzahl            = st.number_input("Anzahl der Kräne", key="anzahl_kraene")
+auswahl_trichterzahl        = st.number_input("Anzahl der Trichter", min_value=1, max_value=10, key="anzahl_trichter")
+auswahl_trichterverbrennung = st.number_input("Verbrennung je Trichter in Mg/h", key="trichter_verbrennung_Mg_h")
 
-#Speichern & Wechseln
+auswahl_greifer_select = st.selectbox(
+    "Greifer auswählen oder Daten  manuell eingeben?",
+    [
+        "Manuell eingeben",
+        "Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1",
+        "Vierseil_Mehrschalen Müllgreifer Mrs Greifer 1-26-6315-6316"
+    ],
+    key="greifer_auswahl"
+)
+if auswahl_greifer_select == "Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1":
+    auswahl_greifer_gewicht = 3.050
+    auswahl_greifer_motor   = 18.8
+    auswahl_greifer_inhalt  = 2.75
+elif auswahl_greifer_select == "Vierseil_Mehrschalen Müllgreifer Mrs Greifer 1-26-6315-6316":
+    auswahl_greifer_gewicht = 3.800
+    auswahl_greifer_motor   = st.number_input("Hubmotorleistung Greifer Öffnen/Schließen in kW", key="greifer_motor_kW")
+    auswahl_greifer_inhalt  = 4
+elif auswahl_greifer_select == "Manuell eingeben":
+    auswahl_greifer_gewicht = st.number_input("Leergewicht Greifer in Mg", key="greifer_leergewicht_Mg")
+    auswahl_greifer_motor   = st.number_input("Motorleistung Greifer für Öffnen/Schließen in kW (Hubmotor oder Hydraulikmotor)", key="greifer_motor_kW")
+    auswahl_greifer_inhalt  = st.number_input("Greifervolumen in m³", key="greifer_volumen_m3")
+
+st.write(":grey[Müllmengen]")
+auswahl_müll = st.selectbox(
+    " Bei Müllmengen mit Standard rechnen oder eigene Werte eingeben?",
+    ["Standard", "Werte eingeben"],
+    key="muell_modus"
+)
+if auswahl_müll == "Werte eingeben":
+    auswahl_müll_gesamtmenge_jahr = st.number_input("Müllmenge in Mg pro Jahr", key="muell_gesamt_Mg_a")
+    auswahl_müll_anliefermenge_h  = st.number_input("Anliefermenge in Mg pro Stunde", key="muell_anliefer_Mg_h")
+    auswahl_müll_anlieferdauer    = st.number_input("Anlieferdauer in Stunden", key="muell_anlieferdauer_h")
+    auswahl_müll_dichte_einlagern = st.number_input("Abfalldichte im Greifer bei Einlagerung in Mg/m³", key="muell_dichte_einlagerung_Mg_m3")
+    auswahl_müll_dichte_trichter  = st.number_input("Abfalldichte im Greifer bei Trichterbeschickung in Mg/m³", key="muell_dichte_trichter_Mg_m3")
+if auswahl_müll == "Standard":
+    pass  # Standardtabelle noch nachzutragen
+
+# Referenzwege
+st.write("\n\n")
+st.write("# :blue[Angaben zu Referenzwegen und Bewegungen]")
+st.write(":grey[Referenzwege]")
+auswahl_referenzweg_hebensenken     = st.number_input("Referenzweg Heben/Senken in m", key="weg_heben_m")
+auswahl_referenzweg_katzfahrt       = st.number_input("Referenzweg Katzfahrt in m", key="weg_katz_m")
+auswahl_referenzweg_kranfahrt       = st.number_input("Referenzweg Kranfahrt in m", key="weg_kran_m")
+auswahl_referenzweg_oeffnenschliessen = st.number_input("Referenzweg Greifer Öffnen/Schließen in m", key="weg_oeffnen_m")
+
+if auswahl_trichterzahl == 1:
+    auswahl_referenzweg_trichter1 = st.number_input("Referenzweg Kranfahrt Trichter 1 in m", key="weg_trichter_1_m")
+elif auswahl_trichterzahl == 2:
+    auswahl_referenzweg_trichter1 = st.number_input("Referenzweg Kranfahrt Trichter 1 in m", key="weg_trichter_1_m")
+    auswahl_referenzweg_trichter2 = st.number_input("Referenzweg Kranfahrt Trichter 2 in m", key="weg_trichter_2_m")
+elif auswahl_trichterzahl == 3:
+    auswahl_referenzweg_trichter1 = st.number_input("Referenzweg Kranfahrt Trichter 1 in m", key="weg_trichter_1_m")
+    auswahl_referenzweg_trichter2 = st.number_input("Referenzweg Kranfahrt Trichter 2 in m", key="weg_trichter_2_m")
+    auswahl_referenzweg_trichter3 = st.number_input("Referenzweg Kranfahrt Trichter 3 in m", key="weg_trichter_3_m")
+elif auswahl_trichterzahl == 4:
+    auswahl_referenzweg_trichter1 = st.number_input("Referenzweg Kranfahrt Trichter 1 in m", key="weg_trichter_1_m")
+    auswahl_referenzweg_trichter2 = st.number_input("Referenzweg Kranfahrt Trichter 2 in m", key="weg_trichter_2_m")
+    auswahl_referenzweg_trichter3 = st.number_input("Referenzweg Kranfahrt Trichter 3 in m", key="weg_trichter_3_m")
+    auswahl_referenzweg_trichter4 = st.number_input("Referenzweg Kranfahrt Trichter 4 in m", key="weg_trichter_4_m")
+elif auswahl_trichterzahl == 5:
+    auswahl_referenzweg_trichter1 = st.number_input("Referenzweg Kranfahrt Trichter 1 in m", key="weg_trichter_1_m")
+    auswahl_referenzweg_trichter2 = st.number_input("Referenzweg Kranfahrt Trichter 2 in m", key="weg_trichter_2_m")
+    auswahl_referenzweg_trichter3 = st.number_input("Referenzweg Kranfahrt Trichter 3 in m", key="weg_trichter_3_m")
+    auswahl_referenzweg_trichter4 = st.number_input("Referenzweg Kranfahrt Trichter 4 in m", key="weg_trichter_4_m")
+    auswahl_referenzweg_trichter5 = st.number_input("Referenzweg Kranfahrt Trichter 5 in m", key="weg_trichter_5_m")
+elif auswahl_trichterzahl == 6:
+    auswahl_referenzweg_trichter1 = st.number_input("Referenzweg Kranfahrt Trichter 1 in m", key="weg_trichter_1_m")
+    auswahl_referenzweg_trichter2 = st.number_input("Referenzweg Kranfahrt Trichter 2 in m", key="weg_trichter_2_m")
+    auswahl_referenzweg_trichter3 = st.number_input("Referenzweg Kranfahrt Trichter 3 in m", key="weg_trichter_3_m")
+    auswahl_referenzweg_trichter4 = st.number_input("Referenzweg Kranfahrt Trichter 4 in m", key="weg_trichter_4_m")
+    auswahl_referenzweg_trichter5 = st.number_input("Referenzweg Kranfahrt Trichter 5 in m", key="weg_trichter_5_m")
+    auswahl_referenzweg_trichter6 = st.number_input("Referenzweg Kranfahrt Trichter 6 in m", key="weg_trichter_6_m")
+elif auswahl_trichterzahl == 7:
+    auswahl_referenzweg_trichter1 = st.number_input("Referenzweg Kranfahrt Trichter 1 in m", key="weg_trichter_1_m")
+    auswahl_referenzweg_trichter2 = st.number_input("Referenzweg Kranfahrt Trichter 2 in m", key="weg_trichter_2_m")
+    auswahl_referenzweg_trichter3 = st.number_input("Referenzweg Kranfahrt Trichter 3 in m", key="weg_trichter_3_m")
+    auswahl_referenzweg_trichter4 = st.number_input("Referenzweg Kranfahrt Trichter 4 in m", key="weg_trichter_4_m")
+    auswahl_referenzweg_trichter5 = st.number_input("Referenzweg Kranfahrt Trichter 5 in m", key="weg_trichter_5_m")
+    auswahl_referenzweg_trichter6 = st.number_input("Referenzweg Kranfahrt Trichter 6 in m", key="weg_trichter_6_m")
+    auswahl_referenzweg_trichter7 = st.number_input("Referenzweg Kranfahrt Trichter 7 in m", key="weg_trichter_7_m")
+
+st.write(":grey[Bewegungen]")
+auswahl_bewegung_hebensenken     = st.number_input("Geschwindigkeit Heben/Senken in m/min", key="v_heben_m_min")
+auswahl_bewegung_katzfahrt       = st.number_input("Geschwindigkeit Katzfahrt in m/min", key="v_katz_m_min")
+auswahl_bewegung_kranfahrt       = st.number_input("Geschwindigkeit Kranfahrt in m/min", key="v_kran_m_min")
+auswahl_bewegung_oeffnenschliessen = st.number_input("Geschwindigkeit Greifer Öffnen/Schließen", key="v_oeffnen_einh")
+
+st.write(":grey[Beschleunigungen]")
+auswahl_beschleunigung_hebensenken     = st.number_input("Beschleuigung Heben/Senken in m/s²", key="a_heben_m_s2")
+auswahl_beschleunigung_katzfahrt       = st.number_input("Beschleunigung Katzfahrt in m/s²", key="a_katz_m_s2")
+auswahl_beschleunigung_kranfahrt       = st.number_input("Beschleunigung Kranfahrt in m/s²", key="a_kran_m_s2")
+auswahl_beschleunigung_oeffnenschliessen = st.number_input("Beschleunigung Greifer Öffnen/Schließen in m/s²", key="a_oeffnen_m_s2")
+
+##-----------------------------------------------------------------
+# Speichern & Wechseln
 if st.button("Auswahl speichern & zur Auswertung"):
+    # Greiferwerte aus Auswahl ableiten (Konstanten oder Eingaben)
+    gaus = st.session_state.get("greifer_auswahl")
+    if gaus == "Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1":
+        g_gewicht_Mg = 3.05
+        g_motor_kW   = 18.8
+        g_vol_m3     = 2.75
+    elif gaus == "Vierseil_Mehrschalen Müllgreifer Mrs Greifer 1-26-6315-6316":
+        g_gewicht_Mg = 3.8
+        g_motor_kW   = to_float(st.session_state.get("greifer_motor_kW"))
+        g_vol_m3     = 4.0
+    else:  # Manuell eingeben
+        g_gewicht_Mg = to_float(st.session_state.get("greifer_leergewicht_Mg"))
+        g_motor_kW   = to_float(st.session_state.get("greifer_motor_kW"))
+        g_vol_m3     = to_float(st.session_state.get("greifer_volumen_m3"))
+
+    # Trichter-Referenzwege als Liste
+    n_tr = int(st.session_state.get("anzahl_trichter", 0) or 0)
+    trichter_refwege = []
+    for i in range(1, n_tr + 1):
+        trichter_refwege.append(to_float(st.session_state.get(f"weg_trichter_{i}_m")))
+
+    # Faktoren-Dict zusammenstellen
     st.session_state["faktoren"] = {
-        "lastplan": auswahl_ablauf,
-        "menge_t_woche": to_float(locals().get("auswahl_ablauf_menge")),
-        "zyklen_woche": to_float(locals().get("auswahl_ablauf_greif_zyklen")),
-        "standby_h": to_float(locals().get("auswahl_ablauf_standby")),
-        "dim_l_m": float(auswahl_dimension_länge),
-        "dim_b_m": float(auswahl_dimension_breite),
-        "dim_h_m": float(auswahl_dimension_höhe),
-        "kran_t":  float(auswahl_dimension_gewicht),
-        "umg_temp_C": to_float(auswahl_umgebung_temperatur),
-        "umg_korrosion": auswahl_umgebung_korrosion,
-        "strommodus": auswahl_strom,
-        "land": locals().get("auswahl_land"),
-        "ee_%": locals().get("auswahl_strommix_ee"),
-        "fe_%": locals().get("auswahl_strommix_fe"),
-        "preis_cent_kwh": locals().get("auswahl_strommix_preis"),
-        "mix_wasser_%": locals().get("auswahl_strommix_wasser"),
-        "mix_solar_%":  locals().get("auswahl_strommix_solar"),
-        "mix_wind_%":   locals().get("auswahl_strommix_wind"),
-        "mix_bio_%":    locals().get("auswahl_strommix_bio"),
-        "mix_atom_%":   locals().get("auswahl_strommix_atom"),
-        "mix_gas_%":    locals().get("auswahl_strommix_erdgas"),
-        "mix_kohle_%":  locals().get("auswahl_strommix_kohle"),
-        "mix_geo_%":    locals().get("auswahl_strommix_geo"),
-        "mix_oel_%":    locals().get("auswahl_strommix_öl"),
-        "alt": {
-            "greifer": st.session_state["greifer_alt"],
-            "steuerung": st.session_state["steuerung_alt"],
-            "hub_kw": st.session_state["hub_kw_alt"],
-            "fahr_kw": st.session_state["fahr_kw_alt"],
-            "fu": st.session_state["fu_alt"],
-            "v_mps": st.session_state["v_alt"],
+        "preset": st.session_state.get("std_preset"),
+        "allgemein": {
+            "anzahl_kraene": int(st.session_state.get("anzahl_kraene", 0) or 0),
+            "anzahl_trichter": n_tr,
+            "verbrennung_pro_trichter_Mg_h": to_float(st.session_state.get("trichter_verbrennung_Mg_h")),
         },
-    }
-
-    # -> Baseline für Auswertung bereitstellen (so erwartet es die Auswertungsseite)
-    preis_cent = st.session_state["faktoren"].get("preis_cent_kwh")
-    preis_eur_kwh = float(preis_cent)/100.0 if preis_cent is not None else 0.30  # Default 0,30 €/kWh
-    co2_g_kwh = 366.0  # Default; kannst du später aus Land/Strommix ableiten
-    betriebsstunden = 4000  # Default; falls du das Feld noch nicht abfragst
-
-    st.session_state["baseline"] = {
-        "hub_kw": float(st.session_state["faktoren"]["alt"]["hub_kw"] or 0),
-        "fahr_kw": float(st.session_state["faktoren"]["alt"]["fahr_kw"] or 0),
-        "fu": st.session_state["faktoren"]["alt"]["fu"],
-        "betriebsstunden": int(betriebsstunden),
-        "preis_eur_kwh": float(preis_eur_kwh),
-        "co2_g_kwh": float(co2_g_kwh),
+        "greifer": {
+            "auswahl": gaus,
+            "leergewicht_Mg": g_gewicht_Mg,
+            "motorleistung_kW": g_motor_kW,
+            "volumen_m3": g_vol_m3,
+        },
+        "muell": {
+            "modus": st.session_state.get("muell_modus"),
+            "gesamtmenge_Mg_a": to_float(st.session_state.get("muell_gesamt_Mg_a")),
+            "anliefermenge_Mg_h": to_float(st.session_state.get("muell_anliefer_Mg_h")),
+            "anlieferdauer_h": to_float(st.session_state.get("muell_anlieferdauer_h")),
+            "dichte_einlagerung_Mg_m3": to_float(st.session_state.get("muell_dichte_einlagerung_Mg_m3")),
+            "dichte_beschickung_Mg_m3": to_float(st.session_state.get("muell_dichte_trichter_Mg_m3")),
+        },
+        "referenzwege": {
+            "heben_senken_m": to_float(st.session_state.get("weg_heben_m")),
+            "katzfahrt_m": to_float(st.session_state.get("weg_katz_m")),
+            "kranfahrt_m": to_float(st.session_state.get("weg_kran_m")),
+            "oeffnen_schliessen_m": to_float(st.session_state.get("weg_oeffnen_m")),
+            "trichterwege_m": trichter_refwege,  # Liste: Index 0 = Trichter 1
+        },
+        "geschwindigkeiten": {
+            "heben_senken_m_min": to_float(st.session_state.get("v_heben_m_min")),
+            "katzfahrt_m_min": to_float(st.session_state.get("v_katz_m_min")),
+            "kranfahrt_m_min": to_float(st.session_state.get("v_kran_m_min")),
+            "oeffnen_schliessen_einh": to_float(st.session_state.get("v_oeffnen_einh")),
+        },
+        "beschleunigungen": {
+            "heben_senken_m_s2": to_float(st.session_state.get("a_heben_m_s2")),
+            "katzfahrt_m_s2": to_float(st.session_state.get("a_katz_m_s2")),
+            "kranfahrt_m_s2": to_float(st.session_state.get("a_kran_m_s2")),
+            "oeffnen_schliessen_m_s2": to_float(st.session_state.get("a_oeffnen_m_s2")),
+        },
     }
 
     st.session_state["ready_for_analysis"] = True
     st.toast("Eingaben gespeichert ✅", icon="✅")
     time.sleep(2)
     st.switch_page("pages/Auswertung.py")
+
