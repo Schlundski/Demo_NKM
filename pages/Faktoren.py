@@ -49,6 +49,7 @@ elif auswahl_greifer_select == "Manuell eingeben":
     auswahl_greifer_gewicht = st.number_input("Leergewicht Greifer in Mg", key="greifer_leergewicht_Mg")
     auswahl_greifer_motor   = st.number_input("Motorleistung Greifer für Öffnen/Schließen in kW (Hubmotor oder Hydraulikmotor)", key="greifer_motor_kW")
     auswahl_greifer_inhalt  = st.number_input("Greifervolumen in m³", key="greifer_volumen_m3")
+    auswahl_greifer_art     = st.selectbox("Greiferart", ["Vierseil-Greifer","Hydraulikgreifer"])
 
 st.write(":grey[Müllmengen]")
 auswahl_müll = st.selectbox(
