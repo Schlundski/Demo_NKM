@@ -1,0 +1,37 @@
+﻿;Beschreibung;Wert;Einheit;Kommentar
+0;;;;
+1;Anzahl Kräne;2;Stk.;
+2;Anzahl Trichter;4;Stk.;
+3;Verbrennung je Trichter;21,2;Mg/h;
+4;Müllmenge im Jahr;760000;Mg;
+5;Anliefermenge Stunde;235;Mg/h;
+6;Anlieferdauer Stunden;12;h;
+7;Dichte Einlagerung;0,7;Mg/m³;
+8;Dichte Beschickung;0,8;Mg/m³;
+9;Greiferart;Vierseil-Greifer;;
+10;Greifer Leergewicht;9,5;Mg;
+11;Motorleistung Greifer in kW;180;kW;
+12;Wirkungsgrad Greifermotor in %;92;%%;Schätzung
+13;Greifervolumen;10;m³;
+14;Referenzweg Heben/Senken;25;m;
+15;Referenzweg Katzfahrt;10;m;
+16;Referenzweg Kranfahrt Einlagern;35;m;
+17;Referenzweg Öffnen/Schließen;11;m;
+18;Trichterweg 1;10;m;
+19;Trichterweg 2;25;m;
+20;Trichterweg 3;40;m;
+21;Trichterweg 4;55;m;
+22;Geschwindigkeit Heben/Senken;100;min/min;
+23;Geschwindigkeit Katzfahrt;85;min/min;
+24;Geschwindigkeit Kranfahrt;85;min/min;
+25;Geschwindigkeit Öffnen/Schließen;100;min/min;
+26;Beschleunigung Heben/Senken;0,5;m/s²;
+27;Beschleunigung Katzfahrt;0,22;m/s²;
+28;Beschleunigung Kranfahrt;0,22;m/s²;
+29;Beschleunigung Öffnen/Schließen;0,5;m/s²;
+30;Nennleistung Hubmotor;180;kW;
+31;Wirkungsgrad Hubmotor;94;%;Schätzung
+32;Nennleistung Katzfahrt;15;kW;
+33;Wirkungsgrad Katzfahrt;93;%;Schätzung
+34;Nennleistung Kranfahrt;30;kW;
+35;Wirkungsgrad Kranfahrt;93;%;Schätzung

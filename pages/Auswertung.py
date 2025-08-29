@@ -1,169 +1,248 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
+import time
 
-st.set_page_config(page_title="Auswertung", page_icon="📊", layout="wide")
-st.title("📊 Auswertung: Alt vs. Neu (live)")
+st.title("📊 Auswertung")
 
-# Modellannahmen
-ETA_BY_FU = {
-    "Standard": 0.88,
-    "ABB AC880": 0.93,
-    "Siemens S120": 0.94,
-    "Siemens Masterdrive": 0.92,
-}
-REGEN_EFF = {
-    "Standard": 0.10,
-    "ABB AC880": 0.25,
-    "Siemens S120": 0.30,
-    "Siemens Masterdrive": 0.20,
-}
-GREIFER_FACTOR = {
-    "-": 1.00,
-    "Hydraulik-Greifer": 1.00,
-    "Vier-Seil-Greifer": 1.05,
-}
+# Abfrage, ob Daten von der Faktorenseite übermittelt wurden
+if "faktoren" not in st.session_state:
+    st.warning("Keine Faktoren gefunden. Bitte zuerst auf der Seite „Faktoren“ eingeben.")
+    st.stop()
 
-def regen_share_from(steuerung: str, v_mps: float) -> float:
-    """Plausibler Reku-Zeitanteil [0..0.5] aus Steuerung + Geschwindigkeit."""
-    base = 0.25 if steuerung == "Automatisch" else 0.20
-    if v_mps >= 1.3:
-        base += 0.05
-    return float(np.clip(base, 0.0, 0.5))
+f = st.session_state["faktoren"]
 
-def compute_metrics(hub_kw, fahr_kw, fu_type, h_per_year, price_eur_kwh,
-                    co2_g_per_kwh, greifer_type="-", steuerung="Manuell", v_mps=1.0):
-    p_total = max(hub_kw, 0.0) + max(fahr_kw, 0.0)                  # kW
-    load_fac = GREIFER_FACTOR.get(greifer_type, 1.0)
-    e_brutto = p_total * max(h_per_year, 0.0) * load_fac            # kWh/Jahr
+def get(dct, path, default=None):
+    cur = dct
+    for p in path.split("."):
+        if isinstance(cur, dict) and p in cur:
+            cur = cur[p]
+        else:
+            return default
+    return cur
 
-    eta = ETA_BY_FU.get(fu_type, 0.9)
-    e_el = e_brutto / max(eta, 1e-6)                                # kWh
-
-    regen_share = regen_share_from(steuerung, v_mps)
-    regen_eff   = REGEN_EFF.get(fu_type, 0.2)
-    e_reku = e_el * regen_share * regen_eff                         # kWh
-
-    e_netto = max(e_el - e_reku, 0.0)
-    co2_kg  = e_netto * (co2_g_per_kwh / 1000.0)
-    kosten  = e_netto * price_eur_kwh
-    return dict(E_netto_kWh=e_netto, CO2_kg=co2_kg, Kosten_EUR=kosten)
-
-def _f(x, default=0.0):
-    """sicher zu float casten"""
+def safe_float(x, default=0.0):
     try:
         return float(x)
     except Exception:
-        return float(default)
+        return default
 
-# Baseline prüfen
-if "baseline" not in st.session_state:
-    st.error("Es sind keine Basisdaten vorhanden. Bitte zuerst auf der Seite **Faktoren** speichern.")
-    st.stop()
+# Neue Faktoren initial befüllen
+if "neu_faktoren" not in st.session_state:
+    st.session_state["neu_faktoren"] = {
+        "greifer": {
+            "greiferart":           get(f, "greifer.greiferart", "Vierseil-Greifer"),
+            "leergewicht_Mg":       safe_float(get(f, "greifer.leergewicht_Mg", 0.0)),
+            "motorleistung_kW":     safe_float(get(f, "greifer.motorleistung_kW", 0.0)),
+            "volumen_m3":           safe_float(get(f, "greifer.volumen_m3", 0.0)),
+        },
+        "motoren": {
+            "greifer_wirkungsgrad_pct": safe_float(get(f, "motoren.greifer_wirkungsgrad_pct", 92.0)),
+            "hub_kW":               safe_float(get(f, "motoren.hub_kW", 0.0)),
+            "hub_wirkungsgrad_pct": safe_float(get(f, "motoren.hub_wirkungsgrad_pct", 94.0)),
+            "katz_kW":              safe_float(get(f, "motoren.katz_kW", 0.0)),
+            "katz_wirkungsgrad_pct":safe_float(get(f, "motoren.katz_wirkungsgrad_pct", 93.0)),
+            "kran_kW":              safe_float(get(f, "motoren.kran_kW", 0.0)),
+            "kran_wirkungsgrad_pct":safe_float(get(f, "motoren.kran_wirkungsgrad_pct", 93.0)),
+        },
+        "geschwindigkeiten": {
+            "heben_senken_m_min":   safe_float(get(f, "geschwindigkeiten.heben_senken_m_min", 0.0)),
+            "katzfahrt_m_min":      safe_float(get(f, "geschwindigkeiten.katzfahrt_m_min", 0.0)),
+            "kranfahrt_m_min":      safe_float(get(f, "geschwindigkeiten.kranfahrt_m_min", 0.0)),
+            "oeffnen_schliessen_einh": safe_float(get(f, "geschwindigkeiten.oeffnen_schliessen_einh", 0.0)),
+        },
+        "beschleunigungen": {
+            "heben_senken_m_s2":    safe_float(get(f, "beschleunigungen.heben_senken_m_s2", 0.0)),
+            "katzfahrt_m_s2":       safe_float(get(f, "beschleunigungen.katzfahrt_m_s2", 0.0)),
+            "kranfahrt_m_s2":       safe_float(get(f, "beschleunigungen.kranfahrt_m_s2", 0.0)),
+            "oeffnen_schliessen_m_s2": safe_float(get(f, "beschleunigungen.oeffnen_schliessen_m_s2", 0.0)),
+        },
+    }
 
-base = st.session_state["baseline"]
-# erwartete Keys: hub_kw, fahr_kw, fu, betriebsstunden, preis_eur_kwh, co2_g_kwh
+nf = st.session_state["neu_faktoren"]
 
-# Eingaben für NEU
-colA, colN = st.columns(2)
+col_left, col_right = st.columns(2)
 
-with colA:
-    st.subheader("🔴 Alt")
-    st.write(f"**FU‑Typ**: {base['fu']}")
-    st.write(f"**Hub/Fahr**: {_f(base['hub_kw']):.1f} / {_f(base['fahr_kw']):.1f} kW")
-    st.write(f"**Betriebsstunden/Jahr**: {int(_f(base['betriebsstunden']))}")
-    st.write(f"**Preis**: {_f(base['preis_eur_kwh']):.2f} €/kWh")
-    st.write(f"**CO₂‑Faktor**: {_f(base['co2_g_kwh']):.0f} g/kWh")
+# -----------------------------------------------
+# Linke Spalte: Anzeige (Ist)
+with col_left:
+    st.subheader("Eingegebene Faktoren (Ist-Zustand)")
+    st.write(":grey[Daten dienen nur der Referenz]")
 
-with colN:
-    st.subheader("🟢 Neu")
-    greifer_neu   = st.selectbox("Greiferart (neu)", ["-","Vier-Seil-Greifer","Hydraulik-Greifer"], index=1)
-    steuerung_neu = st.selectbox("Steuerungsart (neu)", ["Manuell","Automatisch"], index=1)
-    hub_neu  = st.number_input("Hubmotorleistung kW (neu)", 0.0, 5000.0, _f(base["hub_kw"]), 5.0)
-    fahr_neu = st.number_input("Fahrmotorleistung kW (neu)", 0.0, 5000.0, _f(base["fahr_kw"]), 5.0)
-    fu_neu   = st.selectbox("Frequenzumrichter (neu)", list(ETA_BY_FU.keys()),
-                             index=list(ETA_BY_FU.keys()).index(base["fu"]) if base["fu"] in ETA_BY_FU else 0)
-    v_neu    = st.number_input("Durchschnittliche Geschwindigkeit m/s (neu)", 0.0, 10.0, 1.2, 0.1)
+    st.write("**Greiferart:**",                    get(f, "greifer.greiferart", "—"))
+    st.write("**Greifer Leergewicht [Mg]:**",      get(f, "greifer.leergewicht_Mg", "—"))
+    st.write("**Motorleistung Greifer [kW]:**",    get(f, "greifer.motorleistung_kW", "—"))
+    st.write("**Wirkungsgrad Greifermotor [%]:**", get(f, "motoren.greifer_wirkungsgrad_pct", "—"))
+    st.write("**Greifervolumen [m³]:**",           get(f, "greifer.volumen_m3", "—"))
 
-# Rechnen
-alt_metrics = compute_metrics(
-    hub_kw=_f(base["hub_kw"]), fahr_kw=_f(base["fahr_kw"]), fu_type=base["fu"],
-    h_per_year=int(_f(base["betriebsstunden"])), price_eur_kwh=_f(base["preis_eur_kwh"]),
-    co2_g_per_kwh=_f(base["co2_g_kwh"]), greifer_type="-", steuerung="Manuell", v_mps=1.2
-)
-neu_metrics = compute_metrics(
-    hub_kw=_f(hub_neu), fahr_kw=_f(fahr_neu), fu_type=fu_neu,
-    h_per_year=int(_f(base["betriebsstunden"])), price_eur_kwh=_f(base["preis_eur_kwh"]),
-    co2_g_per_kwh=_f(base["co2_g_kwh"]), greifer_type=greifer_neu,
-    steuerung=steuerung_neu, v_mps=_f(v_neu, 1.2)
-)
+    st.markdown("---")
+    st.write("**Geschwindigkeiten**")
+    st.write("• Heben/Senken [m/min]:",    get(f, "geschwindigkeiten.heben_senken_m_min", "—"))
+    st.write("• Katzfahrt [m/min]:",       get(f, "geschwindigkeiten.katzfahrt_m_min", "—"))
+    st.write("• Kranfahrt [m/min]:",       get(f, "geschwindigkeiten.kranfahrt_m_min", "—"))
+    st.write("• Öffnen/Schließen [Einheit]:", get(f, "geschwindigkeiten.oeffnen_schliessen_einh", "—"))
 
-# Neu − Alt
-dE   = _f(neu_metrics["E_netto_kWh"] - alt_metrics["E_netto_kWh"])
-dCO2 = _f(neu_metrics["CO2_kg"]      - alt_metrics["CO2_kg"])
-dEUR = _f(neu_metrics["Kosten_EUR"]  - alt_metrics["Kosten_EUR"])
+    st.markdown("---")
+    st.write("**Beschleunigungen**")
+    st.write("• Heben/Senken [m/s²]:",     get(f, "beschleunigungen.heben_senken_m_s2", "—"))
+    st.write("• Katzfahrt [m/s²]:",        get(f, "beschleunigungen.katzfahrt_m_s2", "—"))
+    st.write("• Kranfahrt [m/s²]:",        get(f, "beschleunigungen.kranfahrt_m_s2", "—"))
+    st.write("• Öffnen/Schließen [m/s²]:", get(f, "beschleunigungen.oeffnen_schliessen_m_s2", "—"))
 
-# Energie
-st.divider()
-st.subheader("Energie")
+    st.markdown("---")
+    st.write("**Antriebsdaten**")
+    st.write("• Nennleistung Hubmotor [kW]:",     get(f, "motoren.hub_kW", "—"))
+    st.write("• Wirkungsgrad Hubmotor [%]:",      get(f, "motoren.hub_wirkungsgrad_pct", "—"))
+    st.write("• Nennleistung Katzfahrt [kW]:",    get(f, "motoren.katz_kW", "—"))
+    st.write("• Wirkungsgrad Katzfahrt [%]:",     get(f, "motoren.katz_wirkungsgrad_pct", "—"))
+    st.write("• Nennleistung Kranfahrt [kW]:",    get(f, "motoren.kran_kW", "—"))
+    st.write("• Wirkungsgrad Kranfahrt [%]:",     get(f, "motoren.kran_wirkungsgrad_pct", "—"))
 
-E_alt = _f(alt_metrics["E_netto_kWh"])
-E_neu = _f(neu_metrics["E_netto_kWh"])
+    with st.expander("Allgemeine Daten"):
+        st.write("**Anzahl Kräne:**",                   get(f, "allgemein.anzahl_kraene", "—"))
+        st.write("**Anzahl Trichter:**",               get(f, "allgemein.anzahl_trichter", "—"))
+        st.write("**Verbrennung je Trichter [Mg/h]:**", get(f, "allgemein.verbrennung_pro_trichter_Mg_h", "—"))
+        st.write("**Müllmenge im Jahr [Mg]:**",        get(f, "muell.gesamtmenge_Mg_a", "—"))
+        st.write("**Anliefermenge Stunde [Mg/h]:**",   get(f, "muell.anliefermenge_Mg_h", "—"))
+        st.write("**Anlieferdauer Stunden [h]:**",     get(f, "muell.anlieferdauer_h", "—"))
+        st.write("**Dichte Einlagerung [Mg/m³]:**",    get(f, "muell.dichte_einlagerung_Mg_m3", "—"))
+        st.write("**Dichte Beschickung [Mg/m³]:**",    get(f, "muell.dichte_beschickung_Mg_m3", "—"))
+        st.markdown("---")
+        st.write("**Referenzwege (Info)**")
+        st.write("• Heben/Senken [m]:",                get(f, "referenzwege.heben_senken_m", "—"))
+        st.write("• Katzfahrt [m]:",                   get(f, "referenzwege.katzfahrt_m", "—"))
+        st.write("• Kranfahrt Einlagern [m]:",         get(f, "referenzwege.kranfahrt_m", "—"))
+        st.write("• Öffnen/Schließen [m]:",            get(f, "referenzwege.oeffnen_schliessen_m", "—"))
+        tw = get(f, "referenzwege.trichterwege_m", []) or []
+        st.write("• Trichterweg 1 [m]:", tw[0] if len(tw) > 0 else "—")
+        st.write("• Trichterweg 2 [m]:", tw[1] if len(tw) > 1 else "—")
+        st.write("• Trichterweg 3 [m]:", tw[2] if len(tw) > 2 else "—")
+        st.write("• Trichterweg 4 [m]:", tw[3] if len(tw) > 3 else "—")
 
-c1, c2 = st.columns(2)
-with c1:
-    st.metric("Energie Alt [kWh/J]", f"{E_alt:,.0f}")
-with c2:
-    st.metric("Energie Neu [kWh/J]", f"{E_neu:,.0f}",
-              delta=f"{dE:,.0f} kWh", delta_color="inverse")
+# ------------------------------------------------
+# Rechte Spalte: Anzeige/Bearbeitung
+with col_right:
+    st.subheader("Neu-Anlage")
+    edit_mode = st.checkbox("Bearbeiten", value=False, key="neu_edit_mode")
 
-df_energy = pd.DataFrame({
-    "Szenario": ["Alt", "Neu"],
-    "Wert": [E_alt, E_neu],
-})
-df_energy["Wert"] = pd.to_numeric(df_energy["Wert"], errors="coerce").fillna(0.0)
-st.bar_chart(df_energy, x="Szenario", y="Wert")
+    # Anzeige-Modus zeigt neuwerte
+    if not edit_mode:
+        st.write("**Greiferart:**",                    get(nf, "greifer.greiferart", "—"))
+        st.write("**Greifer Leergewicht [Mg]:**",      get(nf, "greifer.leergewicht_Mg", "—"))
+        st.write("**Motorleistung Greifer [kW]:**",    get(nf, "greifer.motorleistung_kW", "—"))
+        st.write("**Wirkungsgrad Greifermotor [%]:**", get(nf, "motoren.greifer_wirkungsgrad_pct", "—"))
+        st.write("**Greifervolumen [m³]:**",           get(nf, "greifer.volumen_m3", "—"))
 
-# CO²
-st.divider()
-st.subheader("CO₂")
+        st.markdown("---")
+        st.write("**Geschwindigkeiten**")
+        st.write("• Heben/Senken [m/min]:",    get(nf, "geschwindigkeiten.heben_senken_m_min", "—"))
+        st.write("• Katzfahrt [m/min]:",       get(nf, "geschwindigkeiten.katzfahrt_m_min", "—"))
+        st.write("• Kranfahrt [m/min]:",       get(nf, "geschwindigkeiten.kranfahrt_m_min", "—"))
+        st.write("• Öffnen/Schließen [Einheit]:", get(nf, "geschwindigkeiten.oeffnen_schliessen_einh", "—"))
 
-CO2_alt = _f(alt_metrics["CO2_kg"])
-CO2_neu = _f(neu_metrics["CO2_kg"])
+        st.markdown("---")
+        st.write("**Beschleunigungen**")
+        st.write("• Heben/Senken [m/s²]:",     get(nf, "beschleunigungen.heben_senken_m_s2", "—"))
+        st.write("• Katzfahrt [m/s²]:",        get(nf, "beschleunigungen.katzfahrt_m_s2", "—"))
+        st.write("• Kranfahrt [m/s²]:",        get(nf, "beschleunigungen.kranfahrt_m_s2", "—"))
+        st.write("• Öffnen/Schließen [m/s²]:", get(nf, "beschleunigungen.oeffnen_schliessen_m_s2", "—"))
 
-c3, c4 = st.columns(2)
-with c3:
-    st.metric("CO₂ Alt [kg/J]", f"{CO2_alt:,.0f}")
-with c4:
-    st.metric("CO₂ Neu [kg/J]", f"{CO2_neu:,.0f}",
-              delta=f"{dCO2:,.0f} kg", delta_color="inverse")
+        st.markdown("---")
+        st.write("**Antriebsdaten**")
+        st.write("• Nennleistung Hubmotor [kW]:",     get(nf, "motoren.hub_kW", "—"))
+        st.write("• Wirkungsgrad Hubmotor [%]:",      get(nf, "motoren.hub_wirkungsgrad_pct", "—"))
+        st.write("• Nennleistung Katzfahrt [kW]:",    get(nf, "motoren.katz_kW", "—"))
+        st.write("• Wirkungsgrad Katzfahrt [%]:",     get(nf, "motoren.katz_wirkungsgrad_pct", "—"))
+        st.write("• Nennleistung Kranfahrt [kW]:",    get(nf, "motoren.kran_kW", "—"))
+        st.write("• Wirkungsgrad Kranfahrt [%]:",     get(nf, "motoren.kran_wirkungsgrad_pct", "—"))
 
-df_co2 = pd.DataFrame({
-    "Szenario": ["Alt", "Neu"],
-    "Wert": [CO2_alt, CO2_neu],
-})
-df_co2["Wert"] = pd.to_numeric(df_co2["Wert"], errors="coerce").fillna(0.0)
-st.bar_chart(df_co2, x="Szenario", y="Wert")
+    # Edit Modus
+    else:
+        neu_greiferart = st.selectbox(
+            "Greiferart",
+            ["Vierseil-Greifer", "Hydraulikgreifer"],
+            index = (0 if get(nf, "greifer.greiferart") == "Vierseil-Greifer" else 1)
+                    if get(nf, "greifer.greiferart") in ("Vierseil-Greifer","Hydraulikgreifer") else 0,
+            key="neu_greiferart"
+        )
+        neu_g_leer = st.number_input("Greifer Leergewicht [Mg]",
+                                     value=safe_float(get(nf, "greifer.leergewicht_Mg", 0.0)),
+                                     key="neu_g_leer")
+        neu_g_kw   = st.number_input("Motorleistung Greifer [kW]",
+                                     value=safe_float(get(nf, "greifer.motorleistung_kW", 0.0)),
+                                     key="neu_g_kw")
+        neu_g_eta  = st.number_input("Wirkungsgrad Greifermotor [%]",
+                                     value=safe_float(get(nf, "motoren.greifer_wirkungsgrad_pct", 92.0)),
+                                     key="neu_g_eta")
+        neu_g_vol  = st.number_input("Greifervolumen [m³]",
+                                     value=safe_float(get(nf, "greifer.volumen_m3", 0.0)),
+                                     key="neu_g_vol")
 
-#Kosten
-st.divider()
-st.subheader("Kosten")
+        st.markdown("---")
+        st.write("**Geschwindigkeiten**")
+        neu_v_heben = st.number_input("Geschwindigkeit Heben/Senken [m/min]",
+                                      value=safe_float(get(nf, "geschwindigkeiten.heben_senken_m_min", 0.0)),
+                                      key="neu_v_heben")
+        neu_v_katz  = st.number_input("Geschwindigkeit Katzfahrt [m/min]",
+                                      value=safe_float(get(nf, "geschwindigkeiten.katzfahrt_m_min", 0.0)),
+                                      key="neu_v_katz")
+        neu_v_kran  = st.number_input("Geschwindigkeit Kranfahrt [m/min]",
+                                      value=safe_float(get(nf, "geschwindigkeiten.kranfahrt_m_min", 0.0)),
+                                      key="neu_v_kran")
+        neu_v_oes   = st.number_input("Geschwindigkeit Öffnen/Schließen [Einheit]",
+                                      value=safe_float(get(nf, "geschwindigkeiten.oeffnen_schliessen_einh", 0.0)),
+                                      key="neu_v_oes")
 
-EUR_alt = _f(alt_metrics["Kosten_EUR"])
-EUR_neu = _f(neu_metrics["Kosten_EUR"])
+        st.markdown("---")
+        st.write("**Beschleunigungen**")
+        neu_a_heben = st.number_input("Beschleunigung Heben/Senken [m/s²]",
+                                      value=safe_float(get(nf, "beschleunigungen.heben_senken_m_s2", 0.0)),
+                                      key="neu_a_heben")
+        neu_a_katz  = st.number_input("Beschleunigung Katzfahrt [m/s²]",
+                                      value=safe_float(get(nf, "beschleunigungen.katzfahrt_m_s2", 0.0)),
+                                      key="neu_a_katz")
+        neu_a_kran  = st.number_input("Beschleunigung Kranfahrt [m/s²]",
+                                      value=safe_float(get(nf, "beschleunigungen.kranfahrt_m_s2", 0.0)),
+                                      key="neu_a_kran")
+        neu_a_oes   = st.number_input("Beschleunigung Öffnen/Schließen [m/s²]",
+                                      value=safe_float(get(nf, "beschleunigungen.oeffnen_schliessen_m_s2", 0.0)),
+                                      key="neu_a_oes")
 
-c5, c6 = st.columns(2)
-with c5:
-    st.metric("Kosten Alt [€/J]", f"{EUR_alt:,.0f}")
-with c6:
-    st.metric("Kosten Neu [€/J]", f"{EUR_neu:,.0f}",
-              delta=f"{dEUR:,.0f} €", delta_color="inverse")
+        # ÄÄnderungen übernehmen
+        st.session_state["neu_faktoren"] = {
+            "greifer": {
+                "greiferart": st.session_state["neu_greiferart"],
+                "leergewicht_Mg": st.session_state["neu_g_leer"],
+                "motorleistung_kW": st.session_state["neu_g_kw"],
+                "volumen_m3": st.session_state["neu_g_vol"],
+            },
+            "motoren": {
+                "greifer_wirkungsgrad_pct": st.session_state["neu_g_eta"],
+                "hub_kW": get(nf, "motoren.hub_kW", 0.0),
+                "hub_wirkungsgrad_pct": get(nf, "motoren.hub_wirkungsgrad_pct", 94.0),
+                "katz_kW": get(nf, "motoren.katz_kW", 0.0),
+                "katz_wirkungsgrad_pct": get(nf, "motoren.katz_wirkungsgrad_pct", 93.0),
+                "kran_kW": get(nf, "motoren.kran_kW", 0.0),
+                "kran_wirkungsgrad_pct": get(nf, "motoren.kran_wirkungsgrad_pct", 93.0),
+            },
+            "geschwindigkeiten": {
+                "heben_senken_m_min": st.session_state["neu_v_heben"],
+                "katzfahrt_m_min": st.session_state["neu_v_katz"],
+                "kranfahrt_m_min": st.session_state["neu_v_kran"],
+                "oeffnen_schliessen_einh": st.session_state["neu_v_oes"],
+            },
+            "beschleunigungen": {
+                "heben_senken_m_s2": st.session_state["neu_a_heben"],
+                "katzfahrt_m_s2": st.session_state["neu_a_katz"],
+                "kranfahrt_m_s2": st.session_state["neu_a_kran"],
+                "oeffnen_schliessen_m_s2": st.session_state["neu_a_oes"],
+            },
+        }
 
-df_cost = pd.DataFrame({
-    "Szenario": ["Alt", "Neu"],
-    "Wert": [EUR_alt, EUR_neu],
-})
-df_cost["Wert"] = pd.to_numeric(df_cost["Wert"], errors="coerce").fillna(0.0)
-st.bar_chart(df_cost, x="Szenario", y="Wert")
+# Debug halt
+with st.expander("Debug: Session-Faktoren"):
+    st.write("**faktoren**")
+    st.json(st.session_state.get("faktoren", {}))
+    st.write("**neu_faktoren**")
+    st.json(st.session_state.get("neu_faktoren", {}))
 
-st.write("## Hier könnte die Amortisierung stehen!!!!")
+st.write("Die Auswertung kommt, wenn die mathematischen Zusammenhänge ausgearbeitet wurden")
+st.image("image/image.jpg")
