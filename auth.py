@@ -28,10 +28,10 @@ def check_login():
         if u == user_expected and p == pwd_expected:
             st.session_state["auth_ok"] = True
             st.session_state["auth_user"] = u
-            st.experimental_rerun()  # Seite neu zeichnen, jetzt freigeschaltet
+            st.rerun()   # <- statt st.experimental_rerun()
         else:
             st.error("Benutzername oder Passwort falsch.")
             st.stop()
     else:
-        # Nichts anzeigen, bis angemeldet
         st.stop()
+
