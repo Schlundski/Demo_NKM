@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 import time
+from auth import check_login
+
+st.set_page_config(page_title="Meine App", page_icon="🔒")
+check_login()  # <--- MUSS ganz am Anfang stehen
 
 # -----------------------------
 # CSV laden und vorbereiten
@@ -156,7 +160,7 @@ auswahl_referenzweg_oeffnenschliessen = st.number_input("Referenzweg Greifer Öf
 n_tr = int(auswahl_trichterzahl or 0)  # min/max am Widget gesetzt (1..10)
 if n_tr > 0:
     st.write("Referenzwege je Trichter [m]")
-    cols = st.columns(5)  # hübsch in bis zu 5 Spalten
+    cols = st.columns(5)
     for i in range(1, n_tr + 1):
         col = cols[(i - 1) % len(cols)]
         with col:

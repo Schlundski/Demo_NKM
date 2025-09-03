@@ -1,5 +1,9 @@
 import streamlit as st
 import time
+from auth import check_login
+
+st.set_page_config(page_title="Meine App", page_icon="🔒")
+check_login()  # <--- MUSS ganz am Anfang stehen
 
 st.title("📊 Auswertung")
 
@@ -65,7 +69,6 @@ col_left, col_right = st.columns(2)
 # Linke Spalte: Anzeige (Ist)
 with col_left:
     st.subheader("Eingegebene Faktoren (Ist-Zustand)")
-    st.write(":grey[Daten dienen nur der Referenz]")
 
     st.write("**Greiferart:**",                    get(f, "greifer.greiferart", "—"))
     st.write("**Greifer Leergewicht [Mg]:**",      get(f, "greifer.leergewicht_Mg", "—"))
