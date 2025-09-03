@@ -1,4 +1,3 @@
-# auth.py
 import streamlit as st
 
 def check_login():
@@ -6,7 +5,7 @@ def check_login():
     Blockt die Seite, bis korrektes (username, password) aus st.secrets eingegeben wurde.
     Merkt den Login in st.session_state['auth_ok'].
     """
-    # Schon eingeloggt?
+    # eingeloggt?
     if st.session_state.get("auth_ok"):
         return True
 
@@ -28,7 +27,7 @@ def check_login():
         if u == user_expected and p == pwd_expected:
             st.session_state["auth_ok"] = True
             st.session_state["auth_user"] = u
-            st.rerun()   # <- statt st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Benutzername oder Passwort falsch.")
             st.stop()

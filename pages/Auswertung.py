@@ -3,7 +3,7 @@ import time
 from auth import check_login
 
 st.set_page_config(page_title="Meine App", page_icon="🔒")
-check_login()  # <--- MUSS ganz am Anfang stehen
+check_login()
 
 st.title("📊 Auswertung")
 
