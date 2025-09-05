@@ -1,3 +1,5 @@
+## Auswertungsseite
+
 import streamlit as st
 import time
 from auth import check_login
@@ -7,7 +9,8 @@ check_login()
 
 st.title("📊 Auswertung")
 
-# Abfrage, ob Daten von der Faktorenseite übermittelt wurden
+# Vorbedingungen
+
 if "faktoren" not in st.session_state:
     st.warning("Keine Faktoren gefunden. Bitte zuerst auf der Seite „Faktoren“ eingeben.")
     st.stop()
@@ -15,6 +18,7 @@ if "faktoren" not in st.session_state:
 f = st.session_state["faktoren"]
 
 def get(dct, path, default=None):
+    """Sichere, punkt-getrennte Dict-Navigation: get(f, 'motoren.hub_kW', 0.0)"""
     cur = dct
     for p in path.split("."):
         if isinstance(cur, dict) and p in cur:
@@ -29,7 +33,9 @@ def safe_float(x, default=0.0):
     except Exception:
         return default
 
-# Neue Faktoren initial befüllen
+# -------------------------------------------------------------------
+# Neu-Faktoren initial befüllen (nur einmal)
+# -------------------------------------------------------------------
 if "neu_faktoren" not in st.session_state:
     st.session_state["neu_faktoren"] = {
         "greifer": {
@@ -63,10 +69,30 @@ if "neu_faktoren" not in st.session_state:
 
 nf = st.session_state["neu_faktoren"]
 
+# Praktische Kurzformen
+trichterwege = get(f, "referenzwege.trichterwege_m", []) or []
+anzahl_trichter = get(f, "allgemein.anzahl_trichter", len(trichterwege) or "—")
+preset_name = get(f, "preset", "—")
+
+# -------------------------------------------------------------------
+# Kopf-Zusammenfassung
+# -------------------------------------------------------------------
+m1, m2, m3, m4 = st.columns(4)
+m1.metric("Preset", str(preset_name))
+m2.metric("Kräne", str(get(f, "allgemein.anzahl_kraene", "—")))
+m3.metric("Trichter", str(anzahl_trichter))
+m4.metric("Verbrennung je Trichter [Mg/h]", str(get(f, "allgemein.verbrennung_pro_trichter_Mg_h", "—")))
+
+st.divider()
+
+# -------------------------------------------------------------------
+# Zwei Spalten: Ist links, Neu rechts
+# -------------------------------------------------------------------
 col_left, col_right = st.columns(2)
 
 # -----------------------------------------------
 # Linke Spalte: Anzeige (Ist)
+# -----------------------------------------------
 with col_left:
     st.subheader("Eingegebene Faktoren (Ist-Zustand)")
 
@@ -101,33 +127,39 @@ with col_left:
 
     with st.expander("Allgemeine Daten"):
         st.write("**Anzahl Kräne:**",                   get(f, "allgemein.anzahl_kraene", "—"))
-        st.write("**Anzahl Trichter:**",               get(f, "allgemein.anzahl_trichter", "—"))
+        st.write("**Anzahl Trichter:**",               anzahl_trichter)
         st.write("**Verbrennung je Trichter [Mg/h]:**", get(f, "allgemein.verbrennung_pro_trichter_Mg_h", "—"))
         st.write("**Müllmenge im Jahr [Mg]:**",        get(f, "muell.gesamtmenge_Mg_a", "—"))
         st.write("**Anliefermenge Stunde [Mg/h]:**",   get(f, "muell.anliefermenge_Mg_h", "—"))
         st.write("**Anlieferdauer Stunden [h]:**",     get(f, "muell.anlieferdauer_h", "—"))
         st.write("**Dichte Einlagerung [Mg/m³]:**",    get(f, "muell.dichte_einlagerung_Mg_m3", "—"))
         st.write("**Dichte Beschickung [Mg/m³]:**",    get(f, "muell.dichte_beschickung_Mg_m3", "—"))
+
         st.markdown("---")
         st.write("**Referenzwege (Info)**")
         st.write("• Heben/Senken [m]:",                get(f, "referenzwege.heben_senken_m", "—"))
         st.write("• Katzfahrt [m]:",                   get(f, "referenzwege.katzfahrt_m", "—"))
         st.write("• Kranfahrt Einlagern [m]:",         get(f, "referenzwege.kranfahrt_m", "—"))
         st.write("• Öffnen/Schließen [m]:",            get(f, "referenzwege.oeffnen_schliessen_m", "—"))
-        tw = get(f, "referenzwege.trichterwege_m", []) or []
-        st.write("• Trichterweg 1 [m]:", tw[0] if len(tw) > 0 else "—")
-        st.write("• Trichterweg 2 [m]:", tw[1] if len(tw) > 1 else "—")
-        st.write("• Trichterweg 3 [m]:", tw[2] if len(tw) > 2 else "—")
-        st.write("• Trichterweg 4 [m]:", tw[3] if len(tw) > 3 else "—")
 
-# ------------------------------------------------
-# Rechte Spalte: Anzeige/Bearbeitung
+        # --------- dynamische Ausgabe der Trichterwege ----------
+        tw = trichterwege
+        if tw:
+            st.write("**Trichterwege [m]:**")
+            for i, val in enumerate(tw, start=1):
+                st.write(f"• Trichter {i}: {val}")
+        else:
+            st.write("• Trichterwege: —")
+
+# -----------------------------------------------
+# Rechte Spalte: Anzeige/Bearbeitung (Neu)
+# -----------------------------------------------
 with col_right:
     st.subheader("Neu-Anlage")
     edit_mode = st.checkbox("Bearbeiten", value=False, key="neu_edit_mode")
 
-    # Anzeige-Modus zeigt neuwerte
     if not edit_mode:
+        # Anzeige-Modus
         st.write("**Greiferart:**",                    get(nf, "greifer.greiferart", "—"))
         st.write("**Greifer Leergewicht [Mg]:**",      get(nf, "greifer.leergewicht_Mg", "—"))
         st.write("**Motorleistung Greifer [kW]:**",    get(nf, "greifer.motorleistung_kW", "—"))
@@ -157,8 +189,8 @@ with col_right:
         st.write("• Nennleistung Kranfahrt [kW]:",    get(nf, "motoren.kran_kW", "—"))
         st.write("• Wirkungsgrad Kranfahrt [%]:",     get(nf, "motoren.kran_wirkungsgrad_pct", "—"))
 
-    # Edit Modus
     else:
+        # Edit-Modus
         neu_greiferart = st.selectbox(
             "Greiferart",
             ["Vierseil-Greifer", "Hydraulikgreifer"],
@@ -166,50 +198,74 @@ with col_right:
                     if get(nf, "greifer.greiferart") in ("Vierseil-Greifer","Hydraulikgreifer") else 0,
             key="neu_greiferart"
         )
-        neu_g_leer = st.number_input("Greifer Leergewicht [Mg]",
-                                     value=safe_float(get(nf, "greifer.leergewicht_Mg", 0.0)),
-                                     key="neu_g_leer")
-        neu_g_kw   = st.number_input("Motorleistung Greifer [kW]",
-                                     value=safe_float(get(nf, "greifer.motorleistung_kW", 0.0)),
-                                     key="neu_g_kw")
-        neu_g_eta  = st.number_input("Wirkungsgrad Greifermotor [%]",
-                                     value=safe_float(get(nf, "motoren.greifer_wirkungsgrad_pct", 92.0)),
-                                     key="neu_g_eta")
-        neu_g_vol  = st.number_input("Greifervolumen [m³]",
-                                     value=safe_float(get(nf, "greifer.volumen_m3", 0.0)),
-                                     key="neu_g_vol")
+        neu_g_leer = st.number_input(
+            "Greifer Leergewicht [Mg]",
+            value=safe_float(get(nf, "greifer.leergewicht_Mg", 0.0)),
+            key="neu_g_leer"
+        )
+        neu_g_kw   = st.number_input(
+            "Motorleistung Greifer [kW]",
+            value=safe_float(get(nf, "greifer.motorleistung_kW", 0.0)),
+            key="neu_g_kw"
+        )
+        neu_g_eta  = st.number_input(
+            "Wirkungsgrad Greifermotor [%]",
+            value=safe_float(get(nf, "motoren.greifer_wirkungsgrad_pct", 92.0)),
+            key="neu_g_eta"
+        )
+        neu_g_vol  = st.number_input(
+            "Greifervolumen [m³]",
+            value=safe_float(get(nf, "greifer.volumen_m3", 0.0)),
+            key="neu_g_vol"
+        )
 
         st.markdown("---")
         st.write("**Geschwindigkeiten**")
-        neu_v_heben = st.number_input("Geschwindigkeit Heben/Senken [m/min]",
-                                      value=safe_float(get(nf, "geschwindigkeiten.heben_senken_m_min", 0.0)),
-                                      key="neu_v_heben")
-        neu_v_katz  = st.number_input("Geschwindigkeit Katzfahrt [m/min]",
-                                      value=safe_float(get(nf, "geschwindigkeiten.katzfahrt_m_min", 0.0)),
-                                      key="neu_v_katz")
-        neu_v_kran  = st.number_input("Geschwindigkeit Kranfahrt [m/min]",
-                                      value=safe_float(get(nf, "geschwindigkeiten.kranfahrt_m_min", 0.0)),
-                                      key="neu_v_kran")
-        neu_v_oes   = st.number_input("Geschwindigkeit Öffnen/Schließen [Einheit]",
-                                      value=safe_float(get(nf, "geschwindigkeiten.oeffnen_schliessen_einh", 0.0)),
-                                      key="neu_v_oes")
+        neu_v_heben = st.number_input(
+            "Geschwindigkeit Heben/Senken [m/min]",
+            value=safe_float(get(nf, "geschwindigkeiten.heben_senken_m_min", 0.0)),
+            key="neu_v_heben"
+        )
+        neu_v_katz  = st.number_input(
+            "Geschwindigkeit Katzfahrt [m/min]",
+            value=safe_float(get(nf, "geschwindigkeiten.katzfahrt_m_min", 0.0)),
+            key="neu_v_katz"
+        )
+        neu_v_kran  = st.number_input(
+            "Geschwindigkeit Kranfahrt [m/min]",
+            value=safe_float(get(nf, "geschwindigkeiten.kranfahrt_m_min", 0.0)),
+            key="neu_v_kran"
+        )
+        neu_v_oes   = st.number_input(
+            "Geschwindigkeit Öffnen/Schließen [Einheit]",
+            value=safe_float(get(nf, "geschwindigkeiten.oeffnen_schliessen_einh", 0.0)),
+            key="neu_v_oes"
+        )
 
         st.markdown("---")
         st.write("**Beschleunigungen**")
-        neu_a_heben = st.number_input("Beschleunigung Heben/Senken [m/s²]",
-                                      value=safe_float(get(nf, "beschleunigungen.heben_senken_m_s2", 0.0)),
-                                      key="neu_a_heben")
-        neu_a_katz  = st.number_input("Beschleunigung Katzfahrt [m/s²]",
-                                      value=safe_float(get(nf, "beschleunigungen.katzfahrt_m_s2", 0.0)),
-                                      key="neu_a_katz")
-        neu_a_kran  = st.number_input("Beschleunigung Kranfahrt [m/s²]",
-                                      value=safe_float(get(nf, "beschleunigungen.kranfahrt_m_s2", 0.0)),
-                                      key="neu_a_kran")
-        neu_a_oes   = st.number_input("Beschleunigung Öffnen/Schließen [m/s²]",
-                                      value=safe_float(get(nf, "beschleunigungen.oeffnen_schliessen_m_s2", 0.0)),
-                                      key="neu_a_oes")
+        neu_a_heben = st.number_input(
+            "Beschleunigung Heben/Senken [m/s²]",
+            value=safe_float(get(nf, "beschleunigungen.heben_senken_m_s2", 0.0)),
+            key="neu_a_heben"
+        )
+        neu_a_katz  = st.number_input(
+            "Beschleunigung Katzfahrt [m/s²]",
+            value=safe_float(get(nf, "beschleunigungen.katzfahrt_m_s2", 0.0)),
+            key="neu_a_katz"
+        )
+        neu_a_kran  = st.number_input(
+            "Beschleunigung Kranfahrt [m/s²]",
+            value=safe_float(get(nf, "beschleunigungen.kranfahrt_m_s2", 0.0)),
+            key="neu_a_kran"
+        )
+        neu_a_oes   = st.number_input(
+            "Beschleunigung Öffnen/Schließen [m/s²]",
+            value=safe_float(get(nf, "beschleunigungen.oeffnen_schliessen_m_s2", 0.0)),
+            key="neu_a_oes"
+        )
 
-        # ÄÄnderungen übernehmen
+        # Änderungen übernehmen
         st.session_state["neu_faktoren"] = {
             "greifer": {
                 "greiferart": st.session_state["neu_greiferart"],
@@ -240,12 +296,14 @@ with col_right:
             },
         }
 
-# Debug halt
+
+# Debug
+
 with st.expander("Debug: Session-Faktoren"):
     st.write("**faktoren**")
     st.json(st.session_state.get("faktoren", {}))
     st.write("**neu_faktoren**")
     st.json(st.session_state.get("neu_faktoren", {}))
 
-st.write("Die Auswertung kommt, wenn die mathematischen Zusammenhänge ausgearbeitet wurden")
+st.info("Die Auswertung folgt, sobald die mathematischen Zusammenhänge implementiert sind.")
 st.image("image/image.jpg")
