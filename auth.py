@@ -1,37 +1,35 @@
-# auth.py
+## Hier findet die Automrisierung statt, ist tatsächlich recht simpel und funktioniert sehr gut
+
+
 import streamlit as st
 
 def check_login():
-    """
-    Blockt die Seite, bis korrektes (username, password) aus st.secrets eingegeben wurde.
-    Merkt den Login in st.session_state['auth_ok'].
-    """
-    # Schon eingeloggt?
-    if st.session_state.get("auth_ok"):
-        return True
+    # secrets.toml lesen (lokal oder über streamlit-cloud)
+    auth_section = st.secrets.get("auth", st.secrets)
+    USER = auth_section.get("username")
+    PASS = auth_section.get("password")
 
-    # Secrets vorhanden?
-    user_expected = st.secrets.get("username")
-    pwd_expected  = st.secrets.get("password")
-    if not user_expected or not pwd_expected:
-        st.error("Secrets 'username' und/oder 'password' fehlen. "
-                 "Setze sie in Streamlit Cloud → App → Settings → Secrets.")
+    if not USER or not PASS:
+        st.error("Login ist nicht konfiguriert. Bitte secrets.toml / Cloud-Secrets setzen.")
         st.stop()
 
-    # Login-Form
-    with st.form("login"):
+    if st.session_state.get("logged_in"):
+        return  # bereits eingeloggt
+
+    st.markdown("### 🔒 Anmelden")
+    with st.form("login_form", clear_on_submit=False):
         u = st.text_input("Benutzername")
         p = st.text_input("Passwort", type="password")
-        ok = st.form_submit_button("Anmelden")
+        ok = st.form_submit_button("Login")
 
     if ok:
-        if u == user_expected and p == pwd_expected:
-            st.session_state["auth_ok"] = True
-            st.session_state["auth_user"] = u
-            st.experimental_rerun()  # Seite neu zeichnen, jetzt freigeschaltet
+        if u == USER and p == PASS:
+            st.session_state["logged_in"] = True
+            st.success("Erfolgreich angemeldet.")
+            st.rerun()
         else:
-            st.error("Benutzername oder Passwort falsch.")
+            st.error("Falsche Zugangsdaten.")
             st.stop()
-    else:
-        # Nichts anzeigen, bis angemeldet
-        st.stop()
+
+    # Wenn noch nicht eingeloggt: Seite hier hart beenden
+    st.stop()

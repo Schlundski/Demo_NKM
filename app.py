@@ -2,7 +2,7 @@ import streamlit as st
 from auth import check_login
 
 st.set_page_config(page_title="Meine App", page_icon="🔒")
-check_login()  # <--- MUSS ganz am Anfang stehen
+check_login()
 
 #Startseite generieren, damit app nicht links steht in der Navigation
 def startseite():
