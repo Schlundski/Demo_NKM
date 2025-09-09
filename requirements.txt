@@ -19,6 +19,7 @@ kiwisolver==1.4.9
 MarkupSafe==3.0.2
 matplotlib==3.10.5
 narwhals==2.1.2
+networkx==3.5
 numpy==2.3.2
 packaging==25.0
 pandas==2.3.1
@@ -45,3 +46,5 @@ tzdata==2025.2
 urllib3==2.5.0
 watchdog==6.0.0
 wheel==0.45.1
+
+# Benötigte Pakete: Python, Streamlit, plotly, matplotlib, numpy, pandas
