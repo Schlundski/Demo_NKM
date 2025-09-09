@@ -70,19 +70,28 @@ auswahl_greifer_select = st.selectbox(
 )
 
 # Nur bei manueller Eingabe die Felder anzeigen
-if auswahl_greifer_select == "Manuell eingeben":  # Manuell
-    auswahl_greifer_art     = st.selectbox("Greiferart", ["Vierseil-Greifer", "Hydraulikgreifer"], key="greiferart")
-    auswahl_greifer_gewicht = st.number_input("Leergewicht Greifer in Mg", key="greifer_leergewicht_Mg")
-    auswahl_greifer_inhalt  = st.number_input("Greifervolumen in m³", key="greifer_volumen_m3")
-    # Motorleistung nur abfragen, wenn es ein Motorgreifer/Hydraulikgreifer ist
-    if st.session_state.get("greiferart") == "Hydraulikgreifer":
-        st.number_input("Motorleistung Greifer Öffnen/Schließen in kW", key="greifer_motor_kW")
+match auswahl_greifer_select:
+    case "Manuell eingeben":  # Manuell
+        auswahl_greifer_art     = st.selectbox("Greiferart", ["Vierseil-Greifer", "Hydraulikgreifer"], key="greiferart")
+        auswahl_greifer_gewicht = st.number_input("Leergewicht Greifer in Mg", key="greifer_leergewicht_Mg")
+        auswahl_greifer_inhalt  = st.number_input("Greifervolumen in m³", key="greifer_volumen_m3")
+        # Motorleistung nur abfragen, wenn es ein Motorgreifer/Hydraulikgreifer ist
+        if st.session_state.get("greiferart") == "Hydraulikgreifer":
+                st.number_input("Motorleistung Greifer Öffnen/Schließen in kW", key="greifer_motor_kW")
+    case "Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1":
+        greifer_dict = STANDARDWERTE["Greifer"]["Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1"]
+        for key, value in greifer_dict.items():
+            st.write(f"**{key}:** {value}")
+    case "Vierseil-Mehrschalen Müllgreifer MRS Greifer 1-26-6315-6316":
+        greifer_dict = STANDARDWERTE["Greifer"]["Vierseil-Mehrschalen Müllgreifer MRS Greifer 1-26-6315-6316"]
+        for key, value in greifer_dict.items():
+            st.write(f"**{key}:** {value}")
 
 # Müllmengen
 st.write(":grey[Müllmengen]")
 auswahl_muell = st.selectbox(
     "Bei Müllmengen mit Standardwerten rechnen oder eigene Werte eingeben?",
-    ["Standard", "Werte eingeben"],
+    ["Werte eingeben", "Standard"],
     key="muell_modus"
 )
 
@@ -100,7 +109,7 @@ st.write("# :blue[Angaben zu Bewegungen und Referenzwege]")
 
 auswahl_bewegungen = st.selectbox(
     "Bei Geschwindigkeiten und Beschleunigungen mit Standardwerten rechnen oder eigene Werte eingeben?",
-    ["Standard", "Werte eingeben"],
+    ["Werte eingeben", "Standard"],
     key="bewegung_modus"
 )
 
