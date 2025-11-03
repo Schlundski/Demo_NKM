@@ -12,7 +12,7 @@ from core.io import load_preset, to_float
 
 # Konfiguration
 
-TARGET_PAGE = "pages/Auswertung.py"
+TARGET_PAGE = "pages/Bewegungen.py"
 
 st.set_page_config(page_title="Meine App", page_icon="🔒")
 check_login()
@@ -288,5 +288,5 @@ if st.button("Auswahl speichern & zur Auswertung"):
     st.session_state["ready_for_analysis"] = True
     st.toast("Eingaben gespeichert ✅", icon="✅")
     time.sleep(2)
-    st.switch_page(TARGET_PAGE)
+    st.switch_page(TARGET_PAGE) #Zum Testen abgeändert um auf Bewegungen.py weiterzugehen.
 

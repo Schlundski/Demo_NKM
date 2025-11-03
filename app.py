@@ -16,6 +16,7 @@ def startseite():
 pg = st.navigation([
     st.Page(startseite, title="Startseite", icon="🏭"),
     st.Page("pages/Faktoren.py", title="Faktoren", icon="🔧"),
+    st.Page("pages/Bewegungen.py", title="Bewegungen", icon="🕹️"),
     st.Page("pages/Auswertung.py", title="Auswertung", icon="📊"),
 ])
 pg.run()
