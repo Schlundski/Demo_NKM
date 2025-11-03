@@ -36,3 +36,9 @@ STANDARDWERTE = {
         "oeffnen_schliessen_m_s2": 0.5,
     },
 }
+
+Motorleistungen = {
+    0.06, 0.09, 0.12, 0.18, 0.25, 0.37, 0.55, 0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 
+    110, 132, 160, 200, 250, 315, 335, 400, 450, 560
+    }
+# Daten sind aus IEC 60072.1 entnommen (Table 6 "Preferred rated output values")

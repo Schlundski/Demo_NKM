@@ -54,7 +54,7 @@ if auswahl_standard in PRESET_SOURCES:
 st.write("# :blue[Allgemeines & Müllmengen]")
 st.write(":grey[Allgemeines]")
 
-auswahl_kranzahl            = st.number_input("Anzahl der Krane", key="anzahl_kraene")
+auswahl_kranzahl            = st.number_input("Anzahl der Krane", min_value=1, max_value=5, key="anzahl_kraene")
 auswahl_trichterzahl        = st.number_input("Anzahl der Trichter", min_value=1, max_value=10, key="anzahl_trichter")
 auswahl_trichterverbrennung = st.number_input("Verbrennung je Trichter in Mg/h", key="trichter_verbrennung_Mg_h")
 
@@ -78,6 +78,7 @@ match auswahl_greifer_select:
         # Motorleistung nur abfragen, wenn es ein Motorgreifer/Hydraulikgreifer ist
         if st.session_state.get("greiferart") == "Hydraulikgreifer":
                 st.number_input("Motorleistung Greifer Öffnen/Schließen in kW", key="greifer_motor_kW")
+                st.number_input("Gewicht der Seile")
     case "Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1":
         greifer_dict = STANDARDWERTE["Greifer"]["Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1"]
         for key, value in greifer_dict.items():
