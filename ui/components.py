@@ -1,29 +1,30 @@
 import streamlit as st
 
-# Vorlage:
-    ## Zeile 1: Titel (links) + Standard-Checkbox (rechts) – teilen sich die Breite
-    #row1_col1, row1_col2 = st.columns([5, 2])
-    #with row1_col1:
-    #    st.markdown("**Verbrennung je Trichter [t/h]**")
-    # row1_col2:
-    #    use_std_vjt = st.checkbox("Standard", value=True, key="vjt_use_default")
+def number_standard(
+        titel="not defined",
+        standard=0.0,
+        min=0.0,
+        steps=0.1,
+        max=15,
+        key="not_defined"):
 
-    ## Zeile 2: Eingabebox über die ganze Breite
-    # = st.number_input(
-    #    "Verbrennung je Trichter [t/h]",
-    #    value=15.0,
-    #    min_value=0.0,
-    #    step=0.1,
-    #    format="%.1f",
-    #    disabled=use_std_vjt,
-    #    key="vjt_value",
-    #    label_visibility="collapsed"  # Label ausblenden, da oben schon Titel steht
+    "Unser UI Standard für numerische Eingaben, returned nur den Eingabe- bzw. Standardwert"
     
+    col1, col2 = st.columns([5, 2])
+    with col1:
+        st.markdown(titel)
+    with col2:
+        use_std = st.checkbox("Standard", value=True, key=f"use_default_{key}")
 
-    #verbrennung_je_trichter_tph = 15.0 if use_std_vjt else float(vjt_val)
+    ausgabe = st.number_input(
+        titel,
+        value=float(standard) if use_std else float(min),
+        min_value=float(min),
+        max_value=float(max),
+        step=float(steps),
+        disabled=True if use_std else False,
+        key=f"value_{key}",
+        label_visibility="collapsed"
+    )
 
-def number_with_standard_row(
-        string titel,
-        
-)
-
+    return ausgabe

@@ -17,12 +17,18 @@ STANDARDWERTE = {
     },
     "Müll": # Es handelt sich um die AVG Köln Werte des RMB
     {
-            "Müll Gesamtmenge im Jahr in Mg": 760000,
+            "Müll Gesamtmenge im Jahr in t": 760000,
             "Müll Anliefermenge in der Stunde": 235,
             "Müll Anlieferdauer in Stunden": 12,
-            "Müll Dichte Einlagerung in Mg/m³": 0.7,
-            "Müll Dichte Beschickung in Mg/m³": 0.8
-    },    
+            "Müll Dichte Einlagerung in t/m³": 0.7,
+            "Müll Dichte Beschickung in t/m³": 0.8
+    },  
+    "Anlage":
+    {
+        "Anzahl Kräne": 2,
+        "Anzahl Trichter": 4,
+        "Verbrennung je Trichter": 21.2, 
+    },
     "Geschwindigkeiten": {
         "heben_senken_m_min": 100.0,
         "katzfahrt_m_min": 85.0,
@@ -35,6 +41,17 @@ STANDARDWERTE = {
         "kranfahrt_m_s2": 0.22,
         "oeffnen_schliessen_m_s2": 0.5,
     },
+    "Referenzwege":
+    {
+        "Heben/Senken in m": 25,
+        "Katzfahrt": 10,
+        "Kranfahrt Einlagern": 35,
+        "Öffnen/Schließen": 11,
+        "Trichterweg 1": 10,
+        "Trichterweg 2": 25,
+        "Trichterweg 3": 40,
+        "Trichterweg 4": 55,
+    }
 }
 
 Motorleistungen = {

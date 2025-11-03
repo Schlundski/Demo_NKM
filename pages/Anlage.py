@@ -1,11 +1,25 @@
 import streamlit as st
-#from auth import check_login
-from components import number_with_standard_row
+from auth import check_login
+from ui.components import number_standard
+from config.standards import STANDARDWERTE
+import time
 
-st.header("Eingabe der Anlagendaten")
+st.header("Allgemeinen Anlagendaten")
 
-anzahl_krane = st.number_input("Anzahl der Krane", 1, 5, key="anzahl kraene")
-anzahl_trichter = st.number_input("Anzahl der Trichter", 1, 10, key= "anzahl trichter")
+st.write("# :grey[Allgemeine Daten]")
+anzahl_kraene = number_standard("Anzahl der Kräne", STANDARDWERTE["Anlage"]["Anzahl Kräne"], 1, 1, 10, "anzl_kraene")
+anzahl_trichter = number_standard("Anzahl der Trichter", STANDARDWERTE["Anlage"]["Anzahl Trichter"], 1, 1, 10, "anzl_trichter")
+verbrennung_trichter = number_standard("Verbrennung je Trichter [t]", STANDARDWERTE["Anlage"]["Verbrennung je Trichter"], 0, 0.1, 100, "vbrng_trichter" )
 
-verbrennung_je_trichter_tph = number_with_standard_row("Verbrennung je Trichter [t/h]", "vjt", 15, min_value = 1, step = 1)
+st.write("# :grey[Eingabe der Mülldaten]")
+müll_anlieferung_h = number_standard("Müllanliefermenge pro Stunde [t/h]", STANDARDWERTE["Müll"]["Müll Anliefermenge in der Stunde"], 0, 0.1, 1000, "ml_anlfrmg")
+müll_dichte_beschickung = number_standard("Müll Dichte bei Beschickung [t/m³]", STANDARDWERTE["Müll"]["Müll Dichte Beschickung in t/m³"], 0, 1, 2, "ml_dcht_beschickung")
+müll_dichte_anlieferung = number_standard("Müll Dichte bei Anlieferung [t/m³]", STANDARDWERTE["Müll"]["Müll Dichte Einlagerung in t/m³"], 0, 0.1, 2, "ml_dcht_anlieferung")
 
+button = st.button(
+    "Speichern und weiter")
+
+if button: 
+    st.write(":green[Erfolgreich gespeichert✅]")
+    time.sleep(2)
+    st.switch_page("pages/Mech.py")
