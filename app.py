@@ -8,7 +8,7 @@ check_login()
 def startseite():
     st.image("image/Noell.jpg")
     st.markdown("""
-             # 🏠Willkommen!
+             # 🏭Willkommen!
              Zuerst werden Sie durch die Dateneingabe Ihrer Bestandsanlage geführt.\n
              Dann können Sie ihre Eingaben nochmals überprüfen und speichern.\n
              Abschließend kommt eine Auswertung der Eingaben. Dort können Sie auch Erneuerungen vornehmen und der Unterschied wird anschaulich Visualisiert.\n
@@ -23,10 +23,10 @@ def startseite():
 pg = st.navigation([
     st.Page(startseite, title="Startseite", icon="🏠"),
     st.Page("pages/Anlage.py", title="Anlage", icon="🏭"),
-    st.Page("pages/Mech.py", title="Mechanik", icon="⚙️"),
-    st.Page("pages/Wege.py", title="Referenzwege", icon= "🪜"),
-    st.Page("pages/Auswertung.py", title="Auswertung", icon="📊")
-])
+    st.Page("pages/Greifer.py", title="Greifer", icon="🪝"),
+    st.Page("pages/Krananlage.py", title="Kran", icon="🏗️"),
+    st.Page("pages/Wege.py", title="Wege", icon="📐"),
+    st.Page("pages/Auswertung.py", title="Auswertung", icon="📊")],
+    #position = "hidden"
+    )
 pg.run()
-
-

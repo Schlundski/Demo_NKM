@@ -1,309 +1,678 @@
-## Auswertungsseite
-
 import streamlit as st
 import time
+from ui.components import number_standard, text_standard, selectbox_standard, number_soll, text_soll, selectbox_soll, plot_ldaten_rdiagramm
 from auth import check_login
+from core.computing import spielzeitenberechnung, mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechne_tagesenergie
+from ui.components import plot_ldaten_rdiagramm
+import pandas as pd
+from config.standards import STANDARDWERTE
+import config.standards as std
 
-st.set_page_config(page_title="Meine App", page_icon="🔒")
+st.set_page_config(layout = "wide")
 check_login()
 
+df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
+ist_state = st.session_state["ist_anlage"]
+
 st.title("📊 Auswertung")
+with st.expander("Debug", False):
+    st.write("Übergebenes session_state:")
+    st.write(st.session_state)
 
-# Vorbedingungen
+with st.expander("Parameter für Modernisierung", False):
+    with st.expander("Allgemeine Anlagendaten", False):
+        st.header("Allgemeinen Anlagendaten")
+        # Neuen session states container initialisieren
+        st.session_state["neu_anlage"] = {}
+        st.session_state["neu_anlage"]["anlage"] = {}
+        soll_anlage_state = st.session_state["neu_anlage"]["anlage"]
+        ist_anlage_state = ist_state["anlage"]
+        # Allgemeine Daten
+        st.write("# :grey[Allgemeine Daten]")
+        soll_anzahl_kraene = number_soll(
+            "Anzahl der Kräne",
+            ist_anlage_state["anzahl_kraene"],
+            1, 1, 10,
+            "anzl_kraene",
+            "Anzahl der Krane in der Anlage",
+            0
+        )
+        soll_anzahl_trichter = number_soll(
+            "Anzahl der Trichter",
+            ist_anlage_state["anzahl_trichter"],
+            1, 1, 10,
+            "anzl_trichter",
+            "Anzahl der Trichter zum Beschicken",
+            0
+        )
+        soll_verbrennung_trichter = number_soll(
+            "Verbrennung je Trichter [t]",
+            ist_anlage_state["verbrennung_trichter_t"],
+            0, 0.1, 100,
+            "vbrng_trichter",
+            "Verbrennung pro Trichter in Tonnen"
+        )
+        # Mülldaten
+        st.write("# :grey[Mülldaten]")
+        soll_müll_anlieferung_h = number_soll(
+            "Durchschnittliche Müllanliefermenge pro Stunde [t]",
+            ist_anlage_state["müll_anlieferung_h_t"],
+            0, 1, 1000,
+            "ml_anlfrmg",
+        )
+        soll_müll_dichte_beschickung = number_soll(
+            "Müll Dichte bei Beschickung [t/m³]",
+            ist_anlage_state["müll_dichte_beschickung_t_pro_m3"],
+            0, 0.1, 2,
+            "ml_dcht_beschickung",
+        )
+        soll_müll_dichte_anlieferung = number_soll(
+            "Müll Dichte bei Einlagerung [t/m³]",
+            ist_anlage_state["müll_dichte_anlieferung_t_pro_m3"],
+            0, 0.1, 2,
+            "ml_dcht_anlieferung",
+        )
 
-if "faktoren" not in st.session_state:
-    st.warning("Keine Faktoren gefunden. Bitte zuerst auf der Seite „Faktoren“ eingeben.")
-    st.stop()
+        # Kosten etc.
+        soll_anlage_standort = selectbox_soll(
+            titel = "Standort der Anlage",
+            ist = ist_anlage_state["anlage_standort"],
+            auswahl = df_laender["Land"].tolist(),
+            key = "anl_standort",
+            helptext = "In welchem Land befindet sich die Anlage?"
+        )
+        soll_energie_kosten = number_soll(
+            "Höhe der Tarifenergiekosten des Standortes [c/kWh]",
+            df_laender.loc[df_laender["Land"]==soll_anlage_standort, "Preis in c/kWh"].iloc[0],
+            0,
+            0.1,
+            200,
+            "enrgy_kostn",
+            "Die Energiekosten von c/kWh für die Anlage",
+        )
 
-f = st.session_state["faktoren"]
+    with st.expander("Greiferdaten", False):
+        # Neuen session_state container initialisieren
+        st.session_state["neu_anlage"]["greifer"] = {}
+        soll_greifer_state = st.session_state["neu_anlage"]["greifer"]
+        ist_greifer_state = ist_state["greifer"]
 
-def get(dct, path, default=None):
-    """Sichere, punkt-getrennte Dict-Navigation: get(f, 'motoren.hub_kW', 0.0)"""
-    cur = dct
-    for p in path.split("."):
-        if isinstance(cur, dict) and p in cur:
-            cur = cur[p]
+        # Radio Buttons erstellen
+        soll_greifer_Arten = [std.viers["Greiferart"], std.hydr["Greiferart"]]
+        soll_auswahl = st.radio("Greiferart:", soll_greifer_Arten, key="soll_radio_greifer_Arten")
+
+        # Vierseil-Greifer
+        if soll_auswahl == std.viers["Greiferart"]:
+            soll_gew_greifer_leer = number_soll(
+                "Leergewicht des Greifers [t]",
+                ist_greifer_state["leergewicht_t"],
+                0, 0.1, 15,
+                "soll_leergew",
+            )
+            soll_vol_greifer = number_soll(
+                "Greifervolumen [m³]",
+                ist_greifer_state["volumen_m3"],
+                0, 0.1, 15,
+                "soll_volgreif",
+            )
+            soll_ges_greifen = number_soll(
+                "Greifergeschwindigkeit beim Öffnen/Schließen [m/min]",
+                ist_greifer_state["geschwindigkeit_m_pro_min"],
+                0, 1, 200,
+                "soll_gesgreif",
+            )
+            soll_bes_greifen = number_soll(
+                "Greiferbeschleunigung beim Öffnen/Schließen [m/s²]",
+                ist_greifer_state["beschleunigung_m_pro_s2"],
+                0, 0.1, 10,
+                "soll_besgreif",
+            )
+
+        # Hydraulikgreifer
+        elif soll_auswahl == std.hydr["Greiferart"]:
+            soll_gew_greifer_leer = number_soll(
+                "Leergewicht des Greifers [t]",
+                ist_greifer_state["leergewicht_t"],
+                0, 0.1, 15,
+                "soll_leergew",
+            )
+            soll_vol_greifer = number_soll(
+                "Greifervolumen [m³]",
+                ist_greifer_state["volumen_m3"],
+                0, 0.1, 15,
+                "soll_volgreif",
+            )
+            soll_ges_greifen = number_soll(
+                "Greifergeschwindigkeit beim Öffnen/Schließen [m/min]",
+                ist_greifer_state["geschwindigkeit_m_pro_min"],
+                0, 1, 200,
+                "soll_gesgreif",
+            )
+            soll_bes_greifen = number_soll(
+                "Greiferbeschleunigung beim Öffnen/Schließen [m/s²]",
+                ist_greifer_state["beschleunigung_m_pro_s2"],
+                0, 0.1, 10,
+                "soll_besgreif",
+            )
+            soll_p_hydr_motor = number_soll(
+                "Motorleistung [kW]",
+                ist_greifer_state["motorleistung_kw"],
+                0, 1, 250,
+                "soll_motorleist",
+            )
+            soll_n_hydr_motor = number_soll(
+                "Wirkungsgrad Hydraulik",
+                ist_greifer_state["wirkungsgrad_hydraulik"],
+                0, 0.01, 1,
+                "soll_wirkhyrd",
+            )
+            soll_volumenstrom = number_soll(
+                "Volumenstrom [l/min]",
+                ist_greifer_state["volumenstrom_l_pro_min"],
+                0, 1, 150,
+                "soll_volstr",
+            )
+            soll_betriebsdruck = number_soll(
+                "Betriebsdruck [bar]",
+                std.hydr["betriebsdruck_bar"],
+                0, 1, 300,
+                "soll_betdruck",
+            )
         else:
-            return default
-    return cur
+            st.write("Bitte wählen Sie die Art des Greifers aus")
 
-def safe_float(x, default=0.0):
-    try:
-        return float(x)
-    except Exception:
-        return default
+    with st.expander("Krananlage", False):
+        st.title("Mechanische Krandaten")
+        # Container im Session State initialisieren
+        st.session_state["neu_anlage"]["kran_mechanik"]={}
+        soll_kran_state = st.session_state["neu_anlage"]["kran_mechanik"]
+        soll_kran_state["hubwerk"] = {}
+        soll_kran_state["katze"] = {}
+        soll_kran_state["kranfahrwerk"] = {}
+        soll_kran_hub_state = soll_kran_state["hubwerk"]
+        soll_kran_katz_state = soll_kran_state["katze"]
+        soll_kran_kran_state = soll_kran_state["kranfahrwerk"]
+        ist_kran_state = ist_state["kran_mechanik"]
+        ist_kran_hub_state = ist_kran_state["hubwerk"]
+        ist_kran_katz_state = ist_kran_state["katze"]
+        ist_kran_kran_state = ist_kran_state["kranfahrwerk"]
 
-# -------------------------------------------------------------------
-# Neu-Faktoren initial befüllen (nur einmal)
-# -------------------------------------------------------------------
-if "neu_faktoren" not in st.session_state:
-    st.session_state["neu_faktoren"] = {
-        "greifer": {
-            "greiferart":           get(f, "greifer.greiferart", "Vierseil-Greifer"),
-            "leergewicht_Mg":       safe_float(get(f, "greifer.leergewicht_Mg", 0.0)),
-            "motorleistung_kW":     safe_float(get(f, "greifer.motorleistung_kW", 0.0)),
-            "volumen_m3":           safe_float(get(f, "greifer.volumen_m3", 0.0)),
-        },
-        "motoren": {
-            "greifer_wirkungsgrad_pct": safe_float(get(f, "motoren.greifer_wirkungsgrad_pct", 92.0)),
-            "hub_kW":               safe_float(get(f, "motoren.hub_kW", 0.0)),
-            "hub_wirkungsgrad_pct": safe_float(get(f, "motoren.hub_wirkungsgrad_pct", 94.0)),
-            "katz_kW":              safe_float(get(f, "motoren.katz_kW", 0.0)),
-            "katz_wirkungsgrad_pct":safe_float(get(f, "motoren.katz_wirkungsgrad_pct", 93.0)),
-            "kran_kW":              safe_float(get(f, "motoren.kran_kW", 0.0)),
-            "kran_wirkungsgrad_pct":safe_float(get(f, "motoren.kran_wirkungsgrad_pct", 93.0)),
-        },
-        "geschwindigkeiten": {
-            "heben_senken_m_min":   safe_float(get(f, "geschwindigkeiten.heben_senken_m_min", 0.0)),
-            "katzfahrt_m_min":      safe_float(get(f, "geschwindigkeiten.katzfahrt_m_min", 0.0)),
-            "kranfahrt_m_min":      safe_float(get(f, "geschwindigkeiten.kranfahrt_m_min", 0.0)),
-            "oeffnen_schliessen_einh": safe_float(get(f, "geschwindigkeiten.oeffnen_schliessen_einh", 0.0)),
-        },
-        "beschleunigungen": {
-            "heben_senken_m_s2":    safe_float(get(f, "beschleunigungen.heben_senken_m_s2", 0.0)),
-            "katzfahrt_m_s2":       safe_float(get(f, "beschleunigungen.katzfahrt_m_s2", 0.0)),
-            "kranfahrt_m_s2":       safe_float(get(f, "beschleunigungen.kranfahrt_m_s2", 0.0)),
-            "oeffnen_schliessen_m_s2": safe_float(get(f, "beschleunigungen.oeffnen_schliessen_m_s2", 0.0)),
-        },
+        # Hubwerk
+        with st.expander("Hubwerk", False):
+            soll_seilgewicht = number_soll(
+                "Seilgewicht [kg]", 
+                ist_kran_hub_state["seilgewicht_kg"], 
+                0, 1, 500, 
+                "soll_soll_seilgew"
+            )
+            soll_hub_geschwindigkeit = number_soll(
+                "Hubgeschwindigkeit [m/min]",
+                ist_kran_hub_state["hub_geschwindigkeit_m_pro_min"],
+                0,
+                1,
+                100,
+                "soll_hubgeschw",
+            )
+            soll_hub_beschleunigung = number_soll(
+                "Hubbeschleunigung [m/s²]",
+                ist_kran_hub_state["hub_beschleunigung_m_pro_s2"],
+                0,
+                0.01,
+                5,
+                "soll_hubbeschl",
+            )
+            soll_motordrehzahl_hub = number_soll(
+                "Motordrehzahl Hubwerk [1/min]",
+                ist_kran_hub_state["motordrehzahl_1_pro_min"],
+                0,
+                1,
+                5000,
+                "soll_motdreh_hub",
+            )
+            soll_massentraegheit_hub = number_soll(
+                "Massenträgheit Hubwerk [kg·m²]",
+                ist_kran_hub_state["massenträgheit_kgm2"],
+                0,
+                0.001,
+                100,
+                "soll_massentr_hub",
+                nachkommastellen=3
+            )
+            soll_anzahl_motoren_hub = number_soll(
+                "Anzahl Motoren Hubwerk",
+                ist_kran_hub_state["anzahl_motoren"],
+                0,
+                1,
+                10,
+                "soll_anzmotor_hub",
+                "Anzahl der Motoren, welche die Hubarbeit teilen",
+                0
+            )
+            soll_wirkungsgrad_getr_stufe_hub = number_soll(
+                "Wirkungsgrad Getriebestufe Hubwerk",
+                ist_kran_hub_state["wirkungsgrad_getriebe"],
+                0,
+                0.01,
+                1,
+                "soll_wirkgetr_hub",
+            )
+            soll_wirkungsgrad_seiltrieb = number_soll(
+                "Wirkungsgrad Seiltrieb",
+                ist_kran_hub_state["wirkungsgrad_seiltrieb"],
+                0,
+                0.01,
+                1,
+                "soll_wirkseil",
+            )
+            soll_getriebestufen_hub = number_soll(
+                "Getriebestufen Hubwerk",
+                ist_kran_hub_state["getriebestufen"],
+                0,
+                1,
+                10,
+                "soll_getrstuf_hub",
+                "Anzahl der Getriebestufen des Hubwerkes",
+                0
+            )
+
+            # Anzeigen des Ausgewählten Motors
+            soll_motor_hub = mechleistunghubwerk(
+                gewicht_seile = soll_seilgewicht,
+                gewicht_greifer_leer = soll_gew_greifer_leer,
+                greifer_volumen = soll_vol_greifer,
+                muell_dichte = soll_müll_dichte_beschickung,
+                geschwindigkeit_mmin = soll_hub_geschwindigkeit,
+                beschleunigung_zeit_s = soll_hub_beschleunigung,
+                wirkungsgrad_seiltrieb = soll_wirkungsgrad_seiltrieb,
+                wirkungsgrad_getriebestufe = soll_wirkungsgrad_getr_stufe_hub,
+                drehzahl = soll_motordrehzahl_hub,
+                getriebestufen = soll_getriebestufen_hub,
+                motor_anzahl = soll_anzahl_motoren_hub,
+                massentraegheit= soll_massentraegheit_hub
+            )["Motorauswahl"]
+            number_soll("Von uns gewählte Hubmotorleistung [kW]", 
+                            soll_motor_hub, 
+                            0, 1, 200, 
+                            "mtr_swhl_hb", 
+                            "Der angezeigte Motor wird durch die vorherigen Eingaben intern berechnet"
+                            )
+            soll_wirkungsgrad_motor_hub = number_soll("Wirkungsgrad des Hubmotors", 
+                                                    ist_kran_hub_state["wirkungsgrad_motor_hub"], 
+                                                    0, 0.01, 1, 
+                                                    "wrkgd_mtr_hb", 
+                                                    "Der Standardwert des Wirkungsgrades beruht auf einem Erfahrungswert.")
+
+        # Katze
+        with st.expander("Katze", expanded = False):
+            soll_gewicht_katze = number_soll(
+                "Gewicht der Katze [kg]",
+                ist_kran_katz_state["gewicht_kg"],
+                0,
+                1,
+                100000,
+                "soll_gewkatze",
+            )
+            soll_geschwindigkeit_katze = number_soll(
+                "Fahrgeschwindigkeit Katze [m/min]",
+                ist_kran_katz_state["geschwindigkeit_m_pro_min"],
+                0,
+                1,
+                100,
+                "soll_geschwkatze",
+            )
+            soll_beschleunigung_katze = number_soll(
+                "Beschleunigung Katze [m/s²]",
+                ist_kran_katz_state["beschleunigung_m_pro_s2"],
+                0,
+                0.01,
+                5,
+                "soll_beschlkatze",
+            )
+            soll_motordrehzahl_katze = number_soll(
+                "Motordrehzahl Katze [1/min]",
+                ist_kran_katz_state["motordrehzahl_1_pro_min"],
+                0,
+                1,
+                5000,
+                "soll_motdrehkatze",
+            )
+            soll_massentraegheit_katze = number_soll(
+                "Massenträgheit Katze [kg·m²]",
+                ist_kran_katz_state["massenträgheit_kgm2"],
+                0,
+                0.001,
+                100,
+                "soll_massentrkatze",
+                nachkommastellen=3
+            )
+            soll_anzahl_motoren_katze = number_soll(
+                "Anzahl Motoren Katze",
+                ist_kran_katz_state["anzahl_motoren"],
+                0,
+                1,
+                10,
+                "soll_anzmotkatze",
+                "Anzahl der Motoren, welche die Katzfahrt teilen",
+                0
+            )
+            soll_wirkungsgrad_getr_stufe_katze = number_soll(
+                "Wirkungsgrad Getriebestufe Katze",
+                ist_kran_katz_state["wirkungsgrad_getriebe"],
+                0,
+                0.001,
+                1,
+                "soll_wirkgetrkatze",
+            )
+            soll_getriebestufen_katze = number_soll(
+                "Getriebestufen Katze",
+                ist_kran_katz_state["getriebestufen"],
+                0,
+                1,
+                10,
+                "soll_getrstufkatze",
+                "Anzahl der Getriebestufen des Katzfahrwerkes",
+                0
+            )
+            soll_fahrwiderstand_katze = number_soll(
+                "Fahrwiderstand Katze [kg/t]",
+                ist_kran_katz_state["fahrwiderstand_kg_pro_t"],
+                0,
+                0.1,
+                100,
+                "soll_fahrwidkatze",
+            )
+
+            # Motor berechnen und anzeigen. User kann noch Werte ändern
+            soll_mot_katze=mechleistungkatzfahrt(
+                gewicht_seile = soll_seilgewicht,
+                gewicht_greifer_leer = soll_gew_greifer_leer,
+                greifer_volumen = soll_vol_greifer,
+                muell_dichte = soll_müll_dichte_beschickung,
+                gewicht_katze = soll_gewicht_katze,
+                geschwindigkeit_mmin = soll_geschwindigkeit_katze,
+                beschleunigung_zeit_s = soll_geschwindigkeit_katze/60/soll_beschleunigung_katze,
+                drehzahl = int(soll_motordrehzahl_katze),
+                fahrwerkwiderstand = soll_fahrwiderstand_katze,
+                getriebestufen = int(soll_getriebestufen_katze),
+                wirkungsgrad_getriebestufe = soll_wirkungsgrad_getr_stufe_katze,
+                massentraegheit = soll_massentraegheit_katze,
+                )["Motorauswahl"]
+            number_soll("Von uns gewählte Katzmotorleistung [kW]", 
+                            soll_mot_katze, 
+                            0, 1, 200, 
+                            "soll_minmotorkatze"
+                            )
+            soll_wirkungsgrad_motor_katze = number_soll("Wirkungsgrad des Katzmotors", 
+                                                    ist_kran_katz_state["wirkungsgrad_motor_katze"], 
+                                                    0, 0.01, 1,
+                                                    "soll_wirkmotorkatze")
+
+        # Kran
+        with st.expander("Kranfahrwerk", expanded = False):
+            soll_gewicht_kran = number_soll(
+                "Kranfahrwerk Gewicht [kg]",
+                ist_kran_kran_state["gewicht_kg"],
+                0,
+                1,
+                500000,
+                "soll_gewkran",
+            )
+            soll_geschwindigkeit_kran = number_soll(
+                "Kranfahrgeschwindigkeit [m/min]",
+                ist_kran_kran_state["geschwindigkeit_m_pro_min"],
+                0,
+                1,
+                100,
+                "soll_geschwkran",
+            )
+            soll_beschleunigung_kran = number_soll(
+                "Kranfahrbeschleunigung [m/s²]",
+                ist_kran_kran_state["beschleunigung_m_pro_s2"],
+                0,
+                0.1,
+                5,
+                "soll_beschlkran",
+            )
+            soll_motordrehzahl_kran = number_soll(
+                "Motordrehzahl Kran [1/min]",
+                ist_kran_kran_state["motordrehzahl_1_pro_min"],
+                0,
+                1,
+                5000,
+                "soll_motdrehkran",
+            )
+            soll_massentraegheit_kran = number_soll(
+                "Massenträgheit Kran [kg·m²]",
+                ist_kran_kran_state["massenträgheit_kgm2"],
+                0,
+                0.001,
+                100,
+                "soll_massentrkran",
+                nachkommastellen=3
+            )
+            soll_anzahl_motoren_kran = number_soll(
+                "Anzahl Motoren Kran",
+                ist_kran_kran_state["anzahl_motoren"],
+                0,
+                1,
+                10,
+                "soll_anzmotkran",
+                "Anzahl der Motoren, welche die Kranfahrt teilen",
+                0
+            )
+            soll_wirkungsgrad_getr_stufe_kran = number_soll(
+                "Wirkungsgrad Getriebestufe Kran",
+                ist_kran_kran_state["wirkungsgrad_getriebe"],
+                0,
+                0.01,
+                1,
+                "soll_wirkgetrkran",
+            )
+            soll_wirkungsgrad_vorgelege = number_soll(
+                "Wirkungsgrad Vorgelege",
+                ist_kran_kran_state["wirkungsgrad_vorgelege"],
+                0,
+                0.01,
+                1,
+                "soll_wirkvorgelege",
+            )
+            soll_getriebestufen_kran = number_soll(
+                "Getriebestufen Kran",
+                ist_kran_kran_state["getriebestufen"],
+                0,
+                1,
+                10,
+                "soll_getrstufkran",
+            )
+            soll_fahrwiderstand_kran = number_soll(
+                "Fahrwiderstand Kran[kg/t]",
+                ist_kran_kran_state["fahrwiderstand_kg_pro_t"],
+                0,
+                0.1,
+                100,
+                "soll_fahrwidkran",
+            )
+
+            # Motor berechnen und anzeigen. User kann noch die Werte verändern
+            soll_motor_kran = kranfahrt(
+                gewicht_greifer_leer = soll_gew_greifer_leer,
+                greifer_volumen = soll_vol_greifer,
+                muell_dichte = soll_müll_dichte_beschickung,
+                gewicht_katze = soll_gewicht_katze,
+                gewicht_kran = soll_gewicht_kran,
+                gewicht_seile = soll_seilgewicht,
+                beschleunigung_mss = soll_beschleunigung_kran,
+                geschwindigkeit_mmin = soll_geschwindigkeit_kran,
+                drehzahl = soll_motordrehzahl_kran,
+                massentraegheit = soll_massentraegheit_kran,
+                fahrwiderstand = soll_fahrwiderstand_kran,
+                motoranzahl = soll_anzahl_motoren_kran,
+                wirkungsgrad_getriebestufe = soll_wirkungsgrad_getr_stufe_kran,
+                getriebestufen = soll_getriebestufen_kran
+            )["Motorauswahl"]
+            number_soll("Von uns gewählte Kranmotorleistung [kW]", 
+                            soll_motor_kran, 
+                            0, 1, 200, 
+                            "soll_mtr_swhl_krn", 
+                            "Der angezeigte Motor wird durch die vorherigen Eingaben intern berechnet"
+                            )
+            soll_wirkungsgrad_motor_kran = number_soll("Wirkungsgrad des Kranmotors", 
+                                                    ist_kran_kran_state["wirkungsgrad_motor_kran"], 
+                                                    0, 0.01, 1, 
+                                                    "wrkgd_mtr_krn", 
+                                                    "Der Standardwert des Wirkungsgrades beruht auf einem Erfahrungswert.")
+            
+    with st.expander("Referenzwege", False):
+
+        st.title("Wege")
+
+        # Container im Session State
+        st.session_state["neu_anlage"]["wege"] = {}
+        soll_wege_state = st.session_state["neu_anlage"]["wege"]
+        ist_wege_state = ist_state["wege"]
+
+        soll_weg_hebensenken_m = number_soll(
+            "Referenzweg Heben senken [m]",
+            ist_wege_state["weg_hebensenken_m"],
+            0,
+            1,
+            200,
+            "soll_wg_hs_m",
+            nachkommastellen=0
+        )
+        soll_weg_katzfahrt_m = number_soll(
+            "Referenzweg Katzfahrt [m]",
+            ist_wege_state["weg_katzfahrt_m"],
+            0,
+            1,
+            200,
+            "soll_wg_ktzfhrt_m",
+            nachkommastellen=0
+        )
+        soll_weg_kranfahrt_m = number_soll(
+            "Referenzweg Kranfahrt Einlagern [m]",
+            ist_wege_state["weg_kranfahrt_einlagern_m"],
+            0,
+            1,
+            200,
+            "soll_wg_krnfhrt_m",
+            nachkommastellen=0
+        )
+        soll_weg_oeffnenschliessn_m = number_soll(
+            "Referenzweg Greifer Öffnen/Schließen",
+            ist_wege_state["weg_oeffnen_schliessen_m"],
+            0,
+            1,
+            200,
+            "soll_wg_ofnschl_m",
+            nachkommastellen=0
+        )
+
+        soll_weg_trichter = {}
+        for zahl in range(int(soll_anzahl_trichter)):
+            key = f"soll_Trichterweg {zahl + 1}"
+            soll_weg_trichter[zahl] = number_soll(
+                f"Referenzweg Trichter {zahl + 1}",
+                ist_state["wege"]["weg_trichter_m"][zahl],
+                0,
+                1,
+                200,
+                f"soll_wg_tr_{zahl + 1}",
+                nachkommastellen=0,
+            )
+
+    soll_button = st.button("Änderungen speichern", "soll_bttn_grfr")
+    if soll_button:
+        soll_anlage_state.update(
+            {
+                "anzahl_trichter": soll_anzahl_trichter,
+                "verbrennung_trichter_t": soll_verbrennung_trichter,
+                "müll_anlieferung_h_t": soll_müll_anlieferung_h,
+                "müll_dichte_beschickung_t_pro_m3": soll_müll_dichte_beschickung,
+                "müll_dichte_anlieferung_t_pro_m3": soll_müll_dichte_anlieferung,
+                "anlage_standort": soll_anlage_standort,
+                "energie_kosten": soll_energie_kosten
+                }
+            )    
+        soll_greifer_state.update(
+                {
+                    "leergewicht_t": soll_gew_greifer_leer,
+                    "volumen_m3": soll_vol_greifer,
+                    "geschwindigkeit_m_pro_min": soll_ges_greifen,
+                    "beschleunigung_m_pro_s2": soll_bes_greifen,
+                }
+            )
+        if soll_auswahl == std.viers["Greiferart"]:
+            soll_greifer_state.update(
+                {
+                    "typ": "Vierseil-Greifer",
+                }
+            )
+        elif soll_auswahl == std.hydr["Greiferart"]:
+            soll_greifer_state.update(
+                {
+                    "typ": "Hydraulikgreifer",
+                    "motorleistung_kw": soll_p_hydr_motor,
+                    "wirkungsgrad_hydraulik": soll_n_hydr_motor,
+                    "volumenstrom_l_pro_min": soll_volumenstrom,
+                    "betriebsdruck_bar": soll_betriebsdruck,
+                }
+            )   
+        soll_kran_state.update(
+                {
+                    "hubwerk": {
+                        "seilgewicht_kg": soll_seilgewicht,
+                        "hub_geschwindigkeit_m_pro_min": soll_hub_geschwindigkeit,
+                        "hub_beschleunigung_m_pro_s2": soll_hub_beschleunigung,
+                        "motordrehzahl_1_pro_min": soll_motordrehzahl_hub,
+                        "massenträgheit_kgm2": soll_massentraegheit_hub,
+                        "anzahl_motoren": soll_anzahl_motoren_hub,
+                        "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_hub,
+                        "wirkungsgrad_seiltrieb": soll_wirkungsgrad_seiltrieb,
+                        "getriebestufen": soll_getriebestufen_hub,
+                        "wirkungsgrad_motor_hub": soll_wirkungsgrad_motor_hub
+                    },
+                    "katze": {
+                        "gewicht_kg": soll_gewicht_katze,
+                        "geschwindigkeit_m_pro_min": soll_geschwindigkeit_katze,
+                        "beschleunigung_m_pro_s2": soll_beschleunigung_katze,
+                        "motordrehzahl_1_pro_min": soll_motordrehzahl_katze,
+                        "massenträgheit_kgm2": soll_massentraegheit_katze,
+                        "anzahl_motoren": soll_anzahl_motoren_katze,
+                        "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_katze,
+                        "getriebestufen": soll_getriebestufen_katze,
+                        "fahrwiderstand_kg_pro_t": soll_fahrwiderstand_katze,
+                        "wirkungsgrad_motor_katze": soll_wirkungsgrad_motor_katze
+                    },
+                    "kranfahrwerk": {
+                        "gewicht_kg": soll_gewicht_kran,
+                        "geschwindigkeit_m_pro_min": soll_geschwindigkeit_kran,
+                        "beschleunigung_m_pro_s2": soll_beschleunigung_kran,
+                        "motordrehzahl_1_pro_min": soll_motordrehzahl_kran,
+                        "massenträgheit_kgm2": soll_massentraegheit_kran,
+                        "anzahl_motoren": soll_anzahl_motoren_kran,
+                        "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_kran,
+                        "wirkungsgrad_vorgelege": soll_wirkungsgrad_vorgelege,
+                        "getriebestufen": soll_getriebestufen_kran,
+                        "fahrwiderstand_kg_pro_t": soll_fahrwiderstand_kran,
+                        "wirkungsgrad_motor_kran": soll_wirkungsgrad_motor_kran
+                    },
+                }
+            )
+        soll_wege_state.update(
+    {
+        "weg_hebensenken_m": soll_weg_hebensenken_m,
+        "weg_katzfahrt_m": soll_weg_katzfahrt_m,
+        "weg_kranfahrt_einlagern_m": soll_weg_kranfahrt_m,
+        "weg_oeffnen_schliessen_m": soll_weg_oeffnenschliessn_m,
+        "weg_trichter_m": soll_weg_trichter,
     }
+)
+    
+        st.write(":green[Erfolgreich gespeichert✅]")
 
-nf = st.session_state["neu_faktoren"]
-
-# Praktische Kurzformen
-trichterwege = get(f, "referenzwege.trichterwege_m", []) or []
-anzahl_trichter = get(f, "allgemein.anzahl_trichter", len(trichterwege) or "—")
-preset_name = get(f, "preset", "—")
-
-# -------------------------------------------------------------------
-# Kopf-Zusammenfassung
-# -------------------------------------------------------------------
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Preset", str(preset_name))
-m2.metric("Kräne", str(get(f, "allgemein.anzahl_kraene", "—")))
-m3.metric("Trichter", str(anzahl_trichter))
-m4.metric("Verbrennung je Trichter [Mg/h]", str(get(f, "allgemein.verbrennung_pro_trichter_Mg_h", "—")))
-
-st.divider()
-
-# -------------------------------------------------------------------
-# Zwei Spalten: Ist links, Neu rechts
-# -------------------------------------------------------------------
-col_left, col_right = st.columns(2)
-
-# -----------------------------------------------
-# Linke Spalte: Anzeige (Ist)
-# -----------------------------------------------
-with col_left:
-    st.subheader("Eingegebene Faktoren (Ist-Zustand)")
-
-    st.write("**Greiferart:**",                    get(f, "greifer.greiferart", "—"))
-    st.write("**Greifer Leergewicht [Mg]:**",      get(f, "greifer.leergewicht_Mg", "—"))
-    st.write("**Motorleistung Greifer [kW]:**",    get(f, "greifer.motorleistung_kW", "—"))
-    st.write("**Wirkungsgrad Greifermotor [%]:**", get(f, "motoren.greifer_wirkungsgrad_pct", "—"))
-    st.write("**Greifervolumen [m³]:**",           get(f, "greifer.volumen_m3", "—"))
-
-    st.markdown("---")
-    st.write("**Geschwindigkeiten**")
-    st.write("• Heben/Senken [m/min]:",    get(f, "geschwindigkeiten.heben_senken_m_min", "—"))
-    st.write("• Katzfahrt [m/min]:",       get(f, "geschwindigkeiten.katzfahrt_m_min", "—"))
-    st.write("• Kranfahrt [m/min]:",       get(f, "geschwindigkeiten.kranfahrt_m_min", "—"))
-    st.write("• Öffnen/Schließen [Einheit]:", get(f, "geschwindigkeiten.oeffnen_schliessen_einh", "—"))
-
-    st.markdown("---")
-    st.write("**Beschleunigungen**")
-    st.write("• Heben/Senken [m/s²]:",     get(f, "beschleunigungen.heben_senken_m_s2", "—"))
-    st.write("• Katzfahrt [m/s²]:",        get(f, "beschleunigungen.katzfahrt_m_s2", "—"))
-    st.write("• Kranfahrt [m/s²]:",        get(f, "beschleunigungen.kranfahrt_m_s2", "—"))
-    st.write("• Öffnen/Schließen [m/s²]:", get(f, "beschleunigungen.oeffnen_schliessen_m_s2", "—"))
-
-    st.markdown("---")
-    st.write("**Antriebsdaten**")
-    st.write("• Nennleistung Hubmotor [kW]:",     get(f, "motoren.hub_kW", "—"))
-    st.write("• Wirkungsgrad Hubmotor [%]:",      get(f, "motoren.hub_wirkungsgrad_pct", "—"))
-    st.write("• Nennleistung Katzfahrt [kW]:",    get(f, "motoren.katz_kW", "—"))
-    st.write("• Wirkungsgrad Katzfahrt [%]:",     get(f, "motoren.katz_wirkungsgrad_pct", "—"))
-    st.write("• Nennleistung Kranfahrt [kW]:",    get(f, "motoren.kran_kW", "—"))
-    st.write("• Wirkungsgrad Kranfahrt [%]:",     get(f, "motoren.kran_wirkungsgrad_pct", "—"))
-
-    with st.expander("Allgemeine Daten"):
-        st.write("**Anzahl Kräne:**",                   get(f, "allgemein.anzahl_kraene", "—"))
-        st.write("**Anzahl Trichter:**",               anzahl_trichter)
-        st.write("**Verbrennung je Trichter [Mg/h]:**", get(f, "allgemein.verbrennung_pro_trichter_Mg_h", "—"))
-        st.write("**Müllmenge im Jahr [Mg]:**",        get(f, "muell.gesamtmenge_Mg_a", "—"))
-        st.write("**Anliefermenge Stunde [Mg/h]:**",   get(f, "muell.anliefermenge_Mg_h", "—"))
-        st.write("**Anlieferdauer Stunden [h]:**",     get(f, "muell.anlieferdauer_h", "—"))
-        st.write("**Dichte Einlagerung [Mg/m³]:**",    get(f, "muell.dichte_einlagerung_Mg_m3", "—"))
-        st.write("**Dichte Beschickung [Mg/m³]:**",    get(f, "muell.dichte_beschickung_Mg_m3", "—"))
-
-        st.markdown("---")
-        st.write("**Referenzwege (Info)**")
-        st.write("• Heben/Senken [m]:",                get(f, "referenzwege.heben_senken_m", "—"))
-        st.write("• Katzfahrt [m]:",                   get(f, "referenzwege.katzfahrt_m", "—"))
-        st.write("• Kranfahrt Einlagern [m]:",         get(f, "referenzwege.kranfahrt_m", "—"))
-        st.write("• Öffnen/Schließen [m]:",            get(f, "referenzwege.oeffnen_schliessen_m", "—"))
-
-        # --------- dynamische Ausgabe der Trichterwege ----------
-        tw = trichterwege
-        if tw:
-            st.write("**Trichterwege [m]:**")
-            for i, val in enumerate(tw, start=1):
-                st.write(f"• Trichter {i}: {val}")
-        else:
-            st.write("• Trichterwege: —")
-
-# -----------------------------------------------
-# Rechte Spalte: Anzeige/Bearbeitung (Neu)
-# -----------------------------------------------
-with col_right:
-    st.subheader("Neu-Anlage")
-    edit_mode = st.checkbox("Bearbeiten", value=False, key="neu_edit_mode")
-
-    if not edit_mode:
-        # Anzeige-Modus
-        st.write("**Greiferart:**",                    get(nf, "greifer.greiferart", "—"))
-        st.write("**Greifer Leergewicht [Mg]:**",      get(nf, "greifer.leergewicht_Mg", "—"))
-        st.write("**Motorleistung Greifer [kW]:**",    get(nf, "greifer.motorleistung_kW", "—"))
-        st.write("**Wirkungsgrad Greifermotor [%]:**", get(nf, "motoren.greifer_wirkungsgrad_pct", "—"))
-        st.write("**Greifervolumen [m³]:**",           get(nf, "greifer.volumen_m3", "—"))
-
-        st.markdown("---")
-        st.write("**Geschwindigkeiten**")
-        st.write("• Heben/Senken [m/min]:",    get(nf, "geschwindigkeiten.heben_senken_m_min", "—"))
-        st.write("• Katzfahrt [m/min]:",       get(nf, "geschwindigkeiten.katzfahrt_m_min", "—"))
-        st.write("• Kranfahrt [m/min]:",       get(nf, "geschwindigkeiten.kranfahrt_m_min", "—"))
-        st.write("• Öffnen/Schließen [Einheit]:", get(nf, "geschwindigkeiten.oeffnen_schliessen_einh", "—"))
-
-        st.markdown("---")
-        st.write("**Beschleunigungen**")
-        st.write("• Heben/Senken [m/s²]:",     get(nf, "beschleunigungen.heben_senken_m_s2", "—"))
-        st.write("• Katzfahrt [m/s²]:",        get(nf, "beschleunigungen.katzfahrt_m_s2", "—"))
-        st.write("• Kranfahrt [m/s²]:",        get(nf, "beschleunigungen.kranfahrt_m_s2", "—"))
-        st.write("• Öffnen/Schließen [m/s²]:", get(nf, "beschleunigungen.oeffnen_schliessen_m_s2", "—"))
-
-        st.markdown("---")
-        st.write("**Antriebsdaten**")
-        st.write("• Nennleistung Hubmotor [kW]:",     get(nf, "motoren.hub_kW", "—"))
-        st.write("• Wirkungsgrad Hubmotor [%]:",      get(nf, "motoren.hub_wirkungsgrad_pct", "—"))
-        st.write("• Nennleistung Katzfahrt [kW]:",    get(nf, "motoren.katz_kW", "—"))
-        st.write("• Wirkungsgrad Katzfahrt [%]:",     get(nf, "motoren.katz_wirkungsgrad_pct", "—"))
-        st.write("• Nennleistung Kranfahrt [kW]:",    get(nf, "motoren.kran_kW", "—"))
-        st.write("• Wirkungsgrad Kranfahrt [%]:",     get(nf, "motoren.kran_wirkungsgrad_pct", "—"))
-
-    else:
-        # Edit-Modus
-        neu_greiferart = st.selectbox(
-            "Greiferart",
-            ["Vierseil-Greifer", "Hydraulikgreifer"],
-            index = (0 if get(nf, "greifer.greiferart") == "Vierseil-Greifer" else 1)
-                    if get(nf, "greifer.greiferart") in ("Vierseil-Greifer","Hydraulikgreifer") else 0,
-            key="neu_greiferart"
-        )
-        neu_g_leer = st.number_input(
-            "Greifer Leergewicht [Mg]",
-            value=safe_float(get(nf, "greifer.leergewicht_Mg", 0.0)),
-            key="neu_g_leer"
-        )
-        neu_g_kw   = st.number_input(
-            "Motorleistung Greifer [kW]",
-            value=safe_float(get(nf, "greifer.motorleistung_kW", 0.0)),
-            key="neu_g_kw"
-        )
-        neu_g_eta  = st.number_input(
-            "Wirkungsgrad Greifermotor [%]",
-            value=safe_float(get(nf, "motoren.greifer_wirkungsgrad_pct", 92.0)),
-            key="neu_g_eta"
-        )
-        neu_g_vol  = st.number_input(
-            "Greifervolumen [m³]",
-            value=safe_float(get(nf, "greifer.volumen_m3", 0.0)),
-            key="neu_g_vol"
-        )
-
-        st.markdown("---")
-        st.write("**Geschwindigkeiten**")
-        neu_v_heben = st.number_input(
-            "Geschwindigkeit Heben/Senken [m/min]",
-            value=safe_float(get(nf, "geschwindigkeiten.heben_senken_m_min", 0.0)),
-            key="neu_v_heben"
-        )
-        neu_v_katz  = st.number_input(
-            "Geschwindigkeit Katzfahrt [m/min]",
-            value=safe_float(get(nf, "geschwindigkeiten.katzfahrt_m_min", 0.0)),
-            key="neu_v_katz"
-        )
-        neu_v_kran  = st.number_input(
-            "Geschwindigkeit Kranfahrt [m/min]",
-            value=safe_float(get(nf, "geschwindigkeiten.kranfahrt_m_min", 0.0)),
-            key="neu_v_kran"
-        )
-        neu_v_oes   = st.number_input(
-            "Geschwindigkeit Öffnen/Schließen [Einheit]",
-            value=safe_float(get(nf, "geschwindigkeiten.oeffnen_schliessen_einh", 0.0)),
-            key="neu_v_oes"
-        )
-
-        st.markdown("---")
-        st.write("**Beschleunigungen**")
-        neu_a_heben = st.number_input(
-            "Beschleunigung Heben/Senken [m/s²]",
-            value=safe_float(get(nf, "beschleunigungen.heben_senken_m_s2", 0.0)),
-            key="neu_a_heben"
-        )
-        neu_a_katz  = st.number_input(
-            "Beschleunigung Katzfahrt [m/s²]",
-            value=safe_float(get(nf, "beschleunigungen.katzfahrt_m_s2", 0.0)),
-            key="neu_a_katz"
-        )
-        neu_a_kran  = st.number_input(
-            "Beschleunigung Kranfahrt [m/s²]",
-            value=safe_float(get(nf, "beschleunigungen.kranfahrt_m_s2", 0.0)),
-            key="neu_a_kran"
-        )
-        neu_a_oes   = st.number_input(
-            "Beschleunigung Öffnen/Schließen [m/s²]",
-            value=safe_float(get(nf, "beschleunigungen.oeffnen_schliessen_m_s2", 0.0)),
-            key="neu_a_oes"
-        )
-
-        # Änderungen übernehmen
-        st.session_state["neu_faktoren"] = {
-            "greifer": {
-                "greiferart": st.session_state["neu_greiferart"],
-                "leergewicht_Mg": st.session_state["neu_g_leer"],
-                "motorleistung_kW": st.session_state["neu_g_kw"],
-                "volumen_m3": st.session_state["neu_g_vol"],
-            },
-            "motoren": {
-                "greifer_wirkungsgrad_pct": st.session_state["neu_g_eta"],
-                "hub_kW": get(nf, "motoren.hub_kW", 0.0),
-                "hub_wirkungsgrad_pct": get(nf, "motoren.hub_wirkungsgrad_pct", 94.0),
-                "katz_kW": get(nf, "motoren.katz_kW", 0.0),
-                "katz_wirkungsgrad_pct": get(nf, "motoren.katz_wirkungsgrad_pct", 93.0),
-                "kran_kW": get(nf, "motoren.kran_kW", 0.0),
-                "kran_wirkungsgrad_pct": get(nf, "motoren.kran_wirkungsgrad_pct", 93.0),
-            },
-            "geschwindigkeiten": {
-                "heben_senken_m_min": st.session_state["neu_v_heben"],
-                "katzfahrt_m_min": st.session_state["neu_v_katz"],
-                "kranfahrt_m_min": st.session_state["neu_v_kran"],
-                "oeffnen_schliessen_einh": st.session_state["neu_v_oes"],
-            },
-            "beschleunigungen": {
-                "heben_senken_m_s2": st.session_state["neu_a_heben"],
-                "katzfahrt_m_s2": st.session_state["neu_a_katz"],
-                "kranfahrt_m_s2": st.session_state["neu_a_kran"],
-                "oeffnen_schliessen_m_s2": st.session_state["neu_a_oes"],
-            },
-        }
+# Berechnungen
 
 
-# Debug
-
-with st.expander("Debug: Session-Faktoren"):
-    st.write("**faktoren**")
-    st.json(st.session_state.get("faktoren", {}))
-    st.write("**neu_faktoren**")
-    st.json(st.session_state.get("neu_faktoren", {}))
-
-st.info("Die Auswertung folgt, sobald die mathematischen Zusammenhänge implementiert sind.")
-st.image("image/image.jpg")
+st.write("Visualisierungen:")
+plot_ldaten_rdiagramm("Leistung", "kW", berechne_tagesenergie(st.session_state["ist_anlage"])["energie"]["verbrauch_kWh_tag"], berechne_tagesenergie(st.session_state["neu_anlage"])["energie"]["verbrauch_kWh_tag"])
