@@ -1,4 +1,4 @@
-## Hier findet die Automrisierung statt, ist tatsächlich recht simpel und funktioniert sehr gut
+## Hier findet die Autorisierung statt, ist tatsächlich recht simpel und funktioniert sehr gut
 
 
 import streamlit as st
