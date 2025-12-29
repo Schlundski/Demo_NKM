@@ -2,7 +2,7 @@ import streamlit as st
 import time
 from ui.components import number_standard, text_standard, selectbox_standard, number_soll, text_soll, selectbox_soll, plot_ldaten_rdiagramm
 from auth import check_login
-from core.computing import spielzeitenberechnung, mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechne_tagesenergie
+from core.computing import spielzeitenberechnung, mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt
 from ui.components import plot_ldaten_rdiagramm
 import pandas as pd
 from config.standards import STANDARDWERTE
@@ -571,9 +571,14 @@ with st.expander("Parameter für Modernisierung", False):
         soll_weg_trichter = {}
         for zahl in range(int(soll_anzahl_trichter)):
             key = f"soll_Trichterweg {zahl + 1}"
+            try: 
+                value = ist_state["wege"]["weg_trichter_m"][zahl]
+            except: 
+                value = STANDARDWERTE["Referenzwege"][f"Trichterweg {zahl +1}"]
+                
             soll_weg_trichter[zahl] = number_soll(
                 f"Referenzweg Trichter {zahl + 1}",
-                ist_state["wege"]["weg_trichter_m"][zahl],
+                value,
                 0,
                 1,
                 200,
@@ -581,98 +586,95 @@ with st.expander("Parameter für Modernisierung", False):
                 nachkommastellen=0,
             )
 
-    soll_button = st.button("Änderungen speichern", "soll_bttn_grfr")
-    if soll_button:
-        soll_anlage_state.update(
-            {
-                "anzahl_trichter": soll_anzahl_trichter,
-                "verbrennung_trichter_t": soll_verbrennung_trichter,
-                "müll_anlieferung_h_t": soll_müll_anlieferung_h,
-                "müll_dichte_beschickung_t_pro_m3": soll_müll_dichte_beschickung,
-                "müll_dichte_anlieferung_t_pro_m3": soll_müll_dichte_anlieferung,
-                "anlage_standort": soll_anlage_standort,
-                "energie_kosten": soll_energie_kosten
-                }
-            )    
-        soll_greifer_state.update(
-                {
-                    "leergewicht_t": soll_gew_greifer_leer,
-                    "volumen_m3": soll_vol_greifer,
-                    "geschwindigkeit_m_pro_min": soll_ges_greifen,
-                    "beschleunigung_m_pro_s2": soll_bes_greifen,
-                }
-            )
-        if soll_auswahl == std.viers["Greiferart"]:
-            soll_greifer_state.update(
-                {
-                    "typ": "Vierseil-Greifer",
-                }
-            )
-        elif soll_auswahl == std.hydr["Greiferart"]:
-            soll_greifer_state.update(
-                {
-                    "typ": "Hydraulikgreifer",
-                    "motorleistung_kw": soll_p_hydr_motor,
-                    "wirkungsgrad_hydraulik": soll_n_hydr_motor,
-                    "volumenstrom_l_pro_min": soll_volumenstrom,
-                    "betriebsdruck_bar": soll_betriebsdruck,
-                }
-            )   
-        soll_kran_state.update(
-                {
-                    "hubwerk": {
-                        "seilgewicht_kg": soll_seilgewicht,
-                        "hub_geschwindigkeit_m_pro_min": soll_hub_geschwindigkeit,
-                        "hub_beschleunigung_m_pro_s2": soll_hub_beschleunigung,
-                        "motordrehzahl_1_pro_min": soll_motordrehzahl_hub,
-                        "massenträgheit_kgm2": soll_massentraegheit_hub,
-                        "anzahl_motoren": soll_anzahl_motoren_hub,
-                        "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_hub,
-                        "wirkungsgrad_seiltrieb": soll_wirkungsgrad_seiltrieb,
-                        "getriebestufen": soll_getriebestufen_hub,
-                        "wirkungsgrad_motor_hub": soll_wirkungsgrad_motor_hub
-                    },
-                    "katze": {
-                        "gewicht_kg": soll_gewicht_katze,
-                        "geschwindigkeit_m_pro_min": soll_geschwindigkeit_katze,
-                        "beschleunigung_m_pro_s2": soll_beschleunigung_katze,
-                        "motordrehzahl_1_pro_min": soll_motordrehzahl_katze,
-                        "massenträgheit_kgm2": soll_massentraegheit_katze,
-                        "anzahl_motoren": soll_anzahl_motoren_katze,
-                        "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_katze,
-                        "getriebestufen": soll_getriebestufen_katze,
-                        "fahrwiderstand_kg_pro_t": soll_fahrwiderstand_katze,
-                        "wirkungsgrad_motor_katze": soll_wirkungsgrad_motor_katze
-                    },
-                    "kranfahrwerk": {
-                        "gewicht_kg": soll_gewicht_kran,
-                        "geschwindigkeit_m_pro_min": soll_geschwindigkeit_kran,
-                        "beschleunigung_m_pro_s2": soll_beschleunigung_kran,
-                        "motordrehzahl_1_pro_min": soll_motordrehzahl_kran,
-                        "massenträgheit_kgm2": soll_massentraegheit_kran,
-                        "anzahl_motoren": soll_anzahl_motoren_kran,
-                        "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_kran,
-                        "wirkungsgrad_vorgelege": soll_wirkungsgrad_vorgelege,
-                        "getriebestufen": soll_getriebestufen_kran,
-                        "fahrwiderstand_kg_pro_t": soll_fahrwiderstand_kran,
-                        "wirkungsgrad_motor_kran": soll_wirkungsgrad_motor_kran
-                    },
-                }
-            )
-        soll_wege_state.update(
+soll_anlage_state.update(
+{
+    "anzahl_trichter": soll_anzahl_trichter,
+    "verbrennung_trichter_t": soll_verbrennung_trichter,
+    "müll_anlieferung_h_t": soll_müll_anlieferung_h,
+    "müll_dichte_beschickung_t_pro_m3": soll_müll_dichte_beschickung,
+    "müll_dichte_anlieferung_t_pro_m3": soll_müll_dichte_anlieferung,
+    "anlage_standort": soll_anlage_standort,
+    "energie_kosten": soll_energie_kosten
+    }
+)    
+soll_greifer_state.update(
     {
-        "weg_hebensenken_m": soll_weg_hebensenken_m,
-        "weg_katzfahrt_m": soll_weg_katzfahrt_m,
-        "weg_kranfahrt_einlagern_m": soll_weg_kranfahrt_m,
-        "weg_oeffnen_schliessen_m": soll_weg_oeffnenschliessn_m,
-        "weg_trichter_m": soll_weg_trichter,
+        "leergewicht_t": soll_gew_greifer_leer,
+        "volumen_m3": soll_vol_greifer,
+        "geschwindigkeit_m_pro_min": soll_ges_greifen,
+        "beschleunigung_m_pro_s2": soll_bes_greifen,
     }
 )
-    
-        st.write(":green[Erfolgreich gespeichert✅]")
+if soll_auswahl == std.viers["Greiferart"]:
+    soll_greifer_state.update(
+    {
+        "typ": "Vierseil-Greifer",
+    }
+)
+elif soll_auswahl == std.hydr["Greiferart"]:
+        soll_greifer_state.update(
+        {
+            "typ": "Hydraulikgreifer",
+            "motorleistung_kw": soll_p_hydr_motor,
+            "wirkungsgrad_hydraulik": soll_n_hydr_motor,
+            "volumenstrom_l_pro_min": soll_volumenstrom,
+            "betriebsdruck_bar": soll_betriebsdruck,
+        }
+        )   
+soll_kran_state.update(
+    {
+        "hubwerk": {
+            "seilgewicht_kg": soll_seilgewicht,
+            "hub_geschwindigkeit_m_pro_min": soll_hub_geschwindigkeit,
+            "hub_beschleunigung_m_pro_s2": soll_hub_beschleunigung,
+            "motordrehzahl_1_pro_min": soll_motordrehzahl_hub,
+            "massenträgheit_kgm2": soll_massentraegheit_hub,
+            "anzahl_motoren": soll_anzahl_motoren_hub,
+            "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_hub,
+            "wirkungsgrad_seiltrieb": soll_wirkungsgrad_seiltrieb,
+            "getriebestufen": soll_getriebestufen_hub,
+            "wirkungsgrad_motor_hub": soll_wirkungsgrad_motor_hub
+        },
+        "katze": {
+            "gewicht_kg": soll_gewicht_katze,
+            "geschwindigkeit_m_pro_min": soll_geschwindigkeit_katze,
+            "beschleunigung_m_pro_s2": soll_beschleunigung_katze,
+            "motordrehzahl_1_pro_min": soll_motordrehzahl_katze,
+            "massenträgheit_kgm2": soll_massentraegheit_katze,
+            "anzahl_motoren": soll_anzahl_motoren_katze,
+            "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_katze,
+            "getriebestufen": soll_getriebestufen_katze,
+            "fahrwiderstand_kg_pro_t": soll_fahrwiderstand_katze,
+            "wirkungsgrad_motor_katze": soll_wirkungsgrad_motor_katze
+        },
+        "kranfahrwerk": {
+            "gewicht_kg": soll_gewicht_kran,
+            "geschwindigkeit_m_pro_min": soll_geschwindigkeit_kran,
+            "beschleunigung_m_pro_s2": soll_beschleunigung_kran,
+            "motordrehzahl_1_pro_min": soll_motordrehzahl_kran,
+            "massenträgheit_kgm2": soll_massentraegheit_kran,
+            "anzahl_motoren": soll_anzahl_motoren_kran,
+            "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_kran,
+            "wirkungsgrad_vorgelege": soll_wirkungsgrad_vorgelege,
+            "getriebestufen": soll_getriebestufen_kran,
+            "fahrwiderstand_kg_pro_t": soll_fahrwiderstand_kran,
+            "wirkungsgrad_motor_kran": soll_wirkungsgrad_motor_kran
+        },
+    }
+)
+soll_wege_state.update(
+{
+    "weg_hebensenken_m": soll_weg_hebensenken_m,
+    "weg_katzfahrt_m": soll_weg_katzfahrt_m,
+    "weg_kranfahrt_einlagern_m": soll_weg_kranfahrt_m,
+    "weg_oeffnen_schliessen_m": soll_weg_oeffnenschliessn_m,
+    "weg_trichter_m": soll_weg_trichter,
+}
+)
+
 
 # Berechnungen
 
 
 st.write("Visualisierungen:")
-plot_ldaten_rdiagramm("Leistung", "kW", berechne_tagesenergie(st.session_state["ist_anlage"])["energie"]["verbrauch_kWh_tag"], berechne_tagesenergie(st.session_state["neu_anlage"])["energie"]["verbrauch_kWh_tag"])
+st.write(st.session_state["neu_anlage"])

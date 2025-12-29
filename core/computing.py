@@ -9,7 +9,7 @@ def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
 
     """ Berechnung der Spielzeiten durch die gegebenen Argumente.
 
-    Ausgegeben wird über ein Dictionary die values über folgende keys:
+    Ausgegeben wird über ein dictionary die values über folgende keys:
 
         "Beschleunigungszeit"
         "Beschleunigungsweg"
@@ -41,7 +41,7 @@ def müllberechnung(
     
     """ Alle Berechnungen zum Thema Müll
     
-    Ausgegeben wird ein Dictionary mit values zu folgenden keys:
+    Ausgegeben wird ein dictionary mit values zu folgenden keys:
 
         "Gesamter zu transportierender Müll / h"
         "Mülleinlagerung Pro Zyklus"
@@ -80,7 +80,7 @@ def mechleistungkatzfahrt(gewicht_seile, gewicht_greifer_leer, greifer_volumen, 
                           belastungsfaktor=1.55, motorzahl=1):
     
     """ Funktion zur Berechnung der mech Leistung der Katzfahrt
-    Ausgegeben wird in Dict mit folgenden keys:
+    Ausgegeben wird in dict mit folgenden keys:
     Mindestmotorleistung
     Motorauswahl
     Beschleunigungsleistungen
@@ -116,7 +116,7 @@ def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, mu
                          beschleunigung_zeit_s, wirkungsgrad_seiltrieb, wirkungsgrad_getriebestufe, 
                         drehzahl, getriebestufen, motor_anzahl, massentraegheit):
     
-    """ Berechnen der mechanischen Leistungswerte des Hubwerkes. Ausgegeben wird ein Dict mit folgenden Keys:
+    """ Berechnen der mechanischen Leistungswerte des Hubwerkes. Ausgegeben wird ein dict mit folgenden Keys:
         Motorauswahl
         Gesamtleistung voll
         Gesamtbeschleunigungsleistung voll
@@ -174,7 +174,7 @@ def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, mu
 def greiferhydraulik(betriebsdruck=170, volumenstrom=66, wirkungsgrad_greifer=0.9):
 
     """ Berechnung der benötigten elektrischen und mechanischen Leistung des Hydraulikgreifers
-        Ausgegeben wird ein Dictionary mit folgenden Keys:
+        Ausgegeben wird ein dictionary mit folgenden Keys:
         
         Hydraulische Leistung
         Elektrische Leistung"""
@@ -191,7 +191,7 @@ def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze
         Funktion berechnet die mech Leistung der Kranfahrt und gibt die Mindestleistung und den nächstgrößeren Motor aus.
         Ebenfalls wird die Summe der Beschleunigungsleistungen ausgegeben (Ohne weitere Berechnung, wie aufteilung auf Motoren etc.)
 
-        Ausgegeben wird ein Dict mit folgenden Keys:
+        Ausgegeben wird ein dict mit folgenden Keys:
         Mindestleistung
         Motorauswahl
         Beschleunigungsleistungen
@@ -225,7 +225,7 @@ def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze
 
 def mechleistunggreifervierseil(hubvorgang_beharrung, hubvorgang_beschl):
     """Die mechanische Leistungsberechnung des Greifers ergibt sich als Erfahrungswert aus einem Drittel des Hubvorganges
-    Ausgegeben wird ein Dictionary mit den Key 'Beharrungsleistung' und 'Beschleunigungsleistung'
+    Ausgegeben wird ein dictionary mit den Key 'Beharrungsleistung' und 'Beschleunigungsleistung'
     """
     beharrung_greifer = hubvorgang_beharrung /3
     beschl_greifer = hubvorgang_beschl /3
@@ -234,7 +234,101 @@ def mechleistunggreifervierseil(hubvorgang_beharrung, hubvorgang_beschl):
             "Beschleunigungsleistung": beschl_greifer}
  
 def berechnungen_pro_tag(dict, standardwerte = STANDARDWERTE):
-    soll_value_soll_anzmotor_hub = dict["soll_value_soll_anzmotor_hub"]
-    soll_use_default_soll_massentrkatze = dict["soll_use_default_soll_massentrkatze"]
-    soll_use_default_anzl_trichter = dict["soll_use_default_anzl_trichter"]
+    # region Variablen Deklarieren zum Abrufen der dict-Daten
+    # Pfad-Variablen zur Vereinfachung einrichten
+    dict_anlage = dict["anlage"]
+    dict_greifer = dict["greifer"]
+    dict_hub = dict["kran_mechanik"]["hubwerk"]
+    dict_katz = dict["kran_mechanik"]["katze"]
+    dict_kran = dict["kran_mechanik"]["kranfahrwerk"]
+    dict_wege = dict["wege"]
+
+    ## Variablen deklarieren
+    # Anlage
+    anlage_anzahl_trichter = dict_anlage["anzahl_trichter"]
+    anlage_verbrennung_trichter_t = dict_anlage["verbrennung_trichter_t"]
+    anlage_muell_anlieferung_h_t = dict_anlage["müll_anlieferung_h_t"]
+    anlage_müll_dichte_beschickung_t_pro_m3 = dict_anlage["müll_dichte_beschickung_t_pro_m3"]
+    anlage_müll_dichte_anlieferung_t_pro_m3 = dict_anlage["müll_dichte_anlieferung_t_pro_m3"]
+    anlage_anlage_standort = dict_anlage["anlage_standort"]
+    anlage_energie_kosten = dict_anlage["energie_kosten"]
+    anlage_müll_anlieferdauer = dict_anlage["müll_anlieferdauer"]
+
+    # Greifer
+    if dict_greifer["typ"] == "Vierseil-Greifer":
+        greifer_leergewicht_t = dict_greifer["leergewicht_t"]
+        greifer_volumen_m3 = dict_greifer["volumen_m3"]
+        greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
+        greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
+        greifer_typ = dict_greifer["typ"]
+    elif dict_greifer["typ"] == "Hydraulikgreifer":
+        greifer_leergewicht_t = dict_greifer["leergewicht_t"]
+        greifer_volumen_m3 = dict_greifer["volumen_m3"]
+        greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
+        greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
+        greifer_typ = dict_greifer["typ"]
+        greifer_motorleistung_kw = dict_greifer["motorleistung_kw"]
+        greifer_wirkungsgrad_hydraulik = dict_greifer["wirkungsgrad_hydraulik"]
+        greifer_volumenstrom_l_pro_min = dict_greifer["volumenstrom_l_pro_min"]
+        greifer_betriebsdruck_bar = dict_greifer["betriebsdruck_bar"]
+
+    # Kranmechanik
+    # Hubwerk
+    hubwerk_seilgewicht_kg = dict_hub["seilgewicht_kg"]
+    hubwerk_hub_geschwindigkeit_m_pro_min = dict_hub["hub_geschwindigkeit_m_pro_min"]
+    hubwerk_hub_beschleunigung_m_pro_s2 = dict_hub["hub_beschleunigung_m_pro_s2"]
+    hubwerk_motordrehzahl_1_pro_min = dict_hub["motordrehzahl_1_pro_min"]
+    hubwerk_massenträgheit_kgm2 = dict_hub["massenträgheit_kgm2"]
+    hubwerk_anzahl_motoren = dict_hub["anzahl_motoren"]
+    hubwerk_wirkungsgrad_getriebe = dict_hub["wirkungsgrad_getriebe"]
+    hubwerk_wirkungsgrad_seiltrieb = dict_hub["wirkungsgrad_seiltrieb"]
+    hubwerk_getriebestufen = dict_hub["getriebestufen"]
+    hubwerk_wirkungsgrad_motor_hub = dict_hub["wirkungsgrad_motor_hub"]
+    # Katzfahrwerk
+    katze_gewicht_kg = dict_katz["gewicht_kg"]
+    katze_geschwindigkeit_m_pro_min = dict_katz["geschwindigkeit_m_pro_min"]
+    katze_beschleunigung_m_pro_s2 = dict_katz["beschleunigung_m_pro_s2"]
+    katze_motordrehzahl_1_pro_min = dict_katz["motordrehzahl_1_pro_min"]
+    katze_massenträgheit_kgm2 = dict_katz["massenträgheit_kgm2"]
+    katze_anzahl_motoren = dict_katz["anzahl_motoren"]
+    katze_wirkungsgrad_getriebe = dict_katz["wirkungsgrad_getriebe"]
+    katze_getriebestufen = dict_katz["getriebestufen"]
+    katze_fahrwiderstand_kg_pro_t = dict_katz["fahrwiderstand_kg_pro_t"]
+    katze_wirkungsgrad_motor_katze = dict_katz["wirkungsgrad_motor_katze"]
+    # Kranfahrwerk
+    kranfahrwerk_gewicht_kg = dict_kran["gewicht_kg"]
+    kranfahrwerk_geschwindigkeit_m_pro_min = dict_kran["geschwindigkeit_m_pro_min"]
+    kranfahrwerk_beschleunigung_m_pro_s2 = dict_kran["beschleunigung_m_pro_s2"]
+    kranfahrwerk_motordrehzahl_1_pro_min = dict_kran["motordrehzahl_1_pro_min"]
+    kranfahrwerk_massenträgheit_kgm2 = dict_kran["massenträgheit_kgm2"]
+    kranfahrwerk_anzahl_motoren = dict_kran["anzahl_motoren"]
+    kranfahrwerk_wirkungsgrad_getriebe = dict_kran["wirkungsgrad_getriebe"]
+    kranfahrwerk_wirkungsgrad_vorgelege = dict_kran["wirkungsgrad_vorgelege"]
+    kranfahrwerk_getriebestufen = dict_kran["getriebestufen"]
+    kranfahrwerk_fahrwiderstand_kg_pro_t = dict_kran["fahrwiderstand_kg_pro_t"]
+    kranfahrwerk_wirkungsgrad_motor_kran = dict_kran["wirkungsgrad_motor_kran"]
+    
+    # Wege
+    wege_weg_hebensenken_m = dict_wege["weg_hebensenken_m"]
+    wege_weg_katzfahrt_m = dict_wege["weg_katzfahrt_m"]
+    wege_weg_kranfahrt_einlagern_m = dict_wege["weg_kranfahrt_einlagern_m"]
+    wege_weg_oeffnen_schliessen_m = dict_wege["weg_oeffnen_schliessen_m"]
+    wege_weg_trichter_m = dict_wege["weg_trichter_m"]
+    # endregion
+
+    ### region Grundfunktionen
+    df_müll = müllberechnung(anlage_anzahl_trichter, anlage_verbrennung_trichter_t, anlage_muell_anlieferung_h_t, greifer_volumen_m3,
+                   anlage_müll_dichte_beschickung_t_pro_m3, anlage_müll_dichte_anlieferung_t_pro_m3, anlage_müll_anlieferdauer)
+    df_spielzeiten_hub = spielzeitenberechnung(hubwerk_hub_geschwindigkeit_m_pro_min, hubwerk_hub_beschleunigung_m_pro_s2, wege_weg_hebensenken_m)
+    df_spielzeiten_katze = spielzeitenberechnung(katze_geschwindigkeit_m_pro_min, katze_beschleunigung_m_pro_s2, wege_weg_katzfahrt_m)
+    df_spielzeiten_kran_lager = spielzeitenberechnung(kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_beschleunigung_m_pro_s2, wege_weg_kranfahrt_einlagern_m)
+    df_spielzeiten_kran_beschickung = {}
+    for key,value in wege_weg_trichter_m.items():
+        df_spielzeiten_kran_beschickung[key] = spielzeitenberechnung(kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_beschleunigung_m_pro_s2, value)
+    df_spielzeiten_greifer = spielzeitenberechnung(greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2, wege_weg_oeffnen_schliessen_m)
+    # endregion
+
+    # region Mechanische Berechnungen
+
+    
  
