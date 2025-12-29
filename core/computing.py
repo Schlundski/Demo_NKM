@@ -384,7 +384,7 @@ def berechnungen_pro_tag(dict, standardwerte = STANDARDWERTE):
 
     # Zyklus Einlagerung
 
-    if greifer_typ == "Vierseil-Greifer":
-            Greifer_schliessen = df_mechleist_oeffnenschliessen_einlager["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
-            + df_mechleist_oeffnenschliessen_einlager["Beharrungsleistung voll"] * df_spielzeiten_greifer["Kontinuierliche Zeit"]
-            + 
+    #if greifer_typ == "Vierseil-Greifer":
+     #       Greifer_schliessen = df_mechleist_oeffnenschliessen_einlager["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
+        #    + df_mechleist_oeffnenschliessen_einlager["Beharrungsleistung voll"] * df_spielzeiten_greifer["Kontinuierliche Zeit"]
+          #  + 
