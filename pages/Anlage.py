@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from auth import check_login
-from ui.components import number_standard, text_standard, selectbox_standard
+from ui.components import number_standard, text_standard, selectbox_standard, checkbox_standard
 from config.standards import STANDARDWERTE
 import time
 
@@ -59,6 +59,14 @@ müll_dichte_anlieferung = number_standard(
     0, 0.1, 2,
     "ml_dcht_anlieferung",
 )
+müll_anlieferdauer = number_standard(
+    "Müll Anlieferdauer [h/d]",
+    STANDARDWERTE["Müll"]["Müll Anlieferdauer Stunden[h]"],
+    1, 1, 24,
+    "ml_anlieferdr",
+    "Durchschnittliche tägliche Anlieferdauer in Stunden",
+    0
+)
 
 # Kosten etc.
 anlage_standort = selectbox_standard(
@@ -91,7 +99,8 @@ if button:
             "müll_dichte_beschickung_t_pro_m3": müll_dichte_beschickung,
             "müll_dichte_anlieferung_t_pro_m3": müll_dichte_anlieferung,
             "anlage_standort": anlage_standort,
-            "energie_kosten": energie_kosten
+            "energie_kosten": energie_kosten,
+            "müll_anlieferdauer": müll_anlieferdauer
         }
     )
 

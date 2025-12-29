@@ -2,7 +2,7 @@ import streamlit as st
 import time
 from ui.components import number_standard, text_standard, selectbox_standard, number_soll, text_soll, selectbox_soll, plot_ldaten_rdiagramm
 from auth import check_login
-from core.computing import spielzeitenberechnung, mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt
+from core.computing import spielzeitenberechnung, mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechnungen_pro_tag
 from ui.components import plot_ldaten_rdiagramm
 import pandas as pd
 from config.standards import STANDARDWERTE
@@ -33,7 +33,7 @@ with st.expander("Parameter für Modernisierung", False):
             "Anzahl der Kräne",
             ist_anlage_state["anzahl_kraene"],
             1, 1, 10,
-            "anzl_kraene",
+            "soll_anzl_kraene",
             "Anzahl der Krane in der Anlage",
             0
         )
@@ -41,7 +41,7 @@ with st.expander("Parameter für Modernisierung", False):
             "Anzahl der Trichter",
             ist_anlage_state["anzahl_trichter"],
             1, 1, 10,
-            "anzl_trichter",
+            "soll_anzl_trichter",
             "Anzahl der Trichter zum Beschicken",
             0
         )
@@ -49,7 +49,7 @@ with st.expander("Parameter für Modernisierung", False):
             "Verbrennung je Trichter [t]",
             ist_anlage_state["verbrennung_trichter_t"],
             0, 0.1, 100,
-            "vbrng_trichter",
+            "soll_vbrng_trichter",
             "Verbrennung pro Trichter in Tonnen"
         )
         # Mülldaten
@@ -58,19 +58,27 @@ with st.expander("Parameter für Modernisierung", False):
             "Durchschnittliche Müllanliefermenge pro Stunde [t]",
             ist_anlage_state["müll_anlieferung_h_t"],
             0, 1, 1000,
-            "ml_anlfrmg",
+            "soll_ml_anlfrmg",
         )
         soll_müll_dichte_beschickung = number_soll(
             "Müll Dichte bei Beschickung [t/m³]",
             ist_anlage_state["müll_dichte_beschickung_t_pro_m3"],
             0, 0.1, 2,
-            "ml_dcht_beschickung",
+            "soll_ml_dcht_beschickung",
         )
         soll_müll_dichte_anlieferung = number_soll(
             "Müll Dichte bei Einlagerung [t/m³]",
             ist_anlage_state["müll_dichte_anlieferung_t_pro_m3"],
             0, 0.1, 2,
-            "ml_dcht_anlieferung",
+            "soll_ml_dcht_anlieferung",
+        )
+        soll_müll_anlieferdauer = number_standard(
+            "Müll Anlieferdauer [h/d]",
+            ist_anlage_state["müll_anlieferdauer"],
+            1, 1, 24,
+            "soll_ml_anlieferdr",
+            "Durchschnittliche tägliche Anlieferdauer in Stunden",
+            0
         )
 
         # Kosten etc.
@@ -78,7 +86,7 @@ with st.expander("Parameter für Modernisierung", False):
             titel = "Standort der Anlage",
             ist = ist_anlage_state["anlage_standort"],
             auswahl = df_laender["Land"].tolist(),
-            key = "anl_standort",
+            key = "soll_anl_standort",
             helptext = "In welchem Land befindet sich die Anlage?"
         )
         soll_energie_kosten = number_soll(
@@ -87,7 +95,7 @@ with st.expander("Parameter für Modernisierung", False):
             0,
             0.1,
             200,
-            "enrgy_kostn",
+            "soll_enrgy_kostn",
             "Die Energiekosten von c/kWh für die Anlage",
         )
 
@@ -99,7 +107,11 @@ with st.expander("Parameter für Modernisierung", False):
 
         # Radio Buttons erstellen
         soll_greifer_Arten = [std.viers["Greiferart"], std.hydr["Greiferart"]]
-        soll_auswahl = st.radio("Greiferart:", soll_greifer_Arten, key="soll_radio_greifer_Arten")
+        if ist_greifer_state["typ"] == "Vierseil-Greifer": 
+            standard_index=0 
+        else: 
+            standard_index=1
+        soll_auswahl = st.radio("Greiferart:", soll_greifer_Arten, key="soll_radio_greifer_Arten", index=standard_index)
 
         # Vierseil-Greifer
         if soll_auswahl == std.viers["Greiferart"]:
@@ -174,7 +186,7 @@ with st.expander("Parameter für Modernisierung", False):
             )
             soll_betriebsdruck = number_soll(
                 "Betriebsdruck [bar]",
-                std.hydr["betriebsdruck_bar"],
+                ist_greifer_state["betriebsdruck_bar"],
                 0, 1, 300,
                 "soll_betdruck",
             )
@@ -594,7 +606,8 @@ soll_anlage_state.update(
     "müll_dichte_beschickung_t_pro_m3": soll_müll_dichte_beschickung,
     "müll_dichte_anlieferung_t_pro_m3": soll_müll_dichte_anlieferung,
     "anlage_standort": soll_anlage_standort,
-    "energie_kosten": soll_energie_kosten
+    "energie_kosten": soll_energie_kosten,
+    "müll_anlieferdauer": soll_müll_anlieferdauer
     }
 )    
 soll_greifer_state.update(
@@ -677,4 +690,6 @@ soll_wege_state.update(
 
 
 st.write("Visualisierungen:")
-st.write(st.session_state["neu_anlage"])
+st.write("neu:", st.session_state["neu_anlage"])
+st.write("ist:", st.session_state["ist_anlage"])
+st.write("test:", berechnungen_pro_tag(ist_state))

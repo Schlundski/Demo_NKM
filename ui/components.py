@@ -107,6 +107,31 @@ def text_standard(
 
     return ausgabe
 
+# Helper für das Ankreuzen der Rückspeiseabfragen
+def checkbox_standard(        
+        titel="not defined",
+        standard=0.0,
+        min=0.0,
+        steps=0.1,
+        max=15,
+        key="not_defined",
+        helptext=None,
+        nachkommastellen=2
+        ):
+    
+    "Unser UI Standart für Werteeingaben, returned nur den True/False und je nachdem vielleicht den Wert"
+
+    ausgabe_checkbox = st.checkbox(titel, True, f"{key}_check", help=helptext)
+    if ausgabe_checkbox == True:
+        ausgabe_numberbox = st.number_input(
+            f"FU-Wirkungsgrad für {titel}",
+            min, max, standard, steps,
+            key= f"{key}_number",
+            format=f"%.{nachkommastellen}f" )
+        return ausgabe_numberbox, ausgabe_checkbox
+    
+    return ausgabe_checkbox
+
 ## Helper für die Modernisierungseingaben (Fast dasselbe wie oben)------------------------------
 # Helper für die Eingabeoberfläche für numerische Eingaben mit Standardcheckbox
 def number_soll(
@@ -256,3 +281,4 @@ def plot_ldaten_rdiagramm(titel, wertart, ist_tag, neu_tag):
         st.plotly_chart(fig, use_container_width=True)
 
     st.divider()
+

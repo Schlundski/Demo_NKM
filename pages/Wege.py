@@ -78,4 +78,4 @@ if button:
 
     st.write(":green[Erfolgreich gespeichert✅]")
     time.sleep(2)
-    st.switch_page("pages/Auswertung.py")
+    st.switch_page("pages/Rückspeisung.py")
