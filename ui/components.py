@@ -108,12 +108,12 @@ def text_standard(
     return ausgabe
 
 # Helper für das Ankreuzen der Rückspeiseabfragen
-def checkbox_standard(        
+def rueckspeisung_standard(        
         titel="not defined",
         standard=0.0,
         min=0.0,
         steps=0.1,
-        max=15,
+        max=15.0,
         key="not_defined",
         helptext=None,
         nachkommastellen=2
@@ -125,12 +125,12 @@ def checkbox_standard(
     if ausgabe_checkbox == True:
         ausgabe_numberbox = st.number_input(
             f"FU-Wirkungsgrad für {titel}",
-            min, max, standard, steps,
+            float(min), float(max), float(standard), float(steps),
             key= f"{key}_number",
             format=f"%.{nachkommastellen}f" )
-        return ausgabe_numberbox, ausgabe_checkbox
+        return ausgabe_numberbox, 1
     
-    return ausgabe_checkbox
+    return 0, 0
 
 ## Helper für die Modernisierungseingaben (Fast dasselbe wie oben)------------------------------
 # Helper für die Eingabeoberfläche für numerische Eingaben mit Standardcheckbox

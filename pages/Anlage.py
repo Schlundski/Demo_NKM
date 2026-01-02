@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from auth import check_login
-from ui.components import number_standard, text_standard, selectbox_standard, checkbox_standard
+from ui.components import number_standard, text_standard, selectbox_standard
 from config.standards import STANDARDWERTE
 import time
 

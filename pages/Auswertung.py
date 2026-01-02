@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from ui.components import number_standard, text_standard, selectbox_standard, number_soll, text_soll, selectbox_soll, plot_ldaten_rdiagramm
+from ui.components import number_standard, text_standard, selectbox_standard, number_soll, text_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard
 from auth import check_login
 from core.computing import spielzeitenberechnung, mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechnungen_pro_tag
 from ui.components import plot_ldaten_rdiagramm
@@ -294,7 +294,7 @@ with st.expander("Parameter für Modernisierung", False):
                 greifer_volumen = soll_vol_greifer,
                 muell_dichte = soll_müll_dichte_beschickung,
                 geschwindigkeit_mmin = soll_hub_geschwindigkeit,
-                beschleunigung_zeit_s = soll_hub_beschleunigung,
+                beschleunigung_m_ss = soll_hub_beschleunigung,
                 wirkungsgrad_seiltrieb = soll_wirkungsgrad_seiltrieb,
                 wirkungsgrad_getriebestufe = soll_wirkungsgrad_getr_stufe_hub,
                 drehzahl = soll_motordrehzahl_hub,
@@ -402,7 +402,7 @@ with st.expander("Parameter für Modernisierung", False):
                 muell_dichte = soll_müll_dichte_beschickung,
                 gewicht_katze = soll_gewicht_katze,
                 geschwindigkeit_mmin = soll_geschwindigkeit_katze,
-                beschleunigung_zeit_s = soll_geschwindigkeit_katze/60/soll_beschleunigung_katze,
+                beschleunigung_m_ss = soll_geschwindigkeit_katze/60/soll_beschleunigung_katze,
                 drehzahl = int(soll_motordrehzahl_katze),
                 fahrwerkwiderstand = soll_fahrwiderstand_katze,
                 getriebestufen = int(soll_getriebestufen_katze),
@@ -598,6 +598,51 @@ with st.expander("Parameter für Modernisierung", False):
                 nachkommastellen=0,
             )
 
+    with st.expander("Rückspeisung", False):
+
+        st.title("Rückspeisung")
+
+        # Container im Session State
+        st.session_state["neu_anlage"]["rueckspeisung"] = {}
+        soll_rueckspeisung_state = st.session_state["neu_anlage"]["rueckspeisung"]
+        ist_rueckspeisung_state = ist_state["rueckspeisung"]
+
+        soll_rueckspeisung_greifer = rueckspeisung_standard(
+            "Rückspeisung Greifer", 
+            ist_rueckspeisung_state["FU-Wirkungsgrad greifer"], 
+            0, 0.01, 1, 
+            "soll_rckspng_grfr", 
+            "Hat die Anlage eine Rückspeisung bei Greifer Öffnen/Schließen?", 
+            2
+        )
+
+        soll_rueckspeisung_hub = rueckspeisung_standard(
+            "Rückspeisung Hubfahrt",
+            ist_rueckspeisung_state["FU-Wirkungsgrad hub"],
+            0, 0.01, 1,
+            "soll_rckspng_hb",
+            "Hat die Anlage eine Rückspeisung bei der Hubfahrt?",
+            2
+        )
+
+        soll_rueckspeisung_kran = rueckspeisung_standard(
+            "Rückspeisung Kranfahrt",
+            ist_rueckspeisung_state["FU-Wirkungsgrad kran"],
+            0, 0.01, 1,
+            "soll_rckspng_krn",
+            "Hat die Anlage eine Rückspeisung bei der Kranfahrt?",
+            2
+        )
+
+        soll_rueckspeisung_katz = rueckspeisung_standard(
+            "Rückspeisung Katzfahrt",
+            ist_rueckspeisung_state["FU-Wirkungsgrad katze"],
+            0, 0.01, 1,
+            "soll_rckspng_ktzfhrt",
+            "Hat die Anlage eine Rückspeisung bei der Katzfahrt?",
+            2
+        )
+
 soll_anlage_state.update(
 {
     "anzahl_trichter": soll_anzahl_trichter,
@@ -684,7 +729,18 @@ soll_wege_state.update(
     "weg_trichter_m": soll_weg_trichter,
 }
 )
-
+soll_rueckspeisung_state.update(
+    {
+            "faktor greifer": soll_rueckspeisung_greifer[1],
+            "FU-Wirkungsgrad greifer": soll_rueckspeisung_greifer[0],
+            "faktor hub": soll_rueckspeisung_hub[1],
+            "FU-Wirkungsgrad hub": soll_rueckspeisung_hub[0],
+            "faktor kran": soll_rueckspeisung_kran[1],
+            "FU-Wirkungsgrad kran": soll_rueckspeisung_kran[0],
+            "faktor katze": soll_rueckspeisung_katz[1],
+            "FU-Wirkungsgrad katze": soll_rueckspeisung_katz[0]
+    }
+)
 
 # Berechnungen
 

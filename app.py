@@ -26,6 +26,7 @@ pg = st.navigation([
     st.Page("pages/Greifer.py", title="Greifer", icon="🪝"),
     st.Page("pages/Krananlage.py", title="Kran", icon="🏗️"),
     st.Page("pages/Wege.py", title="Wege", icon="📐"),
+    st.Page("pages/Rückspeisung.py", title="Rückspeisung", icon="♻️"),
     st.Page("pages/Auswertung.py", title="Auswertung", icon="📊")],
     #position = "hidden"
     )
