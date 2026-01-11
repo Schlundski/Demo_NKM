@@ -381,10 +381,11 @@ def berechnungen_pro_tag(dict, standardwerte = STANDARDWERTE):
         df_mechleist_oeffnenschliessen_einlager = mechleistunggreifervierseil(df_mechleist_hub_einlager["Beharrungsleistung voll"], hubwerk_hub_beschleunigung_m_pro_s2)
     elif greifer_typ == "Hydraulikgreifer":
         df_mechleist_oeffnenschliessen_beschick = greiferhydraulik(greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min, greifer_wirkungsgrad_hydraulik)
+    # endregion
 
-    # Zyklus Einlagerung
+    # region Zyklus Einlagerung
 
-    #if greifer_typ == "Vierseil-Greifer":
-     #       Greifer_schliessen = df_mechleist_oeffnenschliessen_einlager["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
-        #    + df_mechleist_oeffnenschliessen_einlager["Beharrungsleistung voll"] * df_spielzeiten_greifer["Kontinuierliche Zeit"]
-          #  + 
+    if greifer_typ == "Vierseil-Greifer":
+            Greifer_schliessen = 
+              df_mechleist_oeffnenschliessen_einlager["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
+            + df_mechleist_oeffnenschliessen_einlager["Beharrungsleistung"] * df_spielzeiten_greifer["Kontinuierliche Zeit"]

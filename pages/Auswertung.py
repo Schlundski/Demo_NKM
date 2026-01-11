@@ -1,9 +1,7 @@
 import streamlit as st
-import time
-from ui.components import number_standard, text_standard, selectbox_standard, number_soll, text_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard
+from ui.components import number_standard, number_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard
 from auth import check_login
-from core.computing import spielzeitenberechnung, mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechnungen_pro_tag
-from ui.components import plot_ldaten_rdiagramm
+from core.computing import mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechnungen_pro_tag
 import pandas as pd
 from config.standards import STANDARDWERTE
 import config.standards as std
@@ -15,9 +13,6 @@ df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
 ist_state = st.session_state["ist_anlage"]
 
 st.title("📊 Auswertung")
-with st.expander("Debug", False):
-    st.write("Übergebenes session_state:")
-    st.write(st.session_state)
 
 with st.expander("Parameter für Modernisierung", False):
     with st.expander("Allgemeine Anlagendaten", False):
@@ -721,13 +716,13 @@ soll_kran_state.update(
     }
 )
 soll_wege_state.update(
-{
-    "weg_hebensenken_m": soll_weg_hebensenken_m,
-    "weg_katzfahrt_m": soll_weg_katzfahrt_m,
-    "weg_kranfahrt_einlagern_m": soll_weg_kranfahrt_m,
-    "weg_oeffnen_schliessen_m": soll_weg_oeffnenschliessn_m,
-    "weg_trichter_m": soll_weg_trichter,
-}
+    {
+        "weg_hebensenken_m": soll_weg_hebensenken_m,
+        "weg_katzfahrt_m": soll_weg_katzfahrt_m,
+        "weg_kranfahrt_einlagern_m": soll_weg_kranfahrt_m,
+        "weg_oeffnen_schliessen_m": soll_weg_oeffnenschliessn_m,
+        "weg_trichter_m": soll_weg_trichter,
+    }
 )
 soll_rueckspeisung_state.update(
     {
@@ -742,8 +737,8 @@ soll_rueckspeisung_state.update(
     }
 )
 
-# Berechnungen
 
+# Berechnungen
 
 st.write("Visualisierungen:")
 st.write("neu:", st.session_state["neu_anlage"])
