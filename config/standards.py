@@ -112,6 +112,12 @@ STANDARDWERTE = {
         "Getriebestufen": 3,
         "Fahrwiderstand": 7,                    #kg/t
         "WirkungsgradMotor": 0.904
+    },
+    "Rückspeisung": {
+        "FU-Wirkungsgrad Greifer": 0.98,
+        "FU-Wirkungsgrad Hubfahrt": 0.98,
+        "FU-Wirkungsgrad Kranfahrt": 0.98,
+        "FU-Wirkungsgrad Katzfahrt": 0.98
     }
 }
 

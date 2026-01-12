@@ -615,7 +615,7 @@ with st.expander("Parameter für Modernisierung", False):
 
         soll_rueckspeisung_greifer = rueckspeisung_standard(
             "Rückspeisung Greifer", 
-            ist_rueckspeisung_state["FU-Wirkungsgrad greifer"], 
+            ist_rueckspeisung_state["FU-Wirkungsgrad greifer"] or STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Greifer"], 
             0, 0.01, 1, 
             "soll_rckspng_grfr", 
             "Hat die Anlage eine Rückspeisung bei Greifer Öffnen/Schließen?", 
@@ -624,7 +624,7 @@ with st.expander("Parameter für Modernisierung", False):
 
         soll_rueckspeisung_hub = rueckspeisung_standard(
             "Rückspeisung Hubfahrt",
-            ist_rueckspeisung_state["FU-Wirkungsgrad hub"],
+            ist_rueckspeisung_state["FU-Wirkungsgrad hub"] or STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Hubfahrt"],
             0, 0.01, 1,
             "soll_rckspng_hb",
             "Hat die Anlage eine Rückspeisung bei der Hubfahrt?",
@@ -633,7 +633,7 @@ with st.expander("Parameter für Modernisierung", False):
 
         soll_rueckspeisung_kran = rueckspeisung_standard(
             "Rückspeisung Kranfahrt",
-            ist_rueckspeisung_state["FU-Wirkungsgrad kran"],
+            ist_rueckspeisung_state["FU-Wirkungsgrad kran"] or STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Kranfahrt"],
             0, 0.01, 1,
             "soll_rckspng_krn",
             "Hat die Anlage eine Rückspeisung bei der Kranfahrt?",
@@ -642,7 +642,7 @@ with st.expander("Parameter für Modernisierung", False):
 
         soll_rueckspeisung_katz = rueckspeisung_standard(
             "Rückspeisung Katzfahrt",
-            ist_rueckspeisung_state["FU-Wirkungsgrad katze"],
+            ist_rueckspeisung_state["FU-Wirkungsgrad katze"] or STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Katzfahrt"],
             0, 0.01, 1,
             "soll_rckspng_ktzfhrt",
             "Hat die Anlage eine Rückspeisung bei der Katzfahrt?",
@@ -756,13 +756,13 @@ with st.expander("Debug session state", False):
     st.write("ist:", st.session_state["ist_anlage"])
 
 st.write("Visualisierungen:")
-#plot_ldaten_rdiagramm("Energieverbrauch", "Energie", 
-#                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"], 
-#                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"])
-#plot_ldaten_rdiagramm("Energierückspeisung", "Energie", 
-#                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Rückspeisung"], 
-#                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Rückspeisung"])
-plot_ldaten_rdiagramm("Energieverbrauch", "kWh", 1571.59, 1473.99)
-plot_ldaten_rdiagramm("Rückspeisung", "kWh", 198, 658)
-plot_ldaten_rdiagramm("Verbrauchtes CO₂", "kg", 230, 110)
-plot_ldaten_rdiagramm("Energiekosten", "EUR", 630, 300)
+plot_ldaten_rdiagramm("Energieverbrauch", "kWh",  
+                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"],
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"])
+plot_ldaten_rdiagramm("Energierückspeisung", "kWh",  
+                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Rückspeisung"],
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Rückspeisung"],
+                      "normal")
+plot_ldaten_rdiagramm(f"Approximierte Kosten in {st.session_state["ist_anlage"]["anlage"]["anlage_standort"]}", "EUR€", 
+                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Kosten"],
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Kosten"])

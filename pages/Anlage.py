@@ -95,7 +95,7 @@ energie_kosten = number_standard(
     0.1,
     200,
     "enrgy_kostn",
-    "Die Energiekosten von c/kWh für die Anlage",
+    "Quelle zu automatischem Tarifvorschlag: https://de.statista.com/statistik/daten/studie/151260/umfrage//strompreise-fuer-industriekunden-in-europa/",
 )
 
 button = st.button("Speichern und weiter")

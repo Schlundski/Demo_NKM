@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from typing import Literal
 
 ## Helper für die Faktoreneingabe---------------------------------------------------------------
 # Helper für die Eingabeoberfläche für numerische Eingaben mit Standardcheckbox
@@ -110,7 +111,7 @@ def text_standard(
 # Helper für das Ankreuzen der Rückspeiseabfragen
 def rueckspeisung_standard(        
         titel="not defined",
-        standard=0.0,
+        standard=0.98,
         min=0.0,
         steps=0.1,
         max=15.0,
@@ -239,7 +240,9 @@ def text_soll(
 
 ## Visualisierung-------------------------------------------------------------------------------
 # Helper für das Erstellen der Plots mit links den Daten und rechts dem Plot plus Slider für die Hochrechnungen auf verschiedene Zeiträume
-def plot_ldaten_rdiagramm(titel, wertart, ist_tag, neu_tag):
+DeltaColor = Literal["normal", "inverse", "off"] # Auswahl für deltacolor festlegen, um schreibfehler zu verhindern
+
+def plot_ldaten_rdiagramm(titel, wertart, ist_tag, neu_tag, unterschied: DeltaColor = "inverse"):
     st.divider()
     st.header(titel)
 
@@ -273,7 +276,7 @@ def plot_ldaten_rdiagramm(titel, wertart, ist_tag, neu_tag):
         st.write("## ")
         st.subheader("Errechnete Werte")
         st.metric(f"{wertart} (Ist)", f"{ist_summe:,.2f}")
-        st.metric(f"{wertart} (Neu)", f"{neu_summe:,.2f}", delta=f"{einsparung:,.2f}", delta_color="inverse")
+        st.metric(f"{wertart} (Neu)", f"{neu_summe:,.2f}", delta=f"{einsparung:,.2f}", delta_color=unterschied)
 
     with col2:
         df = pd.DataFrame({"Variante": ["Ist", "Neu"], wertart: [ist_summe, neu_summe]})

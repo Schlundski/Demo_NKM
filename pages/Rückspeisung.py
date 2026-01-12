@@ -20,7 +20,8 @@ st.title("Rückspeisungen")
 
 rueckspeisung_greifer = rueckspeisung_standard(
     "Rückspeisung Greifer", 
-    0.98, 0, 0.01, 1, 
+    STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Greifer"], 
+    0, 0.01, 1, 
     "rckspng_grfr", 
     "Hat die Anlage eine Rückspeisung bei Greifer Öffnen/Schließen?", 
     2
@@ -28,7 +29,7 @@ rueckspeisung_greifer = rueckspeisung_standard(
 
 rueckspeisung_hub = rueckspeisung_standard(
     "Rückspeisung Hubfahrt",
-    0.98,
+    STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Hubfahrt"],
     0,
     0.01,
     1,
@@ -39,7 +40,7 @@ rueckspeisung_hub = rueckspeisung_standard(
 
 rueckspeisung_kran = rueckspeisung_standard(
     "Rückspeisung Kranfahrt",
-    0.98,
+    STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Kranfahrt"],
     0,
     0.01,
     1,
@@ -50,7 +51,7 @@ rueckspeisung_kran = rueckspeisung_standard(
 
 rueckspeisung_katz = rueckspeisung_standard(
     "Rückspeisung Katzfahrt",
-    0.98,
+    STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Katzfahrt"],
     0,
     0.01,
     1,

@@ -2,6 +2,7 @@ import base64
 from pathlib import Path
 import streamlit as st
 
+# Hintergrund hinzufügen, schaut professioneller aus
 
 def _img_to_data_uri(path: str) -> str:
     p = Path(path)
@@ -17,7 +18,7 @@ def set_background_auto_theme(
     bg_light_path: str,
     bg_dark_path: str,
     *,
-    # Content-Box (damit Text immer lesbar bleibt)
+    # Content-Box, damit Text lesbar bleibt
     content_bg_light: str = "rgba(255, 255, 255, 0.78)",
     content_bg_dark: str = "rgba(0, 0, 0, 0.55)",
     border_radius_px: int = 14,

@@ -4,6 +4,9 @@
 import numpy
 from config.standards import Motorleistungen
 
+# Fehlermeldung "Variable is possibly unbound" ignorieren, da zwingend einer der zwei Greiferfälle ist
+# pyright: reportPossiblyUnboundVariable=false
+
 # Allgemeine Berechnungen
 def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
 
@@ -279,23 +282,22 @@ def berechnungen_pro_tag(dict):
     ## Variablen deklarieren
     # Anlage
     anlage_anzahl_trichter = dict_anlage["anzahl_trichter"]
-    anlage_verbrennung_trichter_t = dict_anlage["verbrennung_trichter_t"]
-    anlage_muell_anlieferung_h_t = dict_anlage["müll_anlieferung_h_t"]
-    anlage_müll_dichte_beschickung_t_pro_m3 = dict_anlage["müll_dichte_beschickung_t_pro_m3"]
-    anlage_müll_dichte_anlieferung_t_pro_m3 = dict_anlage["müll_dichte_anlieferung_t_pro_m3"]
-    anlage_anlage_standort = dict_anlage["anlage_standort"]
+    anlage_verbrennung_trichter_kg = dict_anlage["verbrennung_trichter_kg"]
+    anlage_muell_anlieferung_h_kg = dict_anlage["müll_anlieferung_h_kg"]
+    anlage_müll_dichte_beschickung_kg_pro_m3 = dict_anlage["müll_dichte_beschickung_kg_pro_m3"]
+    anlage_müll_dichte_anlieferung_kg_pro_m3 = dict_anlage["müll_dichte_anlieferung_kg_pro_m3"]
     anlage_energie_kosten = dict_anlage["energie_kosten"]
     anlage_müll_anlieferdauer = dict_anlage["müll_anlieferdauer"]
 
     # Greifer
     if dict_greifer["typ"] == "Vierseil-Greifer":
-        greifer_leergewicht_t = dict_greifer["leergewicht_t"]
+        greifer_leergewicht_kg = dict_greifer["leergewicht_kg"]
         greifer_volumen_m3 = dict_greifer["volumen_m3"]
         greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
         greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
         greifer_typ = dict_greifer["typ"]
     elif dict_greifer["typ"] == "Hydraulikgreifer":
-        greifer_leergewicht_t = dict_greifer["leergewicht_t"]
+        greifer_leergewicht_t = dict_greifer["leergewicht_kg"]
         greifer_volumen_m3 = dict_greifer["volumen_m3"]
         greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
         greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
@@ -350,8 +352,8 @@ def berechnungen_pro_tag(dict):
     # endregion
 
     # region Grundfunktionen
-    df_muell = muellberechnung(anlage_anzahl_trichter, anlage_verbrennung_trichter_t, anlage_muell_anlieferung_h_t, greifer_volumen_m3,
-                   anlage_müll_dichte_beschickung_t_pro_m3, anlage_müll_dichte_anlieferung_t_pro_m3, anlage_müll_anlieferdauer)
+    df_muell = muellberechnung(anlage_anzahl_trichter, anlage_verbrennung_trichter_kg, anlage_muell_anlieferung_h_kg, greifer_volumen_m3,
+                   anlage_müll_dichte_beschickung_kg_pro_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, anlage_müll_anlieferdauer)
     df_spielzeiten_hub = spielzeitenberechnung(hubwerk_hub_geschwindigkeit_m_pro_min, hubwerk_hub_beschleunigung_m_pro_s2, wege_weg_hebensenken_m)
     df_spielzeiten_katze = spielzeitenberechnung(katze_geschwindigkeit_m_pro_min, katze_beschleunigung_m_pro_s2, wege_weg_katzfahrt_m)
     df_spielzeiten_kran_einlager = spielzeitenberechnung(kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_beschleunigung_m_pro_s2, wege_weg_kranfahrt_einlagern_m)
@@ -361,22 +363,22 @@ def berechnungen_pro_tag(dict):
     # endregion
 
     # region grundlegende mechanische Leistungsberechnungen
-    df_mechleist_katz_einlager = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_t, greifer_volumen_m3, anlage_müll_dichte_anlieferung_t_pro_m3, katze_gewicht_kg, 
+    df_mechleist_katz_einlager = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg, 
                                                        katze_geschwindigkeit_m_pro_min, katze_beschleunigung_m_pro_s2, katze_motordrehzahl_1_pro_min, katze_fahrwiderstand_kg_pro_t,
                                                        katze_getriebestufen, katze_wirkungsgrad_getriebe, katze_massenträgheit_kgm2, motorzahl = katze_anzahl_motoren)
-    df_mechleist_katz_beschick = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_t, greifer_volumen_m3, anlage_müll_dichte_beschickung_t_pro_m3, katze_gewicht_kg, 
+    df_mechleist_katz_beschick = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, katze_gewicht_kg, 
                                                        katze_geschwindigkeit_m_pro_min, katze_beschleunigung_m_pro_s2, katze_motordrehzahl_1_pro_min, katze_fahrwiderstand_kg_pro_t,
                                                        katze_getriebestufen, katze_wirkungsgrad_getriebe, katze_massenträgheit_kgm2, motorzahl = katze_anzahl_motoren)
-    df_mechleist_hub_einlager = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_t, greifer_volumen_m3, anlage_müll_dichte_anlieferung_t_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
+    df_mechleist_hub_einlager = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
                                                     hubwerk_hub_beschleunigung_m_pro_s2, hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_motordrehzahl_1_pro_min, hubwerk_getriebestufen, 
                                                     hubwerk_anzahl_motoren, hubwerk_massenträgheit_kgm2)
-    df_mechleist_hub_beschick = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_t, greifer_volumen_m3, anlage_müll_dichte_beschickung_t_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
+    df_mechleist_hub_beschick = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
                                                     hubwerk_hub_beschleunigung_m_pro_s2, hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_motordrehzahl_1_pro_min, hubwerk_getriebestufen, 
                                                     hubwerk_anzahl_motoren, hubwerk_massenträgheit_kgm2)
-    df_mechleist_kran_einlager = kranfahrt(greifer_leergewicht_t, greifer_volumen_m3, anlage_müll_dichte_anlieferung_t_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg, 
+    df_mechleist_kran_einlager = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg, 
                                            kranfahrwerk_beschleunigung_m_pro_s2, kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_motordrehzahl_1_pro_min, kranfahrwerk_massenträgheit_kgm2,
                                            kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren, kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen)
-    df_mechleist_kran_beschick = kranfahrt(greifer_leergewicht_t, greifer_volumen_m3, anlage_müll_dichte_beschickung_t_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg, 
+    df_mechleist_kran_beschick = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg, 
                                            kranfahrwerk_beschleunigung_m_pro_s2, kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_motordrehzahl_1_pro_min, kranfahrwerk_massenträgheit_kgm2,
                                            kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren, kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen)
     
@@ -744,9 +746,20 @@ def berechnungen_pro_tag(dict):
 
     # endregion Tagesberechnung Beschickung
 
-    # 
+    # Gesamtenergie in kWh
+
+    df_elenergie_verbrauch_kwh      = (df_elenergie_beschick_verbrauch_d + df_elenergie_einlager_verbrauch_d) / 3600
+    df_elenergie_rueckspeisung_kwh  = (df_elenergie_beschick_rueckspeisung_d + df_elenergie_einlager_rueckspeisung_d) / 3600
+
+    # region Tagesberechnungen Energiekosten nach Region
+
+    df_elenergie_kosten_eur = df_elenergie_verbrauch_kwh * anlage_energie_kosten / 100  # Euro für gesamtverbrauch
+
+
     return {
-        "Verbrauch": (df_elenergie_beschick_verbrauch_d + df_elenergie_einlager_verbrauch_d),
-        "Rückspeisung": (df_elenergie_beschick_rueckspeisung_d + df_elenergie_einlager_rueckspeisung_d)
+        "Verbrauch": df_elenergie_verbrauch_kwh,
+        "Rückspeisung": df_elenergie_rueckspeisung_kwh,
+        "Kosten": df_elenergie_kosten_eur,
+        #"CO2": pass,
     }
 

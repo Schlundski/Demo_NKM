@@ -2,17 +2,28 @@ import streamlit as st
 from auth import check_login
 from ui.theme import set_background_auto_theme
 
+# Navigation ausblenden, solange nicht eingeloggt
+if not st.session_state.get("logged_in", False):
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"] { display: none; }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+st.set_page_config(page_title="Anwendung Modernisierung", page_icon="🔒")
+
 set_background_auto_theme(
-    "assets/bg_light.jpg",
-    "assets/bg_dark.jpg",
+"assets/bg_light.jpg",
+"assets/bg_dark.jpg",
 )
 
-
-st.set_page_config(page_title="Meine App", page_icon="🔒")
 check_login()
 
-#Startseite generieren, damit app nicht links steht in der Navigation
 def startseite():
+
     st.image("assets/Noell.jpg")
     st.markdown("""
              # 🏭Willkommen!
@@ -38,3 +49,4 @@ pg = st.navigation([
     #position = "hidden"
     )
 pg.run()
+
