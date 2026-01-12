@@ -1,9 +1,19 @@
 import streamlit as st
 import pandas as pd
 from auth import check_login
-from ui.components import number_standard, text_standard, selectbox_standard
+from ui.components import number_standard, selectbox_standard
 from config.standards import STANDARDWERTE
 import time
+from typing import cast
+from ui.theme import set_background_auto_theme
+
+set_background_auto_theme(
+    "assets/bg_light.jpg",
+    "assets/bg_dark.jpg",
+)
+
+
+check_login()
 
 df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
 
@@ -24,39 +34,39 @@ anzahl_kraene = number_standard(
     0
 )
 anzahl_trichter = number_standard(
-    "Anzahl der Trichter",
+    "Anzahl der Trichter/Schuren",
     STANDARDWERTE["Anlage"]["Anzahl Trichter"],
     1, 1, 10,
     "anzl_trichter",
-    "Anzahl der Trichter zum Beschicken",
+    "Anzahl der Trichter/Schuren zum Beschicken",
     0
 )
 verbrennung_trichter = number_standard(
-    "Verbrennung je Trichter [t]",
+    "Verbrennung je Trichter/Schure [kg]",
     STANDARDWERTE["Anlage"]["Verbrennung je Trichter"],
-    0, 0.1, 100,
+    0, 100, 100_000,
     "vbrng_trichter",
-    "Verbrennung pro Trichter in Tonnen"
+    "Verbrennung pro Trichter/Schure in kg"
 )
 
 # Mülldaten
 st.write("# :grey[Eingabe der Mülldaten]")
 müll_anlieferung_h = number_standard(
-    "Durchschnittliche Müllanliefermenge pro Stunde [t]",
-    STANDARDWERTE["Müll"]["Müll Anliefermenge in der Stunde[t]"],
-    0, 1, 1000,
+    "Durchschnittliche Müllanliefermenge pro Stunde [kg]",
+    STANDARDWERTE["Müll"]["Müll Anliefermenge in der Stunde[kg]"],
+    0, 100, 1_000_000,
     "ml_anlfrmg",
 )
 müll_dichte_beschickung = number_standard(
-    "Müll Dichte bei Beschickung [t/m³]",
-    STANDARDWERTE["Müll"]["Müll Dichte Beschickung[t/m³]"],
-    0, 0.1, 2,
+    "Müll Dichte bei Beschickung [kg/m³]",
+    STANDARDWERTE["Müll"]["Müll Dichte Beschickung[kg/m³]"],
+    0, 100, 2_000,
     "ml_dcht_beschickung",
 )
 müll_dichte_anlieferung = number_standard(
-    "Müll Dichte bei Einlagerung [t/m³]",
-    STANDARDWERTE["Müll"]["Müll Dichte Einlagerung[t/m³]"],
-    0, 0.1, 2,
+    "Müll Dichte bei Einlagerung [kg/m³]",
+    STANDARDWERTE["Müll"]["Müll Dichte Einlagerung[kg/m³]"],
+    0, 100, 2_000,
     "ml_dcht_anlieferung",
 )
 müll_anlieferdauer = number_standard(
@@ -76,9 +86,11 @@ anlage_standort = selectbox_standard(
     key = "anl_standort",
     helptext = "In welchem Land befindet sich die Anlage?"
 )
+s = cast(pd.Series, df_laender.loc[df_laender["Land"] == anlage_standort, "Preis in c/kWh"]) 
+preis = s.iloc[0] # Länderpreis direkt nach vorheriger Eingabe raussuchen
 energie_kosten = number_standard(
     "Höhe der Tarifenergiekosten des Standortes [c/kWh]",
-    df_laender.loc[df_laender["Land"]==anlage_standort, "Preis in c/kWh"].iloc[0],
+    preis,
     0,
     0.1,
     200,
@@ -94,10 +106,10 @@ if button:
         {
             "anzahl_kraene": anzahl_kraene,
             "anzahl_trichter": anzahl_trichter,
-            "verbrennung_trichter_t": verbrennung_trichter,
-            "müll_anlieferung_h_t": müll_anlieferung_h,
-            "müll_dichte_beschickung_t_pro_m3": müll_dichte_beschickung,
-            "müll_dichte_anlieferung_t_pro_m3": müll_dichte_anlieferung,
+            "verbrennung_trichter_kg": verbrennung_trichter,
+            "müll_anlieferung_h_kg": müll_anlieferung_h,
+            "müll_dichte_beschickung_kg_pro_m3": müll_dichte_beschickung,
+            "müll_dichte_anlieferung_kg_pro_m3": müll_dichte_anlieferung,
             "anlage_standort": anlage_standort,
             "energie_kosten": energie_kosten,
             "müll_anlieferdauer": müll_anlieferdauer

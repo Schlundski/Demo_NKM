@@ -3,6 +3,12 @@ from auth import check_login
 from ui.components import number_standard
 from config.standards import STANDARDWERTE
 import time
+from ui.theme import set_background_auto_theme
+
+set_background_auto_theme(
+    "assets/bg_light.jpg",
+    "assets/bg_dark.jpg",
+)
 
 weg_trichter = {}
 

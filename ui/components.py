@@ -121,7 +121,7 @@ def rueckspeisung_standard(
     
     "Unser UI Standart für Werteeingaben, returned nur den True/False und je nachdem vielleicht den Wert"
 
-    ausgabe_checkbox = st.checkbox(titel, True, f"{key}_check", help=helptext)
+    ausgabe_checkbox = st.checkbox(titel, False, f"{key}_check", help=helptext)
     if ausgabe_checkbox == True:
         ausgabe_numberbox = st.number_input(
             f"FU-Wirkungsgrad für {titel}",

@@ -4,6 +4,13 @@ from ui.components import number_standard
 import config.standards as std
 import time
 from auth import check_login
+from ui.theme import set_background_auto_theme
+
+set_background_auto_theme(
+    "assets/bg_light.jpg",
+    "assets/bg_dark.jpg",
+)
+
 
 check_login()
 
@@ -28,9 +35,9 @@ bes_greifen = None
 # Vierseil-Greifer
 if auswahl == std.viers["Greiferart"]:
     gew_greifer_leer = number_standard(
-        "Leergewicht des Greifers [t]",
+        "Leergewicht des Greifers [kg]",
         std.viers["Leergewicht"],
-        0, 0.1, 15,
+        0, 100, 20_000,
         "leergew",
     )
     vol_greifer = number_standard(
@@ -55,9 +62,9 @@ if auswahl == std.viers["Greiferart"]:
 # Hydraulikgreifer
 elif auswahl == std.hydr["Greiferart"]:
     gew_greifer_leer = number_standard(
-        "Leergewicht des Greifers [t]",
+        "Leergewicht des Greifers [kg]",
         std.hydr["Leergewicht"],
-        0, 0.1, 15,
+        0, 100, 20_000,
         "leergew",
     )
     vol_greifer = number_standard(
@@ -111,7 +118,7 @@ if button:
     # Basisdaten immer, egal welcher Typ
     greifer_state.update(
         {
-            "leergewicht_t": gew_greifer_leer,
+            "leergewicht_kg": gew_greifer_leer,
             "volumen_m3": vol_greifer,
             "geschwindigkeit_m_pro_min": ges_greifen,
             "beschleunigung_m_pro_s2": bes_greifen,
@@ -131,12 +138,13 @@ if button:
         greifer_state.update(
             {
                 "typ": "Hydraulikgreifer",
-                "motorleistung_kw": p_hydr_motor,
-                "wirkungsgrad_hydraulik": n_hydr_motor,
-                "volumenstrom_l_pro_min": volumenstrom,
-                "betriebsdruck_bar": betriebsdruck,
+                "motorleistung_kw": p_hydr_motor,       # type: ignore[possibly-unbound]
+                "wirkungsgrad_hydraulik": n_hydr_motor, # type: ignore[possibly-unbound]
+                "volumenstrom_l_pro_min": volumenstrom, # type: ignore[possibly-unbound]
+                "betriebsdruck_bar": betriebsdruck,     # type: ignore[possibly-unbound]
             }
         )
+    
 
     st.write(":green[Erfolgreich gespeichert✅]")
     time.sleep(2)

@@ -5,6 +5,12 @@ import config.standards as std
 import time
 from auth import check_login
 from core.computing import mechleistunghubwerk, mechleistungkatzfahrt, kranfahrt, spielzeitenberechnung
+from ui.theme import set_background_auto_theme
+
+set_background_auto_theme(
+    "assets/bg_light.jpg",
+    "assets/bg_dark.jpg",
+)
 
 
 check_login()
@@ -107,9 +113,9 @@ with st.expander("Hubwerk", expanded = st.session_state.expander_hubwerk_open, w
     # Anzeigen des Ausgewählten Motors
     motor_hub = mechleistunghubwerk(
             gewicht_seile = seilgewicht,
-           gewicht_greifer_leer = ist_state.get("greifer", {}).get("leergewicht_t"),
+           gewicht_greifer_leer = ist_state.get("greifer", {}).get("leergewicht_kg"),
            greifer_volumen = ist_state.get("greifer", {}).get("volumen_m3"),
-           muell_dichte = ist_state.get("anlage", {}).get("müll_dichte_beschickung_t_pro_m3"),
+           muell_dichte = ist_state.get("anlage", {}).get("müll_dichte_beschickung_kg_pro_m3"),
            geschwindigkeit_mmin = hub_geschwindigkeit,
            beschleunigung_m_ss = beschleunigung_zeit_hub,
            wirkungsgrad_seiltrieb = wirkungsgrad_seiltrieb,
@@ -222,9 +228,9 @@ with st.expander("Katze", expanded = st.session_state.expander_katze_open, width
     # Motor berechnen und anzeigen. User kann noch Werte ändern
     mot_katze=mechleistungkatzfahrt(
           gewicht_seile=seilgewicht,
-          gewicht_greifer_leer=ist_state.get("greifer", {}).get("leergewicht_t"),
+          gewicht_greifer_leer=ist_state.get("greifer", {}).get("leergewicht_kg"),
           greifer_volumen=ist_state["greifer"]["volumen_m3"],
-          muell_dichte=ist_state.get("anlage", {}).get("müll_dichte_beschickung_t_pro_m3"),
+          muell_dichte=ist_state.get("anlage", {}).get("müll_dichte_beschickung_kg_pro_m3"),
           gewicht_katze=gewicht_katze,
           geschwindigkeit_mmin=geschwindigkeit_katze,
           beschleunigung_m_ss=geschwindigkeit_katze/60/beschleunigung_katze,
@@ -340,9 +346,9 @@ with st.expander("Kranfahrwerk", expanded = st.session_state.expander_kran_open,
 
     # Motor berechnen und anzeigen. User kann noch die Werte verändern
     motor_kran = kranfahrt(
-        gewicht_greifer_leer = ist_state.get("greifer", {}).get("leergewicht_t"),
+        gewicht_greifer_leer = ist_state.get("greifer", {}).get("leergewicht_kg"),
         greifer_volumen = ist_state.get("greifer", {}).get("volumen_m3"),
-        muell_dichte = ist_state.get("anlage", {}).get("müll_dichte_beschickung_t_pro_m3"),
+        muell_dichte = ist_state.get("anlage", {}).get("müll_dichte_beschickung_kg_pro_m3"),
         gewicht_katze = gewicht_katze,
         gewicht_kran = gewicht_kran,
         gewicht_seile = seilgewicht,

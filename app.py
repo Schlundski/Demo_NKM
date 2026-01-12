@@ -1,12 +1,19 @@
 import streamlit as st
 from auth import check_login
+from ui.theme import set_background_auto_theme
+
+set_background_auto_theme(
+    "assets/bg_light.jpg",
+    "assets/bg_dark.jpg",
+)
+
 
 st.set_page_config(page_title="Meine App", page_icon="🔒")
 check_login()
 
 #Startseite generieren, damit app nicht links steht in der Navigation
 def startseite():
-    st.image("image/Noell.jpg")
+    st.image("assets/Noell.jpg")
     st.markdown("""
              # 🏭Willkommen!
              Zuerst werden Sie durch die Dateneingabe Ihrer Bestandsanlage geführt.\n

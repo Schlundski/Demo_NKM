@@ -1,11 +1,22 @@
 import streamlit as st
 from auth import check_login
-from ui.components import number_standard, rueckspeisung_standard
+from ui.components import rueckspeisung_standard
 from config.standards import STANDARDWERTE
 import time
+from ui.theme import set_background_auto_theme
+
+set_background_auto_theme(
+    "assets/bg_light.jpg",
+    "assets/bg_dark.jpg",
+)
+
+
+check_login()
 
 st.session_state["ist_anlage"]["rueckspeisung"] = {}
 rueckspeisung_state = st.session_state["ist_anlage"]["rueckspeisung"]
+
+st.title("Rückspeisungen")
 
 rueckspeisung_greifer = rueckspeisung_standard(
     "Rückspeisung Greifer", 

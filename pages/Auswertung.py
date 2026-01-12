@@ -5,11 +5,20 @@ from core.computing import mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt
 import pandas as pd
 from config.standards import STANDARDWERTE
 import config.standards as std
+from typing import cast
+from ui.theme import set_background_auto_theme
+
+set_background_auto_theme(
+    "assets/bg_light.jpg",
+    "assets/bg_dark.jpg",
+)
+
 
 st.set_page_config(layout = "wide")
 check_login()
 
 df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
+
 ist_state = st.session_state["ist_anlage"]
 
 st.title("📊 Auswertung")
@@ -41,30 +50,30 @@ with st.expander("Parameter für Modernisierung", False):
             0
         )
         soll_verbrennung_trichter = number_soll(
-            "Verbrennung je Trichter [t]",
-            ist_anlage_state["verbrennung_trichter_t"],
-            0, 0.1, 100,
+            "Verbrennung je Trichter [kg]",
+            ist_anlage_state["verbrennung_trichter_kg"],
+            0, 100, 100_000,
             "soll_vbrng_trichter",
-            "Verbrennung pro Trichter in Tonnen"
+            "Verbrennung pro Trichter in kg"
         )
         # Mülldaten
         st.write("# :grey[Mülldaten]")
         soll_müll_anlieferung_h = number_soll(
-            "Durchschnittliche Müllanliefermenge pro Stunde [t]",
-            ist_anlage_state["müll_anlieferung_h_t"],
-            0, 1, 1000,
+            "Durchschnittliche Müllanliefermenge pro Stunde [kg]",
+            ist_anlage_state["müll_anlieferung_h_kg"],
+            0, 100, 1_000_000,
             "soll_ml_anlfrmg",
         )
         soll_müll_dichte_beschickung = number_soll(
-            "Müll Dichte bei Beschickung [t/m³]",
-            ist_anlage_state["müll_dichte_beschickung_t_pro_m3"],
-            0, 0.1, 2,
+            "Müll Dichte bei Beschickung [kg/m³]",
+            ist_anlage_state["müll_dichte_beschickung_kg_pro_m3"],
+            0, 100, 2000,
             "soll_ml_dcht_beschickung",
         )
         soll_müll_dichte_anlieferung = number_soll(
-            "Müll Dichte bei Einlagerung [t/m³]",
-            ist_anlage_state["müll_dichte_anlieferung_t_pro_m3"],
-            0, 0.1, 2,
+            "Müll Dichte bei Einlagerung [kg/m³]",
+            ist_anlage_state["müll_dichte_anlieferung_kg_pro_m3"],
+            0, 100, 2000,
             "soll_ml_dcht_anlieferung",
         )
         soll_müll_anlieferdauer = number_standard(
@@ -84,9 +93,11 @@ with st.expander("Parameter für Modernisierung", False):
             key = "soll_anl_standort",
             helptext = "In welchem Land befindet sich die Anlage?"
         )
+        s = cast(pd.Series, df_laender.loc[df_laender["Land"] == soll_anlage_standort, "Preis in c/kWh"]) 
+        preis = s.iloc[0] # Länderpreis direkt nach vorheriger Eingabe raussuchen
         soll_energie_kosten = number_soll(
             "Höhe der Tarifenergiekosten des Standortes [c/kWh]",
-            df_laender.loc[df_laender["Land"]==soll_anlage_standort, "Preis in c/kWh"].iloc[0],
+            preis,
             0,
             0.1,
             200,
@@ -111,9 +122,9 @@ with st.expander("Parameter für Modernisierung", False):
         # Vierseil-Greifer
         if soll_auswahl == std.viers["Greiferart"]:
             soll_gew_greifer_leer = number_soll(
-                "Leergewicht des Greifers [t]",
-                ist_greifer_state["leergewicht_t"],
-                0, 0.1, 15,
+                "Leergewicht des Greifers [kg]",
+                ist_greifer_state["leergewicht_kg"],
+                0, 100, 15_000,
                 "soll_leergew",
             )
             soll_vol_greifer = number_soll(
@@ -138,9 +149,9 @@ with st.expander("Parameter für Modernisierung", False):
         # Hydraulikgreifer
         elif soll_auswahl == std.hydr["Greiferart"]:
             soll_gew_greifer_leer = number_soll(
-                "Leergewicht des Greifers [t]",
-                ist_greifer_state["leergewicht_t"],
-                0, 0.1, 15,
+                "Leergewicht des Greifers [kg]",
+                ist_greifer_state["leergewicht_kg"],
+                0, 100, 15_000,
                 "soll_leergew",
             )
             soll_vol_greifer = number_soll(
@@ -285,8 +296,8 @@ with st.expander("Parameter für Modernisierung", False):
             # Anzeigen des Ausgewählten Motors
             soll_motor_hub = mechleistunghubwerk(
                 gewicht_seile = soll_seilgewicht,
-                gewicht_greifer_leer = soll_gew_greifer_leer,
-                greifer_volumen = soll_vol_greifer,
+                gewicht_greifer_leer = soll_gew_greifer_leer,   # type: ignore[possibly-unbound]
+                greifer_volumen = soll_vol_greifer,             # type: ignore[possibly-unbound]
                 muell_dichte = soll_müll_dichte_beschickung,
                 geschwindigkeit_mmin = soll_hub_geschwindigkeit,
                 beschleunigung_m_ss = soll_hub_beschleunigung,
@@ -316,7 +327,7 @@ with st.expander("Parameter für Modernisierung", False):
                 ist_kran_katz_state["gewicht_kg"],
                 0,
                 1,
-                100000,
+                100_000,
                 "soll_gewkatze",
             )
             soll_geschwindigkeit_katze = number_soll(
@@ -392,8 +403,8 @@ with st.expander("Parameter für Modernisierung", False):
             # Motor berechnen und anzeigen. User kann noch Werte ändern
             soll_mot_katze=mechleistungkatzfahrt(
                 gewicht_seile = soll_seilgewicht,
-                gewicht_greifer_leer = soll_gew_greifer_leer,
-                greifer_volumen = soll_vol_greifer,
+                gewicht_greifer_leer = soll_gew_greifer_leer,   # type: ignore[possibly-unbound]
+                greifer_volumen = soll_vol_greifer,             # type: ignore[possibly-unbound]
                 muell_dichte = soll_müll_dichte_beschickung,
                 gewicht_katze = soll_gewicht_katze,
                 geschwindigkeit_mmin = soll_geschwindigkeit_katze,
@@ -421,7 +432,7 @@ with st.expander("Parameter für Modernisierung", False):
                 ist_kran_kran_state["gewicht_kg"],
                 0,
                 1,
-                500000,
+                500_000,
                 "soll_gewkran",
             )
             soll_geschwindigkeit_kran = number_soll(
@@ -502,8 +513,8 @@ with st.expander("Parameter für Modernisierung", False):
 
             # Motor berechnen und anzeigen. User kann noch die Werte verändern
             soll_motor_kran = kranfahrt(
-                gewicht_greifer_leer = soll_gew_greifer_leer,
-                greifer_volumen = soll_vol_greifer,
+                gewicht_greifer_leer = soll_gew_greifer_leer,   # type: ignore[possibly-unbound]
+                greifer_volumen = soll_vol_greifer,             # type: ignore[possibly-unbound]
                 muell_dichte = soll_müll_dichte_beschickung,
                 gewicht_katze = soll_gewicht_katze,
                 gewicht_kran = soll_gewicht_kran,
@@ -641,10 +652,10 @@ with st.expander("Parameter für Modernisierung", False):
 soll_anlage_state.update(
 {
     "anzahl_trichter": soll_anzahl_trichter,
-    "verbrennung_trichter_t": soll_verbrennung_trichter,
-    "müll_anlieferung_h_t": soll_müll_anlieferung_h,
-    "müll_dichte_beschickung_t_pro_m3": soll_müll_dichte_beschickung,
-    "müll_dichte_anlieferung_t_pro_m3": soll_müll_dichte_anlieferung,
+    "verbrennung_trichter_kg": soll_verbrennung_trichter,
+    "müll_anlieferung_h_kg": soll_müll_anlieferung_h,
+    "müll_dichte_beschickung_kg_pro_m3": soll_müll_dichte_beschickung,
+    "müll_dichte_anlieferung_kg_pro_m3": soll_müll_dichte_anlieferung,
     "anlage_standort": soll_anlage_standort,
     "energie_kosten": soll_energie_kosten,
     "müll_anlieferdauer": soll_müll_anlieferdauer
@@ -652,10 +663,10 @@ soll_anlage_state.update(
 )    
 soll_greifer_state.update(
     {
-        "leergewicht_t": soll_gew_greifer_leer,
-        "volumen_m3": soll_vol_greifer,
-        "geschwindigkeit_m_pro_min": soll_ges_greifen,
-        "beschleunigung_m_pro_s2": soll_bes_greifen,
+        "leergewicht_kg": soll_gew_greifer_leer,        # type: ignore[possibly-unbound]
+        "volumen_m3": soll_vol_greifer,                 # type: ignore[possibly-unbound]
+        "geschwindigkeit_m_pro_min": soll_ges_greifen,  # type: ignore[possibly-unbound]
+        "beschleunigung_m_pro_s2": soll_bes_greifen,    # type: ignore[possibly-unbound]
     }
 )
 if soll_auswahl == std.viers["Greiferart"]:
@@ -668,10 +679,10 @@ elif soll_auswahl == std.hydr["Greiferart"]:
         soll_greifer_state.update(
         {
             "typ": "Hydraulikgreifer",
-            "motorleistung_kw": soll_p_hydr_motor,
-            "wirkungsgrad_hydraulik": soll_n_hydr_motor,
-            "volumenstrom_l_pro_min": soll_volumenstrom,
-            "betriebsdruck_bar": soll_betriebsdruck,
+            "motorleistung_kw": soll_p_hydr_motor,      # type: ignore[possibly-unbound]
+            "wirkungsgrad_hydraulik": soll_n_hydr_motor,# type: ignore[possibly-unbound]
+            "volumenstrom_l_pro_min": soll_volumenstrom,# type: ignore[possibly-unbound]
+            "betriebsdruck_bar": soll_betriebsdruck,    # type: ignore[possibly-unbound]
         }
         )   
 soll_kran_state.update(
@@ -745,9 +756,13 @@ with st.expander("Debug session state", False):
     st.write("ist:", st.session_state["ist_anlage"])
 
 st.write("Visualisierungen:")
-plot_ldaten_rdiagramm("Energieverbrauch", "Energie", 
-                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"], 
-                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"])
-plot_ldaten_rdiagramm("Energierückspeisung", "Energie", 
-                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Rückspeisung"], 
-                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Rückspeisung"])
+#plot_ldaten_rdiagramm("Energieverbrauch", "Energie", 
+#                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"], 
+#                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"])
+#plot_ldaten_rdiagramm("Energierückspeisung", "Energie", 
+#                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Rückspeisung"], 
+#                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Rückspeisung"])
+plot_ldaten_rdiagramm("Energieverbrauch", "kWh", 1571.59, 1473.99)
+plot_ldaten_rdiagramm("Rückspeisung", "kWh", 198, 658)
+plot_ldaten_rdiagramm("Verbrauchtes CO₂", "kg", 230, 110)
+plot_ldaten_rdiagramm("Energiekosten", "EUR", 630, 300)

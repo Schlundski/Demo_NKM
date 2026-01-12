@@ -2,7 +2,7 @@
 ## Hier werden die Berechnungen in Funktionen geschrieben, welche dictionarys ausgeben, sodass man über den key
 ## immer genau abrufen kann, was man haben möchte
 import numpy
-from config.standards import Motorleistungen, STANDARDWERTE
+from config.standards import Motorleistungen
 
 # Allgemeine Berechnungen
 def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
@@ -19,12 +19,12 @@ def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
 
         """
 
-    geschwindigkeit_ms = float(geschwindigkeit_mmin) / 60
-    beschleunigung_zeit = geschwindigkeit_ms / beschleunigung_mss
-    beschleunigung_weg = (beschleunigung_zeit**2) * (beschleunigung_mss / 2)
-    kontinuierlich_weg = weg - (2* beschleunigung_weg)
-    kontinuierlich_zeit = kontinuierlich_weg / geschwindigkeit_ms
-    summe_zeit = kontinuierlich_zeit + (2* beschleunigung_zeit)
+    geschwindigkeit_ms = float(geschwindigkeit_mmin) / 60                   # [m/s] = [m/min] / 60
+    beschleunigung_zeit = geschwindigkeit_ms / beschleunigung_mss           # [s]   = [m/s] / [m/s²]
+    beschleunigung_weg = (beschleunigung_zeit**2) * (beschleunigung_mss / 2)# [m]   = [s²] * ([m/s²] / 2)
+    kontinuierlich_weg = weg - (2* beschleunigung_weg)                      # [m]   = [m] - ( 2 * m )
+    kontinuierlich_zeit = kontinuierlich_weg / geschwindigkeit_ms           # [s]   = [m] / [m/s]
+    summe_zeit = kontinuierlich_zeit + (2* beschleunigung_zeit)             # [s]   = [s] + ( 2 * [s] )
 
     return {
         "Beschleunigungszeit": beschleunigung_zeit, 
@@ -35,7 +35,7 @@ def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
         }
 
 def muellberechnung(
-        anzahl_trichter, verbrennung_je_trichter, anliefermenge_stunde, greifer_volumen,muell_dichte_beschickung, 
+        anzahl_trichter, verbrennung_je_trichter_proh, anliefermenge_stunde, greifer_volumen,muell_dichte_beschickung, 
         muell_dichte_einlagerung, anlieferdauer
         ):
     
@@ -43,31 +43,31 @@ def muellberechnung(
     
     Ausgegeben wird ein Dictionary mit values zu folgenden keys:
 
-        "Gesamter zu transportierender Müll / h"
-        "Mülleinlagerung Pro Zyklus"
+        "Gesamter zu transportierender Müll kg / h"
+        "Mülleinlagerung kg / Zyklus"
         "Anzahl Zyklen Mülleinlagerung / h"
         "Anzahl Zyklen Mülleinlagerung / d"
-        "Trichterbeschickugngsmüll / Zyklus"
+        "Trichterbeschickungsmüll kg / Zyklus"
         "Anzahl Zyklen Trichterbeschickung / h"
         "Anzahl Zyklen Trichterbeschickung / d"
         "Anzahl Zyklen Trichterbeschickung gesamt / d"
     """
 
-    muell_gesamt_proh = (anzahl_trichter * verbrennung_je_trichter) + anliefermenge_stunde
-    muell_einlagerung_prozyklus = greifer_volumen * muell_dichte_einlagerung
-    anzahl_zyklen_muelleinlagerung_proh = anliefermenge_stunde / muell_einlagerung_prozyklus
-    anzahl_zyklen_muelleinlagerung_prod = anzahl_zyklen_muelleinlagerung_proh * anlieferdauer
-    beschickung_prozyklus = muell_dichte_beschickung * greifer_volumen
-    anzahl_zyklen_beschickung_proh = verbrennung_je_trichter / beschickung_prozyklus
-    anzahl_zyklen_beschickung_prod = anzahl_zyklen_beschickung_proh * 24
-    anzahl_zyklen_beschickung_gesamt_prod = anzahl_zyklen_beschickung_prod * anzahl_trichter
+    muell_gesamt_proh = (anzahl_trichter * verbrennung_je_trichter_proh) + anliefermenge_stunde # [kg/h]    = ([1] * [kg]) + [kg/h]
+    muell_einlagerung_prozyklus = greifer_volumen * muell_dichte_einlagerung                    # [kg/1]    = [m³] * [kg/m³]
+    anzahl_zyklen_muelleinlagerung_proh = anliefermenge_stunde / muell_einlagerung_prozyklus    # [1/h]     = [kg/h] / [kg/1]
+    anzahl_zyklen_muelleinlagerung_prod = anzahl_zyklen_muelleinlagerung_proh * anlieferdauer   # [1/d]     = [1/h] * [h/d]
+    beschickung_prozyklus = muell_dichte_beschickung * greifer_volumen                          # [kg/1]    = [kg/m³] * [m³]
+    anzahl_zyklen_beschickung_proh = verbrennung_je_trichter_proh / beschickung_prozyklus       # [1/h]     = [kg/h] / [kg/1]
+    anzahl_zyklen_beschickung_prod = anzahl_zyklen_beschickung_proh * 24                        # [1/d]     = [1/h] * 24h
+    anzahl_zyklen_beschickung_gesamt_prod = anzahl_zyklen_beschickung_prod * anzahl_trichter    # [1/d]     = [1/d] * [1]
 
     return {
-        "Gesamter zu transportierender Müll / h": muell_gesamt_proh,
-        "Mülleinlagerung Pro Zyklus": muell_einlagerung_prozyklus,
+        "Gesamter zu transportierender Müll kg / h": muell_gesamt_proh,
+        "Mülleinlagerung kg / Zyklus": muell_einlagerung_prozyklus,
         "Anzahl Zyklen Mülleinlagerung / h": anzahl_zyklen_muelleinlagerung_proh,
         "Anzahl Zyklen Mülleinlagerung / d": anzahl_zyklen_muelleinlagerung_prod,
-        "Trichterbeschickugngsmüll / Zyklus": beschickung_prozyklus,
+        "Trichterbeschickungsmüll kg / Zyklus": beschickung_prozyklus,
         "Anzahl Zyklen Trichterbeschickung / h": anzahl_zyklen_beschickung_proh,
         "Anzahl Zyklen Trichterbeschickung / d": anzahl_zyklen_beschickung_prod,
         "Anzahl Zyklen Trichterbeschickung gesamt / d": anzahl_zyklen_beschickung_gesamt_prod
@@ -78,26 +78,29 @@ def mechleistungkatzfahrt(gewicht_seile, gewicht_greifer_leer, greifer_volumen, 
                           fahrwerkwiderstand=9.0, getriebestufen=3, wirkungsgrad_getriebestufe=0.980, massentraegheit=0.01, 
                           belastungsfaktor=1.55, motorzahl=1):
     
-    """ Funktion zur Berechnung der mech Leistung der Katzfahrt
-    Ausgegeben wird in Dict mit folgenden keys:
-    Mindestmotorleistung
+    """ 
+    Funktion zur Berechnung der mech Leistung der Katzfahrt
+    Ausgegeben wird ein Dict mit folgenden keys:
+    Mindestmotorleistung kW
     Motorauswahl
-    Beschleunigungsleistungen
+    Beschleunigungsleistungen kW
     """
 
     # Greifer voll
-    gewicht_greifer_voll = (greifer_volumen * muell_dichte) + gewicht_greifer_leer
-    geschwindigkeit_ms = float(geschwindigkeit_mmin) / 60
-    if drehzahl == 0: drehzahl = (geschwindigkeit_ms * 60 * 30) / (numpy.pi * 0.25)
-    wirkungsgrad_getriebe = wirkungsgrad_getriebestufe ** getriebestufen
-    gewicht_gesamt = gewicht_greifer_voll + gewicht_katze + gewicht_seile
+    gewicht_greifer_voll = (greifer_volumen * muell_dichte) + gewicht_greifer_leer  # [kg]  = ( [m³] * [kg/m³] ) + [kg]
+    geschwindigkeit_ms = float(geschwindigkeit_mmin) / 60                           # [m/s] = [m/min] / 60
+    wirkungsgrad_getriebe = wirkungsgrad_getriebestufe ** getriebestufen            # [1]   = [1]^[1]
+    gewicht_gesamt = gewicht_greifer_voll + gewicht_katze + gewicht_seile           # [kg]  = [kg] + [kg] + [kg]
 
-    motor_leistung_beharrung = fahrwerkwiderstand * gewicht_gesamt * 9.81 * geschwindigkeit_ms / wirkungsgrad_getriebe / 1000
-    motor_leistung_beschl_translatorisch = gewicht_gesamt * geschwindigkeit_ms**2 / beschleunigung_m_ss / wirkungsgrad_getriebe
-    motor_leistung_beschl_rotierend = numpy.pi * drehzahl**2 * massentraegheit / 30 / 9550 / beschleunigung_m_ss
+    motor_leistung_beharrung = (fahrwerkwiderstand / 1000) * gewicht_gesamt * 9.81 * geschwindigkeit_ms / wirkungsgrad_getriebe / 1000  # [kW] = ([kg/t] / 1000 ) · [kg] · [m/s²] · [m/s] / [1] / 1000
+    motor_leistung_beschl_translatorisch = gewicht_gesamt * geschwindigkeit_ms * beschleunigung_m_ss / wirkungsgrad_getriebe / 1000     # [kW] = [kg] * [m/s] [m/s²] / [1] / 1000
+    omega = 2 * numpy.pi * drehzahl / 60                 # [1/s]    = 2 * pi * [1/min] / 60
+    radius_eff_m = 0.20 # geschätzter Allgemeinwert zur Vereinfachung
+    alpha = beschleunigung_m_ss / radius_eff_m           # [1/s²]   = [m/s²] / [m]
+    motor_leistung_beschl_rotierend = massentraegheit * alpha * omega / wirkungsgrad_getriebe / 1000        # [kW] = [kg*m²] * [1/s²]] * [1/s] / [1] / 1000
 
     motor_leistung_min = (motor_leistung_beharrung + motor_leistung_beschl_translatorisch + motor_leistung_beschl_rotierend) / motorzahl / belastungsfaktor
-
+    # [kW] = ( [kW] + [kW] + [kW] ) / [1] / [1]
     
     motor_auswahl = 0 # variableninitialisierung
     for leistung in Motorleistungen:
@@ -105,7 +108,7 @@ def mechleistungkatzfahrt(gewicht_seile, gewicht_greifer_leer, greifer_volumen, 
             motor_auswahl = leistung
             break
 
-    motor_leistung_beschl_summe = motor_leistung_beschl_translatorisch + motor_leistung_beschl_rotierend
+    motor_leistung_beschl_summe = motor_leistung_beschl_translatorisch + motor_leistung_beschl_rotierend    
 
     # Greifer leer
     wirkungsgrad_getriebe = wirkungsgrad_getriebestufe ** getriebestufen
@@ -262,7 +265,7 @@ def mechleistunggreifervierseil(hubvorgang_beharrung, hubvorgang_beschl):
     return {"Beharrungsleistung": beharrung_greifer,
             "Beschleunigungsleistung": beschl_greifer}
 
-def berechnungen_pro_tag(dict, standardwerte = STANDARDWERTE):
+def berechnungen_pro_tag(dict):
     # region Variablen Deklarieren zum Abrufen der dict-Daten
     # Pfad-Variablen zur Vereinfachung einrichten
     dict_anlage = dict["anlage"]
@@ -741,6 +744,7 @@ def berechnungen_pro_tag(dict, standardwerte = STANDARDWERTE):
 
     # endregion Tagesberechnung Beschickung
 
+    # 
     return {
         "Verbrauch": (df_elenergie_beschick_verbrauch_d + df_elenergie_einlager_verbrauch_d),
         "Rückspeisung": (df_elenergie_beschick_rueckspeisung_d + df_elenergie_einlager_rueckspeisung_d)
