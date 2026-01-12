@@ -6,6 +6,9 @@ import time
 from auth import check_login
 from core.computing import mechleistunghubwerk, mechleistungkatzfahrt, kranfahrt, spielzeitenberechnung
 
+
+check_login()
+
 st.title("Mechanische Krandaten")
 
 # Eingaben bei Seitenaufruf ausklappen

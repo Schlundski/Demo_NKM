@@ -5,6 +5,10 @@ import config.standards as std
 import time
 from auth import check_login
 
+check_login()
+
+standard_greifer_hydraulik = std.STANDARDWERTE["Greifer"]["Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1"]
+
 st.title("Greiferkonfiguration")
 
 # Container im Session State
@@ -117,6 +121,10 @@ if button:
         greifer_state.update(
             {
                 "typ": "Vierseil-Greifer",
+                "motorleistung_kw": standard_greifer_hydraulik["Motorleistung"],
+                "wirkungsgrad_hydraulik": standard_greifer_hydraulik["Wirkungsgrad"],
+                "volumenstrom_l_pro_min": standard_greifer_hydraulik["Volumenstrom"],
+                "betriebsdruck_bar": standard_greifer_hydraulik["Betriebsdruck"]
             }
         )
     elif auswahl == std.hydr["Greiferart"]:

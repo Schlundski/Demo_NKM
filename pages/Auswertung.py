@@ -738,9 +738,16 @@ soll_rueckspeisung_state.update(
 )
 
 
-# Berechnungen
+# Visualisierung der Berechnungen
+
+with st.expander("Debug session state", False):
+    st.write("neu:", st.session_state["neu_anlage"])
+    st.write("ist:", st.session_state["ist_anlage"])
 
 st.write("Visualisierungen:")
-st.write("neu:", st.session_state["neu_anlage"])
-st.write("ist:", st.session_state["ist_anlage"])
-st.write("test:", berechnungen_pro_tag(ist_state))
+plot_ldaten_rdiagramm("Energieverbrauch", "Energie", 
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"], 
+                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"])
+plot_ldaten_rdiagramm("Energierückspeisung", "Energie", 
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Rückspeisung"], 
+                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Rückspeisung"])
