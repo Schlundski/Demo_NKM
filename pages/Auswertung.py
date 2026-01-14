@@ -1,5 +1,5 @@
 import streamlit as st
-from ui.components import number_standard, number_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard
+from ui.components import number_standard, number_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard, plot_aufteilung_CO2
 from auth import check_login
 from core.computing import mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechnungen_pro_tag
 import pandas as pd
@@ -758,11 +758,17 @@ with st.expander("Debug session state", False):
 st.write("Visualisierungen:")
 plot_ldaten_rdiagramm("Energieverbrauch", "kWh",  
                       berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"],
-                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"])
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"]
+                      )
 plot_ldaten_rdiagramm("Energierückspeisung", "kWh",  
                       berechnungen_pro_tag(st.session_state["ist_anlage"])["Rückspeisung"],
                       berechnungen_pro_tag(st.session_state["neu_anlage"])["Rückspeisung"],
                       "normal")
 plot_ldaten_rdiagramm(f"Approximierte Kosten in {st.session_state["ist_anlage"]["anlage"]["anlage_standort"]}", "EUR€", 
                       berechnungen_pro_tag(st.session_state["ist_anlage"])["Kosten"],
-                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Kosten"])
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Kosten"]
+                      )
+plot_aufteilung_CO2(soll_anlage_standort, 
+                    berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"],
+                    berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"]
+                    )

@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from typing import Literal
+
+df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
 
 ## Helper für die Faktoreneingabe---------------------------------------------------------------
 # Helper für die Eingabeoberfläche für numerische Eingaben mit Standardcheckbox
@@ -243,6 +246,7 @@ def text_soll(
 DeltaColor = Literal["normal", "inverse", "off"] # Auswahl für deltacolor festlegen, um schreibfehler zu verhindern
 
 def plot_ldaten_rdiagramm(titel, wertart, ist_tag, neu_tag, unterschied: DeltaColor = "inverse"):
+    
     st.divider()
     st.header(titel)
 
@@ -285,3 +289,73 @@ def plot_ldaten_rdiagramm(titel, wertart, ist_tag, neu_tag, unterschied: DeltaCo
 
     st.divider()
 
+def plot_aufteilung_CO2(standort: str, kWh_ist_proTag: float, kWh_neu_proTag: float):
+
+    ENERGIE_SPALTEN = ["Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges"]
+
+    # --- Zeile für das Land holen ---
+    row_df = df_laender.loc[df_laender["Land"] == standort]
+    if row_df.empty:
+        st.error(f"Land '{standort}' nicht gefunden.")
+        return
+    land_row = row_df.iloc[0]
+
+    # --- CO2-Faktor-Zeile holen ---
+    co2_df = df_laender.loc[df_laender["Land"] == "CO2Faktor"]
+    if co2_df.empty:
+        st.error("Zeile 'CO2Faktor' nicht gefunden.")
+        return
+    co2_row = co2_df.iloc[0]
+
+    # --- Werte in floats ---
+    anteile_pct = pd.to_numeric(land_row[ENERGIE_SPALTEN], errors="coerce").fillna(0.0)   # %
+    co2_faktoren = pd.to_numeric(co2_row[ENERGIE_SPALTEN], errors="coerce").fillna(0.0)  # gCO2/kWh (Annahme)
+
+    # --- CO2 je Quelle berechnen (g/Tag) ---
+    def co2_g_pro_tag(kwh_pro_tag: float) -> pd.Series:
+        return kwh_pro_tag * (anteile_pct / 100.0) * co2_faktoren
+
+    co2_ist_g = co2_g_pro_tag(kWh_ist_proTag)
+    co2_neu_g = co2_g_pro_tag(kWh_neu_proTag)
+
+    gesamt_ist_kg = float(co2_ist_g.sum()) / 1000.0
+    gesamt_neu_kg = float(co2_neu_g.sum()) / 1000.0
+    diff_kg = gesamt_ist_kg - gesamt_neu_kg
+
+    # --- UI ---
+    show_anteile = st.checkbox("CO₂-Aufteilung nach Energiequelle anzeigen", value=True)
+
+    fig = go.Figure()
+
+    if show_anteile:
+        # Gestapelte Balken: IST vs NEU, aufgeteilt nach Quellen
+        for quelle in ENERGIE_SPALTEN:
+            fig.add_trace(go.Bar(
+                x=["IST", "NEU"],
+                y=[float(co2_ist_g[quelle]) / 1000.0, float(co2_neu_g[quelle]) / 1000.0],
+                name=quelle
+            ))
+
+        fig.update_layout(
+            title=f"CO₂-Aufteilung pro Tag (IST vs NEU) – {standort}",
+            xaxis_title="Zustand",
+            yaxis_title="CO₂ (kg/Tag)",
+            barmode="stack",
+            legend_title="Energiequelle"
+        )
+    else:
+        # Nur Gesamt: IST vs NEU
+        fig.add_trace(go.Bar(x=["IST", "NEU"], y=[gesamt_ist_kg, gesamt_neu_kg], name="Gesamt CO₂"))
+        fig.update_layout(
+            title=f"Gesamt CO₂ pro Tag (IST vs NEU) – {standort}",
+            xaxis_title="Zustand",
+            yaxis_title="CO₂ (kg/Tag)",
+        )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # --- Kennzahlen ---
+    c1, c2, c3 = st.columns(3)
+    c1.metric("IST CO₂ / Tag", f"{gesamt_ist_kg:,.2f} kg".replace(",", "X").replace(".", ",").replace("X", "."))
+    c2.metric("NEU CO₂ / Tag", f"{gesamt_neu_kg:,.2f} kg".replace(",", "X").replace(".", ",").replace("X", "."))
+    c3.metric("Ersparnis / Tag", f"{diff_kg:,.2f} kg".replace(",", "X").replace(".", ",").replace("X", "."))
