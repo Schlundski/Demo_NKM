@@ -192,17 +192,21 @@ def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, mu
         "Beharrungsleistung leer": leer_motor_leistung_beharrung,
     }
 
-def greiferhydraulik(betriebsdruck=170, volumenstrom=66, wirkungsgrad_greifer=0.9):
+def greiferhydraulik(betriebsdruck=170, volumenstrom=66, wirkungsgrad_greifer=0.9, anteil_bewegte_masse=0.15, 
+                     geschwindigkeit_m_pro_min=100, beschleunigung_m_pro_s2=0.5):
 
     """ Berechnung der benötigten elektrischen und mechanischen Leistung des Hydraulikgreifers
         Ausgegeben wird ein Dictionary mit folgenden Keys:
         
         Hydraulische Leistung
         Elektrische Leistung"""
-    leistung_hydraulisch = betriebsdruck * volumenstrom / 600
-    leistung_elektrisch = leistung_hydraulisch * wirkungsgrad_greifer
+    leistung_hydraulisch_beharrung = betriebsdruck * volumenstrom / 600
+    leistung_hydraulisch_beschleunigung = anteil_bewegte_masse * geschwindigkeit_m_pro_min * beschleunigung_m_pro_s2
 
-    return { "Hydraulische Leistung": leistung_hydraulisch, "Elektrische Leistung": leistung_elektrisch}
+    return { 
+        "Leistung Beharrung": leistung_hydraulisch_beharrung,
+        "Leistung Beschleunigung": leistung_hydraulisch_beschleunigung
+            }
 
 def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze, gewicht_kran, gewicht_seile, beschleunigung_mss,
                geschwindigkeit_mmin, drehzahl, massentraegheit, fahrwiderstand, motoranzahl, wirkungsgrad_getriebestufe, 
@@ -297,7 +301,7 @@ def berechnungen_pro_tag(dict):
         greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
         greifer_typ = dict_greifer["typ"]
     elif dict_greifer["typ"] == "Hydraulikgreifer":
-        greifer_leergewicht_t = dict_greifer["leergewicht_kg"]
+        greifer_leergewicht_kg = dict_greifer["leergewicht_kg"]
         greifer_volumen_m3 = dict_greifer["volumen_m3"]
         greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
         greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
@@ -385,7 +389,7 @@ def berechnungen_pro_tag(dict):
     if greifer_typ == "Vierseil-Greifer":
         df_mechleist_oeffnenschliessen_vierseil = mechleistunggreifervierseil(df_mechleist_hub_einlager["Beharrungsleistung voll"], hubwerk_hub_beschleunigung_m_pro_s2)
     elif greifer_typ == "Hydraulikgreifer":
-        df_mechleist_oeffnenschliessen_hydraulik = greiferhydraulik(greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min, greifer_wirkungsgrad_hydraulik)
+        df_mechleist_oeffnenschliessen_hydraulik = greiferhydraulik(greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min, greifer_wirkungsgrad_hydraulik, greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2)
     # endregion
 
     # region mechanische Energieberechnungen einzelne Vorgänge
@@ -459,8 +463,8 @@ def berechnungen_pro_tag(dict):
         
     elif greifer_typ == "Hydraulikgreifer":
         df_mechenergie_greifer_oeffnenschliessen_hydraulik = (
-            df_mechleist_oeffnenschliessen_hydraulik * df_spielzeiten_greifer["Beschleunigungszeit"] 
-            + df_mechleist_oeffnenschliessen_hydraulik["Beharrungsleistung"] * df_spielzeiten_greifer["Kontinuierliche Zeit"] 
+            df_mechleist_oeffnenschliessen_hydraulik["Leistung Beschleunigung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
+            + df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Kontinuierliche Zeit"] 
         )
     # endregion Greifer
     # endregion mechanische Energieberechnung

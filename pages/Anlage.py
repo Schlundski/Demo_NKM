@@ -12,6 +12,7 @@ set_background_auto_theme(
     "assets/bg_dark.jpg",
 )
 
+st.set_page_config(layout = "centered")
 
 check_login()
 

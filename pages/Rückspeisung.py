@@ -10,6 +10,7 @@ set_background_auto_theme(
     "assets/bg_dark.jpg",
 )
 
+st.set_page_config(layout = "centered")
 
 check_login()
 
@@ -17,15 +18,17 @@ st.session_state["ist_anlage"]["rueckspeisung"] = {}
 rueckspeisung_state = st.session_state["ist_anlage"]["rueckspeisung"]
 
 st.title("Rückspeisungen")
-
-rueckspeisung_greifer = rueckspeisung_standard(
-    "Rückspeisung Greifer", 
-    STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Greifer"], 
-    0, 0.01, 1, 
-    "rckspng_grfr", 
-    "Hat die Anlage eine Rückspeisung bei Greifer Öffnen/Schließen?", 
-    2
-)
+if (st.session_state["ist_anlage"]["greifer"]["typ"]=="Vierseil-Greifer"):
+    rueckspeisung_greifer = rueckspeisung_standard(
+        "Rückspeisung Greifer", 
+        STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Greifer"], 
+        0, 0.01, 1, 
+        "rckspng_grfr", 
+        "Hat die Anlage eine Rückspeisung bei Greifer Öffnen/Schließen?", 
+        2
+    )
+else:
+    rueckspeisung_greifer = [0,0]
 
 rueckspeisung_hub = rueckspeisung_standard(
     "Rückspeisung Hubfahrt",

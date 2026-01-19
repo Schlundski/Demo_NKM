@@ -24,6 +24,8 @@ check_login()
 
 def startseite():
 
+    st.set_page_config(layout = "centered")
+
     st.image("assets/Noell.jpg")
     st.markdown("""
              # 🏭Willkommen!
@@ -45,7 +47,8 @@ pg = st.navigation([
     st.Page("pages/Krananlage.py", title="Kran", icon="🏗️"),
     st.Page("pages/Wege.py", title="Wege", icon="📐"),
     st.Page("pages/Rückspeisung.py", title="Rückspeisung", icon="♻️"),
-    st.Page("pages/Auswertung.py", title="Auswertung", icon="📊")],
+    st.Page("pages/Auswertung.py", title="Auswertung", icon="📊"),
+    st.Page("pages/ModellQuellen.py", title="Modell&Quellen", icon="📖")]
     #position = "hidden"
     )
 pg.run()

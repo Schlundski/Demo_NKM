@@ -3,6 +3,8 @@
 
 import streamlit as st
 
+st.set_page_config(layout = "centered")
+
 def check_login():
     # secrets.toml lesen (lokal oder über streamlit-cloud)
     auth_section = st.secrets.get("auth", st.secrets)

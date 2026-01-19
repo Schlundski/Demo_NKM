@@ -22,6 +22,7 @@ STANDARDWERTE = {
             "Greiferart": "Hydraulikgreifer",
             "Oeffnungszeit": 6,                 #s
             "Schliesszeit": 10.5,               #s
+            "Anteil bewegte Masse": 0.15        #%
             
         },
         "Vierseil-Mehrschalen Müllgreifer MRS Greifer 1-26-6315-6316":
@@ -71,7 +72,10 @@ STANDARDWERTE = {
         "Trichterweg 4": 55,                    #m
         "Trichterweg 5": 70,                    #m
         "Trichterweg 6": 85,                    #m
-        "Trichterweg 7": 100                    #m
+        "Trichterweg 7": 100,                   #m
+        "Trichterweg 8": 115,                    #m
+        "Trichterweg 9": 130,                   #m
+        "Trichterweg 10": 145,                  #m
     },
 
     "Hubwerk": {#Werte aus 831022M.010000-8_Motorgreifer

@@ -1,5 +1,5 @@
 import streamlit as st
-from ui.components import number_standard, number_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard, plot_aufteilung_CO2
+from ui.components import number_standard, number_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard, plot_aufteilung_CO2, plot_slider_global
 from auth import check_login
 from core.computing import mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechnungen_pro_tag
 import pandas as pd
@@ -12,7 +12,6 @@ set_background_auto_theme(
     "assets/bg_light.jpg",
     "assets/bg_dark.jpg",
 )
-
 
 st.set_page_config(layout = "wide")
 check_login()
@@ -195,6 +194,12 @@ with st.expander("Parameter für Modernisierung", False):
                 ist_greifer_state["betriebsdruck_bar"],
                 0, 1, 300,
                 "soll_betdruck",
+            )
+            soll_ant_bew_masse = number_standard(
+                "Anteil der bewegten Masse am Greifer [%]",
+                ist_greifer_state["anteil_bew_masse"],
+                0,0.1,1,
+                "soll_antbewma"
             )
         else:
             st.write("Bitte wählen Sie die Art des Greifers aus")
@@ -613,14 +618,17 @@ with st.expander("Parameter für Modernisierung", False):
         soll_rueckspeisung_state = st.session_state["neu_anlage"]["rueckspeisung"]
         ist_rueckspeisung_state = ist_state["rueckspeisung"]
 
-        soll_rueckspeisung_greifer = rueckspeisung_standard(
-            "Rückspeisung Greifer", 
-            ist_rueckspeisung_state["FU-Wirkungsgrad greifer"] or STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Greifer"], 
-            0, 0.01, 1, 
-            "soll_rckspng_grfr", 
-            "Hat die Anlage eine Rückspeisung bei Greifer Öffnen/Schließen?", 
-            2
-        )
+        if (soll_auswahl=="Vierseil-Greifer"):
+            soll_rueckspeisung_greifer = rueckspeisung_standard(
+                "Rückspeisung Greifer", 
+                ist_rueckspeisung_state["FU-Wirkungsgrad greifer"] or STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Greifer"], 
+                0, 0.01, 1, 
+                "soll_rckspng_grfr", 
+                "Hat die Anlage eine Rückspeisung bei Greifer Öffnen/Schließen?", 
+                2
+            )
+        else:
+            soll_rueckspeisung_greifer = [0,0]
 
         soll_rueckspeisung_hub = rueckspeisung_standard(
             "Rückspeisung Hubfahrt",
@@ -683,6 +691,7 @@ elif soll_auswahl == std.hydr["Greiferart"]:
             "wirkungsgrad_hydraulik": soll_n_hydr_motor,# type: ignore[possibly-unbound]
             "volumenstrom_l_pro_min": soll_volumenstrom,# type: ignore[possibly-unbound]
             "betriebsdruck_bar": soll_betriebsdruck,    # type: ignore[possibly-unbound]
+            "anteil_bew_masse": soll_ant_bew_masse,      # type: ignore[possibly-unbound]
         }
         )   
 soll_kran_state.update(
@@ -752,23 +761,31 @@ soll_rueckspeisung_state.update(
 # Visualisierung der Berechnungen
 
 with st.expander("Debug session state", False):
-    st.write("neu:", st.session_state["neu_anlage"])
-    st.write("ist:", st.session_state["ist_anlage"])
+    st.write(st.session_state)
 
 st.write("Visualisierungen:")
+faktor = plot_slider_global()
 plot_ldaten_rdiagramm("Energieverbrauch", "kWh",  
                       berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"],
-                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"]
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"],
+                      faktor
                       )
-plot_ldaten_rdiagramm("Energierückspeisung", "kWh",  
+plot_ldaten_rdiagramm("Energierückspeisung", "kWh",
                       berechnungen_pro_tag(st.session_state["ist_anlage"])["Rückspeisung"],
                       berechnungen_pro_tag(st.session_state["neu_anlage"])["Rückspeisung"],
-                      "normal")
-plot_ldaten_rdiagramm(f"Approximierte Kosten in {st.session_state["ist_anlage"]["anlage"]["anlage_standort"]}", "EUR€", 
-                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Kosten"],
-                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Kosten"]
+                      faktor, "normal"
                       )
-plot_aufteilung_CO2(soll_anlage_standort, 
+plot_ldaten_rdiagramm(f"Approximierte Betriebskosten in {st.session_state["ist_anlage"]["anlage"]["anlage_standort"]}", "EUR€",
+                      berechnungen_pro_tag(st.session_state["ist_anlage"])["Kosten"],
+                      berechnungen_pro_tag(st.session_state["neu_anlage"])["Kosten"],
+                      faktor
+                      )
+plot_aufteilung_CO2(soll_anlage_standort,
                     berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"],
-                    berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"]
+                    berechnungen_pro_tag(st.session_state["neu_anlage"])["Verbrauch"],
+                    faktor
                     )
+
+button = st.button("Woher kommen die Werte?")
+if button:
+    st.switch_page("pages/ModellQuellen.py")
