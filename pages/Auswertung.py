@@ -694,10 +694,6 @@ soll_rueckspeisung_state.update(
 
 # Visualisierung der Berechnungen
 
-with st.expander("Debug session state", False):
-    st.write(st.session_state)
-
-st.write("Visualisierungen:")
 faktor = plot_slider_global()
 plot_ldaten_rdiagramm("Energieverbrauch", "kWh",  
                       berechnungen_pro_tag(st.session_state["ist_anlage"])["Verbrauch"],
