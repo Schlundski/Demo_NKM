@@ -244,23 +244,6 @@ with st.expander("Parameter für Modernisierung", False):
                 5,
                 "soll_hubbeschl",
             )
-            soll_motordrehzahl_hub = number_soll(
-                "Motordrehzahl Hubwerk [1/min]",
-                ist_kran_hub_state["motordrehzahl_1_pro_min"],
-                0,
-                1,
-                5000,
-                "soll_motdreh_hub",
-            )
-            soll_massentraegheit_hub = number_soll(
-                "Massenträgheit Hubwerk [kg·m²]",
-                ist_kran_hub_state["massenträgheit_kgm2"],
-                0,
-                0.001,
-                100,
-                "soll_massentr_hub",
-                nachkommastellen=3
-            )
             soll_anzahl_motoren_hub = number_soll(
                 "Anzahl Motoren Hubwerk",
                 ist_kran_hub_state["anzahl_motoren"],
@@ -305,13 +288,12 @@ with st.expander("Parameter für Modernisierung", False):
                 greifer_volumen = soll_vol_greifer,             # type: ignore[possibly-unbound]
                 muell_dichte = soll_müll_dichte_beschickung,
                 geschwindigkeit_mmin = soll_hub_geschwindigkeit,
-                beschleunigung_m_ss = soll_hub_beschleunigung,
+                beschleunigung_zeit = soll_hub_geschwindigkeit / 60 / soll_hub_beschleunigung,
                 wirkungsgrad_seiltrieb = soll_wirkungsgrad_seiltrieb,
                 wirkungsgrad_getriebestufe = soll_wirkungsgrad_getr_stufe_hub,
-                drehzahl = soll_motordrehzahl_hub,
                 getriebestufen = soll_getriebestufen_hub,
                 motor_anzahl = soll_anzahl_motoren_hub,
-                massentraegheit= soll_massentraegheit_hub
+                belastungsfaktor=1.55
             )["Motorauswahl"]
             number_soll("Von uns gewählte Hubmotorleistung [kW]", 
                             soll_motor_hub, 
@@ -350,23 +332,6 @@ with st.expander("Parameter für Modernisierung", False):
                 0.01,
                 5,
                 "soll_beschlkatze",
-            )
-            soll_motordrehzahl_katze = number_soll(
-                "Motordrehzahl Katze [1/min]",
-                ist_kran_katz_state["motordrehzahl_1_pro_min"],
-                0,
-                1,
-                5000,
-                "soll_motdrehkatze",
-            )
-            soll_massentraegheit_katze = number_soll(
-                "Massenträgheit Katze [kg·m²]",
-                ist_kran_katz_state["massenträgheit_kgm2"],
-                0,
-                0.001,
-                100,
-                "soll_massentrkatze",
-                nachkommastellen=3
             )
             soll_anzahl_motoren_katze = number_soll(
                 "Anzahl Motoren Katze",
@@ -413,12 +378,12 @@ with st.expander("Parameter für Modernisierung", False):
                 muell_dichte = soll_müll_dichte_beschickung,
                 gewicht_katze = soll_gewicht_katze,
                 geschwindigkeit_mmin = soll_geschwindigkeit_katze,
-                beschleunigung_m_ss = soll_geschwindigkeit_katze/60/soll_beschleunigung_katze,
-                drehzahl = int(soll_motordrehzahl_katze),
                 fahrwerkwiderstand = soll_fahrwiderstand_katze,
                 getriebestufen = int(soll_getriebestufen_katze),
                 wirkungsgrad_getriebestufe = soll_wirkungsgrad_getr_stufe_katze,
-                massentraegheit = soll_massentraegheit_katze,
+                motorzahl = int(soll_anzahl_motoren_katze),
+                beschleunigungszeit = int(soll_geschwindigkeit_katze / 60.0 / soll_beschleunigung_katze),
+                belastungsfaktor=1.55
                 )["Motorauswahl"]
             number_soll("Von uns gewählte Katzmotorleistung [kW]", 
                             soll_mot_katze, 
@@ -455,23 +420,6 @@ with st.expander("Parameter für Modernisierung", False):
                 0.1,
                 5,
                 "soll_beschlkran",
-            )
-            soll_motordrehzahl_kran = number_soll(
-                "Motordrehzahl Kran [1/min]",
-                ist_kran_kran_state["motordrehzahl_1_pro_min"],
-                0,
-                1,
-                5000,
-                "soll_motdrehkran",
-            )
-            soll_massentraegheit_kran = number_soll(
-                "Massenträgheit Kran [kg·m²]",
-                ist_kran_kran_state["massenträgheit_kgm2"],
-                0,
-                0.001,
-                100,
-                "soll_massentrkran",
-                nachkommastellen=3
             )
             soll_anzahl_motoren_kran = number_soll(
                 "Anzahl Motoren Kran",
@@ -524,14 +472,13 @@ with st.expander("Parameter für Modernisierung", False):
                 gewicht_katze = soll_gewicht_katze,
                 gewicht_kran = soll_gewicht_kran,
                 gewicht_seile = soll_seilgewicht,
-                beschleunigung_mss = soll_beschleunigung_kran,
                 geschwindigkeit_mmin = soll_geschwindigkeit_kran,
-                drehzahl = soll_motordrehzahl_kran,
-                massentraegheit = soll_massentraegheit_kran,
                 fahrwiderstand = soll_fahrwiderstand_kran,
                 motoranzahl = soll_anzahl_motoren_kran,
                 wirkungsgrad_getriebestufe = soll_wirkungsgrad_getr_stufe_kran,
-                getriebestufen = soll_getriebestufen_kran
+                getriebestufen = soll_getriebestufen_kran,
+                beschleunigungszeit=int(soll_geschwindigkeit_kran / 60 / soll_beschleunigung_kran),
+                belastungsfaktor=1.55
             )["Motorauswahl"]
             number_soll("Von uns gewählte Kranmotorleistung [kW]", 
                             soll_motor_kran, 
@@ -700,8 +647,6 @@ soll_kran_state.update(
             "seilgewicht_kg": soll_seilgewicht,
             "hub_geschwindigkeit_m_pro_min": soll_hub_geschwindigkeit,
             "hub_beschleunigung_m_pro_s2": soll_hub_beschleunigung,
-            "motordrehzahl_1_pro_min": soll_motordrehzahl_hub,
-            "massenträgheit_kgm2": soll_massentraegheit_hub,
             "anzahl_motoren": soll_anzahl_motoren_hub,
             "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_hub,
             "wirkungsgrad_seiltrieb": soll_wirkungsgrad_seiltrieb,
@@ -712,8 +657,6 @@ soll_kran_state.update(
             "gewicht_kg": soll_gewicht_katze,
             "geschwindigkeit_m_pro_min": soll_geschwindigkeit_katze,
             "beschleunigung_m_pro_s2": soll_beschleunigung_katze,
-            "motordrehzahl_1_pro_min": soll_motordrehzahl_katze,
-            "massenträgheit_kgm2": soll_massentraegheit_katze,
             "anzahl_motoren": soll_anzahl_motoren_katze,
             "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_katze,
             "getriebestufen": soll_getriebestufen_katze,
@@ -724,8 +667,6 @@ soll_kran_state.update(
             "gewicht_kg": soll_gewicht_kran,
             "geschwindigkeit_m_pro_min": soll_geschwindigkeit_kran,
             "beschleunigung_m_pro_s2": soll_beschleunigung_kran,
-            "motordrehzahl_1_pro_min": soll_motordrehzahl_kran,
-            "massenträgheit_kgm2": soll_massentraegheit_kran,
             "anzahl_motoren": soll_anzahl_motoren_kran,
             "wirkungsgrad_getriebe": soll_wirkungsgrad_getr_stufe_kran,
             "wirkungsgrad_vorgelege": soll_wirkungsgrad_vorgelege,

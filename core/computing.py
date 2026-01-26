@@ -77,122 +77,108 @@ def muellberechnung(
     }
 
 # Mechanische Leistungsberechnungen
-def mechleistungkatzfahrt(gewicht_seile, gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze, geschwindigkeit_mmin, beschleunigung_m_ss, drehzahl=0, 
-                          fahrwerkwiderstand=9.0, getriebestufen=3, wirkungsgrad_getriebestufe=0.980, massentraegheit=0.01, 
-                          belastungsfaktor=1.55, motorzahl=1):
-    
-    """ 
+def mechleistungkatzfahrt(gewicht_seile, gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze, geschwindigkeit_mmin,
+                          fahrwerkwiderstand=9.0, getriebestufen=3, wirkungsgrad_getriebestufe=0.980,  
+                          motorzahl=1, beschleunigungszeit = 0, belastungsfaktor=1.55):
+   
+    """
     Funktion zur Berechnung der mech Leistung der Katzfahrt
     Ausgegeben wird ein Dict mit folgenden keys:
-    Mindestmotorleistung kW
-    Motorauswahl
-    Beschleunigungsleistungen kW
+                Motorauswahl
+                Beschleunigungsleistungen
+                Beharrungsleistung
+                Beschleunigungsleistungen_leer
+                Beharrungsleistung_leer
     """
-
+ 
     # Greifer voll
-    gewicht_greifer_voll = (greifer_volumen * muell_dichte) + gewicht_greifer_leer  # [kg]  = ( [m³] * [kg/m³] ) + [kg]
-    geschwindigkeit_ms = float(geschwindigkeit_mmin) / 60                           # [m/s] = [m/min] / 60
-    wirkungsgrad_getriebe = wirkungsgrad_getriebestufe ** getriebestufen            # [1]   = [1]^[1]
-    gewicht_gesamt = gewicht_greifer_voll + gewicht_katze + gewicht_seile           # [kg]  = [kg] + [kg] + [kg]
-
-    motor_leistung_beharrung = (fahrwerkwiderstand / 1000) * gewicht_gesamt * 9.81 * geschwindigkeit_ms / wirkungsgrad_getriebe / 1000  # [kW] = ([kg/t] / 1000 ) · [kg] · [m/s²] · [m/s] / [1] / 1000
-    motor_leistung_beschl_translatorisch = gewicht_gesamt * geschwindigkeit_ms * beschleunigung_m_ss / wirkungsgrad_getriebe / 1000     # [kW] = [kg] * [m/s] [m/s²] / [1] / 1000
-    omega = 2 * numpy.pi * drehzahl / 60                 # [1/s]    = 2 * pi * [1/min] / 60
-    radius_eff_m = 0.20 # geschätzter Allgemeinwert zur Vereinfachung
-    alpha = beschleunigung_m_ss / radius_eff_m           # [1/s²]   = [m/s²] / [m]
-    motor_leistung_beschl_rotierend = massentraegheit * alpha * omega / wirkungsgrad_getriebe / 1000        # [kW] = [kg*m²] * [1/s²]] * [1/s] / [1] / 1000
-
-    motor_leistung_min = (motor_leistung_beharrung + motor_leistung_beschl_translatorisch + motor_leistung_beschl_rotierend) / motorzahl / belastungsfaktor
-    # [kW] = ( [kW] + [kW] + [kW] ) / [1] / [1]
-    
+    gewicht_greifer_voll =      (greifer_volumen * muell_dichte) + gewicht_greifer_leer                                 # [kg]  = ( [m³] * [kg/m³] ) + [kg]
+    geschwindigkeit_ms =        float(geschwindigkeit_mmin) / 60                                                        # [m/s] = [m/min] / 60
+    wirkungsgrad_getriebe =     wirkungsgrad_getriebestufe ** getriebestufen                                            # [1]   = [1]^[1]
+    gewicht_gesamt =            gewicht_greifer_voll + gewicht_katze + gewicht_seile                                    # [kg]  = [kg] + [kg] + [kg]
+ 
+    motor_leistung_beharrung =  (fahrwerkwiderstand / 1000) * gewicht_gesamt * 9.81 * geschwindigkeit_ms \
+                                    / wirkungsgrad_getriebe / 1000                                                      # [kW] = ([kg/t] / 1000 ) · [kg] · [m/s²] · [m/s] / [1] / 1000
+   
+    motor_leistung_beschl =     gewicht_gesamt * 0.5 * geschwindigkeit_ms ** 2 \
+                                    / beschleunigungszeit / wirkungsgrad_getriebe / 1000                                # [kW] = [kg] * [1] * [(m/s)²] / ([m/s] / [m/s²]) * [1] / 1000
+ 
+ 
+    motor_leistung_min =        motor_leistung_beharrung / motorzahl * belastungsfaktor       # [kW] = [kW] / [1] * [1]
+   
     motor_auswahl = 0 # variableninitialisierung
     for leistung in Motorleistungen:
-        if leistung > (motor_leistung_min*1.1/1000): 
+        if leistung > motor_leistung_min:
             motor_auswahl = leistung
             break
-
-    motor_leistung_beschl_summe = motor_leistung_beschl_translatorisch + motor_leistung_beschl_rotierend    
-
-    # Greifer leer
-    wirkungsgrad_getriebe = wirkungsgrad_getriebestufe ** getriebestufen
-    gewicht_gesamt_leer = gewicht_greifer_leer + gewicht_katze + gewicht_seile
-
-    motor_leistung_beharrung_leer = fahrwerkwiderstand * gewicht_gesamt_leer * 9.81 * geschwindigkeit_ms / wirkungsgrad_getriebe / 1000
-    motor_leistung_beschl_translatorisch_leer = gewicht_gesamt_leer * geschwindigkeit_ms**2 / beschleunigung_m_ss / wirkungsgrad_getriebe
-    motor_leistung_beschl_rotierend_leer = numpy.pi * drehzahl**2 * massentraegheit / 30 / 9550 / beschleunigung_m_ss
-
-    motor_leistung_leer = (motor_leistung_beharrung_leer + motor_leistung_beschl_translatorisch_leer + motor_leistung_beschl_rotierend_leer) / motorzahl / belastungsfaktor
-    motor_leistung_beschl_leer = (motor_leistung_beschl_rotierend_leer + motor_leistung_beschl_translatorisch_leer)
-
+ 
+    # Greifer leer                                     # [1] = [1] ** [1]
+    gewicht_gesamt_leer =           gewicht_greifer_leer + gewicht_katze + gewicht_seile                                # [kg] = [kg] + [kg] + [kg]
+ 
+    motor_leistung_beharrung_leer = (fahrwerkwiderstand / 1000) * gewicht_gesamt_leer * 9.81 * geschwindigkeit_ms \
+                                        / wirkungsgrad_getriebe / 1000                                                  # [kW] = ([kg/t] / 1000 ) · [kg] · [m/s²] · [m/s] / [1] / 1000
+    motor_leistung_beschl_leer =    gewicht_gesamt_leer * 0.5 * geschwindigkeit_ms ** 2 \
+                                        / beschleunigungszeit / wirkungsgrad_getriebe / 1000                            # [kW] = [kg] * [1] * [(m/s)²] / ([m/s] / [m/s²]) * [1] / 1000                                                                 # [kW] = ([kW] + [kW]) / [1]
+ 
     return {
-                "Mindestmotorleistung": motor_leistung_min,
                 "Motorauswahl": motor_auswahl,
-                "Beschleunigungsleistungen": motor_leistung_beschl_summe,
+                "Beschleunigungsleistungen": motor_leistung_beschl,
                 "Beharrungsleistung": motor_leistung_beharrung,
-                "Motorleistung_leer": motor_leistung_leer,
                 "Beschleunigungsleistungen_leer": motor_leistung_beschl_leer,
                 "Beharrungsleistung_leer": motor_leistung_beharrung_leer
     }
 
 def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, muell_dichte, geschwindigkeit_mmin, 
-                         beschleunigung_m_ss, wirkungsgrad_seiltrieb, wirkungsgrad_getriebestufe, 
-                        drehzahl, getriebestufen, motor_anzahl, massentraegheit):
+                         beschleunigung_zeit, wirkungsgrad_seiltrieb, wirkungsgrad_getriebestufe, 
+                         getriebestufen, motor_anzahl, belastungsfaktor=1.55):
     
     """ Berechnen der mechanischen Leistungswerte des Hubwerkes. Ausgegeben wird ein Dict mit folgenden Keys:
         Motorauswahl
-        Gesamtleistung voll
         Gesamtbeschleunigungsleistung voll
         Beharrungsleistung voll
-        Gesamtleistung leer
         Gesamtbeschleunigungsleistung leer
         Beharrungleistung leer
     """
 
     #  Grundlegende Berechnungen
-    geschwindigkeit_ms = geschwindigkeit_mmin / 60
-    wirkungsgrad_gesamt = wirkungsgrad_getriebestufe**getriebestufen * wirkungsgrad_seiltrieb
+    geschwindigkeit_ms = geschwindigkeit_mmin / 60                                              # [m/s] = [m/min] / 60
+    wirkungsgrad_gesamt = wirkungsgrad_getriebestufe**getriebestufen * wirkungsgrad_seiltrieb   # [1]   = [1]^[1] * [1]
 
     # Berechnungen bei vollem Greifer (Hauptsächlich Heben)
-    voll_gewicht_greifer = (greifer_volumen * muell_dichte) + gewicht_greifer_leer
-    voll_gewicht_gesamt = gewicht_seile + voll_gewicht_greifer
+    voll_gewicht_greifer = (greifer_volumen * muell_dichte) + gewicht_greifer_leer              # [kg]  = ( [m³] * [kg/m³] ) + [kg]
+    voll_gewicht_gesamt = gewicht_seile + voll_gewicht_greifer                                  # [kg]  = [kg] + [kg]
 
-    voll_motor_leistung_beharrung = voll_gewicht_gesamt * 9.81 * geschwindigkeit_ms * wirkungsgrad_gesamt
-    voll_motor_leistung_beschl_translatorisch = voll_gewicht_gesamt * geschwindigkeit_ms**2 / beschleunigung_m_ss / wirkungsgrad_gesamt
-    voll_motor_leistung_beschl_rotatorisch = numpy.pi * drehzahl**2 * massentraegheit / 30 / 9550 / beschleunigung_m_ss
+    voll_motor_leistung_beharrung = voll_gewicht_gesamt * 9.81 * geschwindigkeit_ms \
+        / wirkungsgrad_gesamt / 1000                                                            # [kW] = [kg] * [m/s²] * [m/s] / [1] / 1000
+    voll_motor_leistung_beschleunigung_gesamt = (voll_gewicht_gesamt * 0.5 \
+        * geschwindigkeit_ms**2) / (beschleunigung_zeit * wirkungsgrad_gesamt) / 1000           # [kW] = [kg] * 0.5 * [m²/s²] / [s] / [1] / 1000
 
-    voll_motor_leistung_beschl_gesamt = voll_motor_leistung_beschl_translatorisch + voll_motor_leistung_beschl_rotatorisch
-    voll_motor_leistung_gesamt = voll_motor_leistung_beharrung + voll_motor_leistung_beschl_rotatorisch + voll_motor_leistung_beschl_translatorisch
-
-    motor_leistung_min = voll_motor_leistung_beharrung / motor_anzahl
+    motor_leistung_min = voll_motor_leistung_beharrung / motor_anzahl * belastungsfaktor        # [kW] = [kW] / [1] * [1]
     
     motor_auswahl = 0 # variableninitialisierung
     for leistung in Motorleistungen:
-        if leistung > (motor_leistung_min / 1000): 
+        if leistung > motor_leistung_min: 
             motor_auswahl = leistung
             break
 
     # Berechnung bei leerem Greifer (Hauptsächlich Senken)
-    leer_gewicht_greifer = gewicht_greifer_leer
-    leer_gewicht_gesamt = gewicht_seile + leer_gewicht_greifer
+    leer_gewicht_greifer = gewicht_greifer_leer                                                 # [kg]  = [kg]
+    leer_gewicht_gesamt = gewicht_seile + leer_gewicht_greifer                                  # [kg]  = [kg] + [kg]
 
-    leer_motor_leistung_beharrung = leer_gewicht_gesamt * 9.81 * geschwindigkeit_ms * wirkungsgrad_gesamt
-    leer_motor_leistung_beschl_translatorisch = leer_gewicht_gesamt * geschwindigkeit_ms**2 / beschleunigung_m_ss / wirkungsgrad_gesamt
-    leer_motor_leistung_beschl_rotatorisch = numpy.pi * drehzahl**2 * massentraegheit / 30 / 9550 / beschleunigung_m_ss
-
-    leer_motor_leistung_beschl_gesamt = leer_motor_leistung_beschl_translatorisch + leer_motor_leistung_beschl_rotatorisch
-    leer_motor_leistung_gesamt = leer_motor_leistung_beharrung + leer_motor_leistung_beschl_rotatorisch + leer_motor_leistung_beschl_translatorisch
+    leer_motor_leistung_beharrung = leer_gewicht_gesamt * 9.81 * geschwindigkeit_ms \
+        / wirkungsgrad_gesamt / 1000                                                            # [kW] = [kg] * [m/s²] * [m/s] / [1] / 1000
+    leer_motor_leistung_beschleunigung_gesamt = (leer_gewicht_gesamt * 0.5 * \
+        geschwindigkeit_ms**2) / (beschleunigung_zeit * wirkungsgrad_gesamt) / 1000             # [kW] = [kg] * 0.5 * [m²/s²] / [s] / [1] / 1000
 
     return {
         "Motorauswahl": motor_auswahl,
-        "Gesamtleistung voll": voll_motor_leistung_gesamt,
-        "Gesamtbeschleunigungsleistung voll": voll_motor_leistung_beschl_gesamt,
+        "Gesamtbeschleunigungsleistung voll": voll_motor_leistung_beschleunigung_gesamt,
         "Beharrungsleistung voll": voll_motor_leistung_beharrung,
-        "Gesamtleistung leer": leer_motor_leistung_gesamt,
-        "Gesamtbeschleunigungsleistung leer": leer_motor_leistung_beschl_gesamt,
+        "Gesamtbeschleunigungsleistung leer": leer_motor_leistung_beschleunigung_gesamt,
         "Beharrungsleistung leer": leer_motor_leistung_beharrung,
     }
 
-def greiferhydraulik(leergewicht=3050,betriebsdruck=170, volumenstrom=66, wirkungsgrad_greifer=0.9, anteil_bewegte_masse=0.15, 
+def greiferhydraulik(leergewicht=3050,betriebsdruck=170, volumenstrom=66, anteil_bewegte_masse=0.15, 
                      geschwindigkeit_m_pro_min=100, beschleunigung_m_pro_s2=0.5):
 
     """ Berechnung der benötigten elektrischen und mechanischen Leistung des Hydraulikgreifers
@@ -208,59 +194,60 @@ def greiferhydraulik(leergewicht=3050,betriebsdruck=170, volumenstrom=66, wirkun
         "Leistung Beschleunigung": leistung_hydraulisch_beschleunigung
             }
 
-def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze, gewicht_kran, gewicht_seile, beschleunigung_mss,
-               geschwindigkeit_mmin, drehzahl, massentraegheit, fahrwiderstand, motoranzahl, wirkungsgrad_getriebestufe, 
-               getriebestufen, belastungsfaktor=1.5):
-    
-    """ 
+def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze, gewicht_kran, gewicht_seile,
+               geschwindigkeit_mmin, fahrwiderstand, motoranzahl, wirkungsgrad_getriebestufe,
+               getriebestufen, beschleunigungszeit = 0, belastungsfaktor=1.55):
+   
+    """
         Funktion berechnet die mech Leistung der Kranfahrt und gibt die Mindestleistung und den nächstgrößeren Motor aus.
         Ebenfalls wird die Summe der Beschleunigungsleistungen ausgegeben (Ohne weitere Berechnung, wie aufteilung auf Motoren etc.)
-
+ 
         Ausgegeben wird ein Dict mit folgenden Keys:
-        Mindestleistung
         Motorauswahl
         Beschleunigungsleistungen
+        Beharrungsleistung
+        Beschleunigungsleistungen_leer
+        Beharrungsleistung_leer
     """
-    
-    gewicht_greifer_voll = (greifer_volumen * muell_dichte) + gewicht_greifer_leer
-    gewicht_gesamt = gewicht_greifer_voll + gewicht_katze + gewicht_kran + gewicht_seile
-    geschwindigkeit_ms = geschwindigkeit_mmin / 60
-    wirkungsgrad_getriebe = wirkungsgrad_getriebestufe**getriebestufen
-
-    motor_leistung_beharrung = gewicht_gesamt * fahrwiderstand * 9.81 * geschwindigkeit_ms / wirkungsgrad_getriebe / 1000
-    motor_leistung_beschl_translatorisch = gewicht_gesamt * beschleunigung_mss * geschwindigkeit_ms / wirkungsgrad_getriebe
-    motor_leistung_beschl_rotation = numpy.pi * drehzahl**2 * massentraegheit / 30 / 9550 / (geschwindigkeit_ms/beschleunigung_mss)
-
-    motor_leistung_min = (motor_leistung_beharrung + motor_leistung_beschl_rotation + motor_leistung_beschl_translatorisch) \
-                            / belastungsfaktor / motoranzahl
-    
-    motor_leistung_beschl_gesamt = motor_leistung_beschl_translatorisch + motor_leistung_beschl_rotation
-    
+   
+    gewicht_greifer_voll = (greifer_volumen * muell_dichte) + gewicht_greifer_leer                      # [kg] = ([m³] * [kg/m³]) + [kg]
+    gewicht_gesamt = gewicht_greifer_voll + gewicht_katze + gewicht_kran + gewicht_seile                # [kg] = [kg] + [kg] + [kg]
+    geschwindigkeit_ms = geschwindigkeit_mmin / 60                                                      # [m/s] = [m/min] / 60
+    wirkungsgrad_getriebe = wirkungsgrad_getriebestufe ** getriebestufen                                # [1] = [1] * [1]
+ 
+ 
+    # Berechnungen bei vollem Greifer
+    motor_leistung_beharrung =  (fahrwiderstand / 1000) * gewicht_gesamt * 9.81 * geschwindigkeit_ms \
+                                    / wirkungsgrad_getriebe / 1000                                      # [kW] = ([kg/t] / 1000 ) · [kg] · [m/s²] · [m/s] / [1] / 1000
+ 
+    motor_leistung_beschl =     gewicht_gesamt * 0.5 * geschwindigkeit_ms ** 2 \
+                                    / beschleunigungszeit / wirkungsgrad_getriebe / 1000                # [kW] = [kg] * [1] * [(m/s)²] / ([m/s] / [m/s²]) * [1] / 1000
+ 
+    motor_leistung_min = (motor_leistung_beharrung) / motoranzahl * belastungsfaktor                    # [kW] = [kW] / [1] * [1]
+   
     motor_auswahl = 0 # variableninitialisierung
     for leistung in Motorleistungen:
-        if leistung > (motor_leistung_min/1000): 
+        if leistung > (motor_leistung_min):
             motor_auswahl = leistung
             break
-
-    gewicht_gesamt_leer = gewicht_greifer_leer + gewicht_katze + gewicht_kran + gewicht_seile
-    motor_leistung_beharrung_leer = gewicht_gesamt_leer * fahrwiderstand * 9.81 * geschwindigkeit_ms / wirkungsgrad_getriebe / 1000
-    motor_leistung_beschl_translatorisch_leer = gewicht_gesamt_leer * beschleunigung_mss * geschwindigkeit_ms / wirkungsgrad_getriebe
-    motor_leistung_beschl_rotation_leer = numpy.pi * drehzahl**2 * massentraegheit / 30 / 9550 / (geschwindigkeit_ms/beschleunigung_mss)
-
-    motor_leistung_leer = (motor_leistung_beharrung_leer + motor_leistung_beschl_rotation_leer + motor_leistung_beschl_translatorisch_leer) \
-                            / belastungsfaktor / motoranzahl
-    
-    motor_leistung_beschl_gesamt_leer = motor_leistung_beschl_translatorisch_leer + motor_leistung_beschl_rotation_leer
+ 
+    # Berechnungen bei leerem Greifer
+    gewicht_gesamt_leer = gewicht_greifer_leer + gewicht_katze + gewicht_kran + gewicht_seile           # [kg] = [kg] + [kg] + [kg]
+ 
+    motor_leistung_beharrung_leer =  (fahrwiderstand / 100) * gewicht_gesamt_leer * 9.81 * geschwindigkeit_ms \
+                                        / wirkungsgrad_getriebe / 1000                                  # [kW] = ([kg/t] / 1000 ) · [kg] · [m/s²] · [m/s] / [1] / 1000
+    motor_leistung_beschl_leer =    gewicht_gesamt_leer * 0.5 * geschwindigkeit_ms ** 2 \
+                                        / beschleunigungszeit / wirkungsgrad_getriebe / 1000            # [kW] = [kg] * [1] * [(m/s)²] / ([m/s] / [m/s²]) * [1] / 1000
+ 
+   
     return {
-        "Mindestleistung" : motor_leistung_min,
         "Motorauswahl" : motor_auswahl,
-        "Beschleunigungsleistungen": motor_leistung_beschl_gesamt,
+        "Beschleunigungsleistungen": motor_leistung_beschl,
         "Beharrungsleistung": motor_leistung_beharrung,
-        "Motorleistung_leer": motor_leistung_leer,
-        "Beschleunigungsleistungen_leer": motor_leistung_beschl_gesamt_leer,
+        "Beschleunigungsleistungen_leer": motor_leistung_beschl_leer,
         "Beharrungsleistung_leer": motor_leistung_beharrung_leer
     }
-
+ 
 def mechleistunggreifervierseil(hubvorgang_beharrung, hubvorgang_beschl):
     """Die mechanische Leistungsberechnung des Greifers ergibt sich als Erfahrungswert aus einem Drittel des Hubvorganges
     Ausgegeben wird ein Dictionary mit den Key 'Beharrungsleistung' und 'Beschleunigungsleistung'
@@ -367,29 +354,28 @@ def berechnungen_pro_tag(dict):
     # endregion
 
     # region grundlegende mechanische Leistungsberechnungen
-    df_mechleist_katz_einlager = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg, 
-                                                       katze_geschwindigkeit_m_pro_min, katze_beschleunigung_m_pro_s2, katze_motordrehzahl_1_pro_min, katze_fahrwiderstand_kg_pro_t,
-                                                       katze_getriebestufen, katze_wirkungsgrad_getriebe, katze_massenträgheit_kgm2, motorzahl = katze_anzahl_motoren)
-    df_mechleist_katz_beschick = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, katze_gewicht_kg, 
-                                                       katze_geschwindigkeit_m_pro_min, katze_beschleunigung_m_pro_s2, katze_motordrehzahl_1_pro_min, katze_fahrwiderstand_kg_pro_t,
-                                                       katze_getriebestufen, katze_wirkungsgrad_getriebe, katze_massenträgheit_kgm2, motorzahl = katze_anzahl_motoren)
+    df_mechleist_katz_einlager = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg,
+                                                       katze_geschwindigkeit_m_pro_min, katze_fahrwiderstand_kg_pro_t, katze_getriebestufen, katze_wirkungsgrad_getriebe, katze_anzahl_motoren,
+                                                       df_spielzeiten_katze["Beschleunigungszeit"])
+    df_mechleist_katz_beschick = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, katze_gewicht_kg,
+                                                       katze_geschwindigkeit_m_pro_min, katze_fahrwiderstand_kg_pro_t, katze_getriebestufen, katze_wirkungsgrad_getriebe, katze_anzahl_motoren,
+                                                       df_spielzeiten_katze["Beschleunigungszeit"])
     df_mechleist_hub_einlager = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
-                                                    hubwerk_hub_beschleunigung_m_pro_s2, hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_motordrehzahl_1_pro_min, hubwerk_getriebestufen, 
-                                                    hubwerk_anzahl_motoren, hubwerk_massenträgheit_kgm2)
+                                                    df_spielzeiten_hub["Beschleunigungszeit"], hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_getriebestufen, 
+                                                    hubwerk_anzahl_motoren)
     df_mechleist_hub_beschick = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
-                                                    hubwerk_hub_beschleunigung_m_pro_s2, hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_motordrehzahl_1_pro_min, hubwerk_getriebestufen, 
-                                                    hubwerk_anzahl_motoren, hubwerk_massenträgheit_kgm2)
-    df_mechleist_kran_einlager = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg, 
-                                           kranfahrwerk_beschleunigung_m_pro_s2, kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_motordrehzahl_1_pro_min, kranfahrwerk_massenträgheit_kgm2,
-                                           kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren, kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen)
-    df_mechleist_kran_beschick = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg, 
-                                           kranfahrwerk_beschleunigung_m_pro_s2, kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_motordrehzahl_1_pro_min, kranfahrwerk_massenträgheit_kgm2,
-                                           kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren, kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen)
-    
+                                                    df_spielzeiten_hub["Beschleunigungszeit"], hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_getriebestufen, 
+                                                    hubwerk_anzahl_motoren)
+    df_mechleist_kran_einlager = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg,
+                                           kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren,
+                                           kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen, df_spielzeiten_kran_einlager["Beschleunigungszeit"])
+    df_mechleist_kran_beschick = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg,
+                                           kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren,
+                                           kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen, df_spielzeiten_kran_beschick["Beschleunigungszeit"])
     if greifer_typ == "Vierseil-Greifer":
         df_mechleist_oeffnenschliessen_vierseil = mechleistunggreifervierseil(df_mechleist_hub_einlager["Beharrungsleistung voll"], hubwerk_hub_beschleunigung_m_pro_s2)
     elif greifer_typ == "Hydraulikgreifer":
-        df_mechleist_oeffnenschliessen_hydraulik = greiferhydraulik(greifer_leergewicht_kg, greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min, greifer_wirkungsgrad_hydraulik, greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2)
+        df_mechleist_oeffnenschliessen_hydraulik = greiferhydraulik(greifer_leergewicht_kg, greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min, greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2)
     # endregion
 
     # region mechanische Energieberechnungen einzelne Vorgänge

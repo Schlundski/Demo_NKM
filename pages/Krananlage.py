@@ -51,23 +51,6 @@ with st.expander("Hubwerk", expanded = st.session_state.expander_hubwerk_open, w
         5,
         "hubbeschl",
     )
-    motordrehzahl_hub = number_standard(
-        "Motordrehzahl Hubwerk [1/min]",
-        std.hubw["Motordrehzahl"],
-        0,
-        1,
-        5000,
-        "motdreh_hub",
-    )
-    massentraegheit_hub = number_standard(
-        "Massenträgheit Hubwerk [kg·m²]",
-        std.hubw["Massentraegheit"],
-        0,
-        0.001,
-        100,
-        "massentr_hub",
-        nachkommastellen=3
-    )
     anzahl_motoren_hub = number_standard(
         "Anzahl Motoren Hubwerk",
         std.hubw["AnzahlMotoren"],
@@ -114,18 +97,17 @@ with st.expander("Hubwerk", expanded = st.session_state.expander_hubwerk_open, w
     # Anzeigen des Ausgewählten Motors
     motor_hub = mechleistunghubwerk(
             gewicht_seile = seilgewicht,
-           gewicht_greifer_leer = ist_state.get("greifer", {}).get("leergewicht_kg"),
-           greifer_volumen = ist_state.get("greifer", {}).get("volumen_m3"),
-           muell_dichte = ist_state.get("anlage", {}).get("müll_dichte_beschickung_kg_pro_m3"),
-           geschwindigkeit_mmin = hub_geschwindigkeit,
-           beschleunigung_m_ss = beschleunigung_zeit_hub,
-           wirkungsgrad_seiltrieb = wirkungsgrad_seiltrieb,
-           wirkungsgrad_getriebestufe = wirkungsgrad_getr_stufe_hub,
-           drehzahl = motordrehzahl_hub,
-           getriebestufen = getriebestufen_hub,
-           motor_anzahl = anzahl_motoren_hub,
-           massentraegheit= massentraegheit_hub
-    )["Motorauswahl"]
+            gewicht_greifer_leer = ist_state.get("greifer", {}).get("leergewicht_kg"),
+            greifer_volumen = ist_state.get("greifer", {}).get("volumen_m3"),
+            muell_dichte = ist_state.get("anlage", {}).get("müll_dichte_beschickung_kg_pro_m3"),
+            geschwindigkeit_mmin = hub_geschwindigkeit,
+            beschleunigung_zeit = hub_geschwindigkeit / 60 / hub_beschleunigung,
+            wirkungsgrad_seiltrieb = wirkungsgrad_seiltrieb,
+            wirkungsgrad_getriebestufe = wirkungsgrad_getr_stufe_hub,
+            getriebestufen = getriebestufen_hub,
+            motor_anzahl = anzahl_motoren_hub,
+            belastungsfaktor = 1.55
+            )["Motorauswahl"]
     number_standard("Von uns gewählte Hubmotorleistung [kW]", 
                     motor_hub, 
                     0, 1, 200, 
@@ -172,23 +154,6 @@ with st.expander("Katze", expanded = st.session_state.expander_katze_open, width
         5,
         "beschlkatze",
     )
-    motordrehzahl_katze = number_standard(
-        "Motordrehzahl Katze [1/min]",
-        std.katze["Motordrehzahl"],
-        0,
-        1,
-        5000,
-        "motdrehkatze",
-    )
-    massentraegheit_katze = number_standard(
-        "Massenträgheit Katze [kg·m²]",
-        std.katze["Massentraegheit"],
-        0,
-        0.001,
-        100,
-        "massentrkatze",
-        nachkommastellen=3
-    )
     anzahl_motoren_katze = number_standard(
         "Anzahl Motoren Katze",
         std.katze["AnzahlMotoren"],
@@ -234,12 +199,12 @@ with st.expander("Katze", expanded = st.session_state.expander_katze_open, width
           muell_dichte=ist_state.get("anlage", {}).get("müll_dichte_beschickung_kg_pro_m3"),
           gewicht_katze=gewicht_katze,
           geschwindigkeit_mmin=geschwindigkeit_katze,
-          beschleunigung_m_ss=geschwindigkeit_katze/60/beschleunigung_katze,
-          drehzahl=int(motordrehzahl_katze),
           fahrwerkwiderstand=fahrwiderstand_katze,
           getriebestufen=int(getriebestufen_katze),
           wirkungsgrad_getriebestufe=wirkungsgrad_getr_stufe_katze,
-          massentraegheit=massentraegheit_katze,
+          motorzahl=int(anzahl_motoren_katze),
+          beschleunigungszeit=int(geschwindigkeit_katze / 60.0 / beschleunigung_katze),
+          belastungsfaktor=1.55
         )["Motorauswahl"]
     number_standard("Von uns gewählte Katzmotorleistung [kW]", 
                     mot_katze, 
@@ -284,23 +249,6 @@ with st.expander("Kranfahrwerk", expanded = st.session_state.expander_kran_open,
         0.1,
         5,
         "beschlkran",
-    )
-    motordrehzahl_kran = number_standard(
-        "Motordrehzahl Kran [1/min]",
-        std.kran["Motordrehzahl"],
-        0,
-        1,
-        5000,
-        "motdrehkran",
-    )
-    massentraegheit_kran = number_standard(
-        "Massenträgheit Kran [kg·m²]",
-        std.kran["Massentraegheit"],
-        0,
-        0.001,
-        100,
-        "massentrkran",
-        nachkommastellen=3
     )
     anzahl_motoren_kran = number_standard(
         "Anzahl Motoren Kran",
@@ -353,14 +301,13 @@ with st.expander("Kranfahrwerk", expanded = st.session_state.expander_kran_open,
         gewicht_katze = gewicht_katze,
         gewicht_kran = gewicht_kran,
         gewicht_seile = seilgewicht,
-        beschleunigung_mss = beschleunigung_kran,
         geschwindigkeit_mmin = geschwindigkeit_kran,
-        drehzahl = motordrehzahl_kran,
-        massentraegheit = massentraegheit_kran,
         fahrwiderstand = fahrwiderstand_kran,
         motoranzahl = anzahl_motoren_kran,
         wirkungsgrad_getriebestufe = wirkungsgrad_getr_stufe_kran,
-        getriebestufen = getriebestufen_kran
+        getriebestufen = getriebestufen_kran,
+        beschleunigungszeit=int(geschwindigkeit_kran / 60.0 / beschleunigung_kran),
+        belastungsfaktor=1.55
     )["Motorauswahl"]
     number_standard("Von uns gewählte Kranmotorleistung [kW]", 
                     motor_kran, 
@@ -397,8 +344,6 @@ if button:
                 "seilgewicht_kg": seilgewicht,
                 "hub_geschwindigkeit_m_pro_min": hub_geschwindigkeit,
                 "hub_beschleunigung_m_pro_s2": hub_beschleunigung,
-                "motordrehzahl_1_pro_min": motordrehzahl_hub,
-                "massenträgheit_kgm2": massentraegheit_hub,
                 "anzahl_motoren": anzahl_motoren_hub,
                 "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_hub,
                 "wirkungsgrad_seiltrieb": wirkungsgrad_seiltrieb,
@@ -409,8 +354,6 @@ if button:
                 "gewicht_kg": gewicht_katze,
                 "geschwindigkeit_m_pro_min": geschwindigkeit_katze,
                 "beschleunigung_m_pro_s2": beschleunigung_katze,
-                "motordrehzahl_1_pro_min": motordrehzahl_katze,
-                "massenträgheit_kgm2": massentraegheit_katze,
                 "anzahl_motoren": anzahl_motoren_katze,
                 "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_katze,
                 "getriebestufen": getriebestufen_katze,
@@ -421,8 +364,6 @@ if button:
                 "gewicht_kg": gewicht_kran,
                 "geschwindigkeit_m_pro_min": geschwindigkeit_kran,
                 "beschleunigung_m_pro_s2": beschleunigung_kran,
-                "motordrehzahl_1_pro_min": motordrehzahl_kran,
-                "massenträgheit_kgm2": massentraegheit_kran,
                 "anzahl_motoren": anzahl_motoren_kran,
                 "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_kran,
                 "wirkungsgrad_vorgelege": wirkungsgrad_vorgelege,
