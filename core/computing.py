@@ -495,44 +495,44 @@ def berechnungen_pro_tag(dict):
         "Verbrauch": (
             df_mechenergie_hub_einlager_voll / dict_hub["wirkungsgrad_motor_hub"]
             - (df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         ),
         "Rückspeisung": (
             (df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         )
     }
     df_elenergie_hub_einlager_leer = {
         "Verbrauch": (
             df_mechenergie_hub_einlager_leer / dict_hub["wirkungsgrad_motor_hub"]
             - (df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         ),
         "Rückspeisung": (
             (df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         )
     }
     df_elenergie_hub_beschick_voll = {
         "Verbrauch": (
             df_mechenergie_hub_beschick_voll / dict_hub["wirkungsgrad_motor_hub"]
             - (df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         ),
         "Rückspeisung": (
             (df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         )
     }
     df_elenergie_hub_beschick_leer = {
         "Verbrauch": (
             df_mechenergie_hub_beschick_leer / dict_hub["wirkungsgrad_motor_hub"]
             - (df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         ),
         "Rückspeisung": (
             (df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         )
         }
     # endregion el Energie Hub
@@ -543,18 +543,18 @@ def berechnungen_pro_tag(dict):
         "Verbrauch": (
             df_mechenergie_kran_einlager_voll / dict_kran["wirkungsgrad_motor_kran"]
             - (df_mechleist_kran_einlager["Beschleunigungsleistungen"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] / dict_rueckspeisung["FU-Wirkungsgrad kran"]
+            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
         ),
         "Rückspeisung": (
             (df_mechleist_kran_einlager["Beschleunigungsleistungen"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] / dict_rueckspeisung["FU-Wirkungsgrad kran"]
+            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
         )
     }
     df_elenergie_kran_einlager_leer = {
         "Verbrauch": (
             df_mechenergie_kran_einlager_leer / dict_kran["wirkungsgrad_motor_kran"]
             - (df_mechleist_kran_einlager["Beschleunigungsleistungen_leer"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] / dict_rueckspeisung["FU-Wirkungsgrad kran"]
+            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
         ),
         "Rückspeisung": (
             (df_mechleist_kran_einlager["Beschleunigungsleistungen_leer"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
@@ -589,13 +589,13 @@ def berechnungen_pro_tag(dict):
 
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_greifer_vierseil_oeffnen = (
-            -1 * (df_mechenergie_greifer_oeffnenschliessen_vierseil * dict_hub["wirkungsgrad_motor_hub"]) /dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            -1 * (df_mechenergie_greifer_oeffnenschliessen_vierseil) /dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         )
         df_elenergie_greifer_vierseil_schliessen = (
-            df_mechenergie_greifer_oeffnenschliessen_vierseil * dict_hub["wirkungsgrad_motor_hub"]
+            df_mechenergie_greifer_oeffnenschliessen_vierseil / dict_hub["wirkungsgrad_motor_hub"]
             - (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] / dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
         )
     elif greifer_typ == "Hydraulikgreifer":
         df_elenergie_greifer_hydraulik_oeffnenschliessen = (
@@ -681,7 +681,7 @@ def berechnungen_pro_tag(dict):
             df_elenergie_katz_beschick_voll["Verbrauch"] +
             df_elenergie_greifer_vierseil_oeffnen +
             df_elenergie_katz_beschick_leer["Verbrauch"] +
-            df_elenergie_kran_beschick_voll["Verbrauch"] +
+            df_elenergie_kran_beschick_leer["Verbrauch"] +
             df_elenergie_hub_beschick_leer["Verbrauch"]
         )
     if greifer_typ == "Hydraulikgreifer":
@@ -692,7 +692,7 @@ def berechnungen_pro_tag(dict):
             df_elenergie_katz_beschick_voll["Verbrauch"] +
             df_elenergie_greifer_hydraulik_oeffnenschliessen +
             df_elenergie_katz_beschick_leer["Verbrauch"] +
-            df_elenergie_kran_beschick_voll["Verbrauch"] +
+            df_elenergie_kran_beschick_leer["Verbrauch"] +
             df_elenergie_hub_beschick_leer["Verbrauch"]
         )
     df_elenergie_beschick_verbrauch_d = df_elenergie_beschick_verbrauch_zyklus * df_zyklen_beschick_d
@@ -705,7 +705,7 @@ def berechnungen_pro_tag(dict):
             df_elenergie_kran_beschick_voll["Rückspeisung"] +
             df_elenergie_katz_beschick_voll["Rückspeisung"] +
             df_elenergie_katz_beschick_leer["Rückspeisung"] +
-            df_elenergie_kran_beschick_voll["Rückspeisung"] +
+            df_elenergie_kran_beschick_leer["Rückspeisung"] +
             df_elenergie_hub_beschick_leer["Rückspeisung"]
         )
     if greifer_typ == "Hydraulikgreifer":
@@ -714,7 +714,7 @@ def berechnungen_pro_tag(dict):
             df_elenergie_kran_beschick_voll["Rückspeisung"] +
             df_elenergie_katz_beschick_voll["Rückspeisung"] +
             df_elenergie_katz_beschick_leer["Rückspeisung"] +
-            df_elenergie_kran_beschick_voll["Rückspeisung"] +
+            df_elenergie_kran_beschick_leer["Rückspeisung"] +
             df_elenergie_hub_beschick_leer["Rückspeisung"]
         )
     df_elenergie_beschick_rueckspeisung_d = df_elenergie_beschick_rueckspeisung_zyklus * df_zyklen_beschick_d
