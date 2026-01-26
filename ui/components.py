@@ -408,3 +408,4 @@ def plot_aufteilung_CO2(
     c1.metric(f"IST CO₂ / {suffix}", _fmt_kg_de(gesamt_ist_kg))
     c2.metric(f"NEU CO₂ / {suffix}", _fmt_kg_de(gesamt_neu_kg))
     c3.metric(f"Ersparnis / {suffix}", _fmt_kg_de(diff_kg))
+
