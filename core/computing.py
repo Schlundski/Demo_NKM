@@ -186,12 +186,10 @@ def greiferhydraulik(leergewicht=3050,betriebsdruck=170, volumenstrom=66, anteil
         
         Leistung Beharrung
         Leistung Beschleunigung"""
-    leistung_hydraulisch_beharrung = betriebsdruck * volumenstrom / 600
-    leistung_hydraulisch_beschleunigung = leergewicht * anteil_bewegte_masse * geschwindigkeit_m_pro_min * beschleunigung_m_pro_s2
+    leistung_hydraulisch_beharrung = betriebsdruck * volumenstrom / 600                          # [kW] = [bar] * [l/min] / 600
 
     return { 
         "Leistung Beharrung": leistung_hydraulisch_beharrung,
-        "Leistung Beschleunigung": leistung_hydraulisch_beschleunigung
             }
 
 def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze, gewicht_kran, gewicht_seile,
@@ -293,8 +291,6 @@ def berechnungen_pro_tag(dict):
         greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
         greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
         greifer_typ = dict_greifer["typ"]
-        greifer_motorleistung_kw = dict_greifer["motorleistung_kw"]
-        greifer_wirkungsgrad_hydraulik = dict_greifer["wirkungsgrad_hydraulik"]
         greifer_volumenstrom_l_pro_min = dict_greifer["volumenstrom_l_pro_min"]
         greifer_betriebsdruck_bar = dict_greifer["betriebsdruck_bar"]
 
@@ -303,36 +299,26 @@ def berechnungen_pro_tag(dict):
     hubwerk_seilgewicht_kg = dict_hub["seilgewicht_kg"]
     hubwerk_hub_geschwindigkeit_m_pro_min = dict_hub["hub_geschwindigkeit_m_pro_min"]
     hubwerk_hub_beschleunigung_m_pro_s2 = dict_hub["hub_beschleunigung_m_pro_s2"]
-    hubwerk_motordrehzahl_1_pro_min = dict_hub["motordrehzahl_1_pro_min"]
-    hubwerk_massenträgheit_kgm2 = dict_hub["massenträgheit_kgm2"]
     hubwerk_anzahl_motoren = dict_hub["anzahl_motoren"]
     hubwerk_wirkungsgrad_getriebe = dict_hub["wirkungsgrad_getriebe"]
     hubwerk_wirkungsgrad_seiltrieb = dict_hub["wirkungsgrad_seiltrieb"]
     hubwerk_getriebestufen = dict_hub["getriebestufen"]
-    hubwerk_wirkungsgrad_motor_hub = dict_hub["wirkungsgrad_motor_hub"]
     # Katzfahrwerk
     katze_gewicht_kg = dict_katz["gewicht_kg"]
     katze_geschwindigkeit_m_pro_min = dict_katz["geschwindigkeit_m_pro_min"]
     katze_beschleunigung_m_pro_s2 = dict_katz["beschleunigung_m_pro_s2"]
-    katze_motordrehzahl_1_pro_min = dict_katz["motordrehzahl_1_pro_min"]
-    katze_massenträgheit_kgm2 = dict_katz["massenträgheit_kgm2"]
     katze_anzahl_motoren = dict_katz["anzahl_motoren"]
     katze_wirkungsgrad_getriebe = dict_katz["wirkungsgrad_getriebe"]
     katze_getriebestufen = dict_katz["getriebestufen"]
     katze_fahrwiderstand_kg_pro_t = dict_katz["fahrwiderstand_kg_pro_t"]
-    katze_wirkungsgrad_motor_katze = dict_katz["wirkungsgrad_motor_katze"]
     # Kranfahrwerk
     kranfahrwerk_gewicht_kg = dict_kran["gewicht_kg"]
     kranfahrwerk_geschwindigkeit_m_pro_min = dict_kran["geschwindigkeit_m_pro_min"]
     kranfahrwerk_beschleunigung_m_pro_s2 = dict_kran["beschleunigung_m_pro_s2"]
-    kranfahrwerk_motordrehzahl_1_pro_min = dict_kran["motordrehzahl_1_pro_min"]
-    kranfahrwerk_massenträgheit_kgm2 = dict_kran["massenträgheit_kgm2"]
     kranfahrwerk_anzahl_motoren = dict_kran["anzahl_motoren"]
     kranfahrwerk_wirkungsgrad_getriebe = dict_kran["wirkungsgrad_getriebe"]
-    kranfahrwerk_wirkungsgrad_vorgelege = dict_kran["wirkungsgrad_vorgelege"]
     kranfahrwerk_getriebestufen = dict_kran["getriebestufen"]
     kranfahrwerk_fahrwiderstand_kg_pro_t = dict_kran["fahrwiderstand_kg_pro_t"]
-    kranfahrwerk_wirkungsgrad_motor_kran = dict_kran["wirkungsgrad_motor_kran"]
     
     # Wege
     wege_weg_hebensenken_m = dict_wege["weg_hebensenken_m"]
@@ -449,7 +435,7 @@ def berechnungen_pro_tag(dict):
         
     elif greifer_typ == "Hydraulikgreifer":
         df_mechenergie_greifer_oeffnenschliessen_hydraulik = (
-            df_mechleist_oeffnenschliessen_hydraulik["Leistung Beschleunigung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
+            df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
             + df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Kontinuierliche Zeit"] 
         )
     # endregion Greifer
