@@ -192,16 +192,16 @@ def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, mu
         "Beharrungsleistung leer": leer_motor_leistung_beharrung,
     }
 
-def greiferhydraulik(betriebsdruck=170, volumenstrom=66, wirkungsgrad_greifer=0.9, anteil_bewegte_masse=0.15, 
+def greiferhydraulik(leergewicht=3050,betriebsdruck=170, volumenstrom=66, wirkungsgrad_greifer=0.9, anteil_bewegte_masse=0.15, 
                      geschwindigkeit_m_pro_min=100, beschleunigung_m_pro_s2=0.5):
 
     """ Berechnung der benötigten elektrischen und mechanischen Leistung des Hydraulikgreifers
         Ausgegeben wird ein Dictionary mit folgenden Keys:
         
-        Hydraulische Leistung
-        Elektrische Leistung"""
+        Leistung Beharrung
+        Leistung Beschleunigung"""
     leistung_hydraulisch_beharrung = betriebsdruck * volumenstrom / 600
-    leistung_hydraulisch_beschleunigung = anteil_bewegte_masse * geschwindigkeit_m_pro_min * beschleunigung_m_pro_s2
+    leistung_hydraulisch_beschleunigung = leergewicht * anteil_bewegte_masse * geschwindigkeit_m_pro_min * beschleunigung_m_pro_s2
 
     return { 
         "Leistung Beharrung": leistung_hydraulisch_beharrung,
@@ -389,7 +389,7 @@ def berechnungen_pro_tag(dict):
     if greifer_typ == "Vierseil-Greifer":
         df_mechleist_oeffnenschliessen_vierseil = mechleistunggreifervierseil(df_mechleist_hub_einlager["Beharrungsleistung voll"], hubwerk_hub_beschleunigung_m_pro_s2)
     elif greifer_typ == "Hydraulikgreifer":
-        df_mechleist_oeffnenschliessen_hydraulik = greiferhydraulik(greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min, greifer_wirkungsgrad_hydraulik, greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2)
+        df_mechleist_oeffnenschliessen_hydraulik = greiferhydraulik(greifer_leergewicht_kg, greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min, greifer_wirkungsgrad_hydraulik, greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2)
     # endregion
 
     # region mechanische Energieberechnungen einzelne Vorgänge
