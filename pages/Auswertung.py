@@ -195,12 +195,6 @@ with st.expander("Parameter für Modernisierung", False):
                 0, 1, 300,
                 "soll_betdruck",
             )
-            soll_ant_bew_masse = number_standard(
-                "Anteil der bewegten Masse am Greifer [%]",
-                ist_greifer_state["anteil_bew_masse"],
-                0,0.1,1,
-                "soll_antbewma"
-            )
         else:
             st.write("Bitte wählen Sie die Art des Greifers aus")
 
@@ -638,7 +632,6 @@ elif soll_auswahl == std.hydr["Greiferart"]:
             "wirkungsgrad_hydraulik": soll_n_hydr_motor,# type: ignore[possibly-unbound]
             "volumenstrom_l_pro_min": soll_volumenstrom,# type: ignore[possibly-unbound]
             "betriebsdruck_bar": soll_betriebsdruck,    # type: ignore[possibly-unbound]
-            "anteil_bew_masse": soll_ant_bew_masse,      # type: ignore[possibly-unbound]
         }
         )   
 soll_kran_state.update(

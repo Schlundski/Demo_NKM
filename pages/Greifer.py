@@ -110,12 +110,6 @@ elif auswahl == std.hydr["Greiferart"]:
         0, 1, 300,
         "betdruck",
     )
-    ant_bew_masse = number_standard(
-        "Anteil der bewegten Masse am Greifer [%]",
-        std.hydr["Anteil bewegte Masse"],
-        0,0.1,1,
-        "antbewma"
-    )
 else:
     st.write("Bitte wählen Sie die Art des Greifers aus")
 
@@ -138,8 +132,7 @@ if button:
                 "motorleistung_kw": standard_greifer_hydraulik["Motorleistung"],
                 "wirkungsgrad_hydraulik": standard_greifer_hydraulik["Wirkungsgrad"],
                 "volumenstrom_l_pro_min": standard_greifer_hydraulik["Volumenstrom"],
-                "betriebsdruck_bar": standard_greifer_hydraulik["Betriebsdruck"],
-                "anteil_bew_masse": standard_greifer_hydraulik["Anteil bewegte Masse"]
+                "betriebsdruck_bar": standard_greifer_hydraulik["Betriebsdruck"]
             }
         )
     elif auswahl == std.hydr["Greiferart"]:
@@ -150,7 +143,6 @@ if button:
                 "wirkungsgrad_hydraulik": n_hydr_motor, # type: ignore[possibly-unbound]
                 "volumenstrom_l_pro_min": volumenstrom, # type: ignore[possibly-unbound]
                 "betriebsdruck_bar": betriebsdruck,     # type: ignore[possibly-unbound]
-                "anteil_bew_masse": ant_bew_masse,      # type: ignore[possibly-unbound]
             }
         )
     
