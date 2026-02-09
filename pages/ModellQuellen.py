@@ -573,9 +573,10 @@ def render_strommix_table():
         st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
         st.caption("Quelle CO₂-Faktoren außer \"Sonstiges\":")
         st.caption("     https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf, Table A.III.2")
-        st.caption("CO2Faktor \"Sonstiges\" ist Durchschnittswert des Strommixes: ")
+        st.caption("CO₂-Faktor \"Sonstiges\" ist Durchschnittswert des Strommixes: ")
         st.caption("     https://www.iea.org/reports/electricity-2025/emissions")
-
+        st.caption("Qelle CO₂-Faktor \"Öl\" :")
+        st.caption("     https://www.bafa.de/SharedDocs/Downloads/DE/Energie/eew_infoblatt_co2_faktoren_2022.pdf?__blob=publicationFile&v=6, Tabelle 2")
 # ------------------------------------------------------------
 # Render page
 # ------------------------------------------------------------
