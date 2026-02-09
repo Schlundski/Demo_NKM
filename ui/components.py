@@ -116,8 +116,8 @@ def rueckspeisung_standard(
         titel="not defined",
         standard=0.98,
         min=0.0,
-        steps=0.1,
-        max=15.0,
+        steps=0.01,
+        max=1.0,
         key="not_defined",
         helptext=None,
         nachkommastellen=2
@@ -409,3 +409,14 @@ def plot_aufteilung_CO2(
     c2.metric(f"NEU CO₂ / {suffix}", _fmt_kg_de(gesamt_neu_kg))
     c3.metric(f"Ersparnis / {suffix}", _fmt_kg_de(diff_kg))
 
+def my_sidebar_nav():
+    if "neu_anlage" in st.session_state:
+        with st.sidebar:
+            st.page_link("app.py", label="🏠 Startseite")
+            st.page_link("pages/Anlage.py", label="🏭 Anlage")
+            st.page_link("pages/Greifer.py", label="🪝 Greifer")
+            st.page_link("pages/Krananlage.py", label="🏗️ Kran")
+            st.page_link("pages/Wege.py", label="📐 Wege")
+            st.page_link("pages/Rückspeisung.py", label="♻️ Rückspeisung")
+            st.page_link("pages/Auswertung.py", label="📊 Auswertung")
+            st.page_link("pages/ModellQuellen.py", label="📖 Modell & Quellen")

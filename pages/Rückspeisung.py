@@ -1,9 +1,11 @@
 import streamlit as st
 from auth import check_login
-from ui.components import rueckspeisung_standard
+from ui.components import rueckspeisung_standard, my_sidebar_nav
 from config.standards import STANDARDWERTE
 import time
 from ui.theme import set_background_auto_theme
+
+my_sidebar_nav()
 
 set_background_auto_theme(
     "assets/bg_light.jpg",
@@ -13,8 +15,8 @@ set_background_auto_theme(
 st.set_page_config(layout = "centered")
 
 check_login()
-
-st.session_state["ist_anlage"]["rueckspeisung"] = {}
+if "rueckspeisung" not in st.session_state["ist_anlage"]:
+    st.session_state["ist_anlage"]["rueckspeisung"] = {}
 rueckspeisung_state = st.session_state["ist_anlage"]["rueckspeisung"]
 
 st.title("Rückspeisungen")

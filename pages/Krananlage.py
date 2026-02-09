@@ -1,11 +1,13 @@
 # Bewegungseingaben
 import streamlit as st
-from ui.components import number_standard
+from ui.components import number_standard, my_sidebar_nav
 import config.standards as std
 import time
 from auth import check_login
 from core.computing import mechleistunghubwerk, mechleistungkatzfahrt, kranfahrt, spielzeitenberechnung
 from ui.theme import set_background_auto_theme
+
+my_sidebar_nav()
 
 set_background_auto_theme(
     "assets/bg_light.jpg",

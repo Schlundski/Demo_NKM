@@ -1,11 +1,13 @@
 import streamlit as st
 import pandas as pd
 from auth import check_login
-from ui.components import number_standard, selectbox_standard
+from ui.components import number_standard, selectbox_standard, my_sidebar_nav
 from config.standards import STANDARDWERTE
 import time
 from typing import cast
 from ui.theme import set_background_auto_theme
+
+my_sidebar_nav()
 
 set_background_auto_theme(
     "assets/bg_light.jpg",

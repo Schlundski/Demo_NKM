@@ -4,6 +4,8 @@ import pandas as pd
 import streamlit as st
 
 from config.standards import STANDARDWERTE
+from ui.components import my_sidebar_nav
+from ui.theme import set_background_auto_theme
 
 # Rechenfunktionen (für echte Zwischenergebnisse)
 from core.computing import (
@@ -19,7 +21,12 @@ from core.computing import (
 # ------------------------------------------------------------
 # Page config
 # ------------------------------------------------------------
+my_sidebar_nav()
 st.set_page_config(page_title="Modell & Quellen", layout="centered")
+set_background_auto_theme(
+    "assets/bg_light.jpg",
+    "assets/bg_dark.jpg",
+)
 st.title("📖 Modell & Quellen")
 st.caption(
     "Diese Seite dient der Nachvollziehbarkeit der in der Auswertung dargestellten Ergebnisse "

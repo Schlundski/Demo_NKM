@@ -1,5 +1,5 @@
 import streamlit as st
-from ui.components import number_standard, number_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard, plot_aufteilung_CO2, plot_slider_global
+from ui.components import number_standard, number_soll, selectbox_soll, plot_ldaten_rdiagramm, rueckspeisung_standard, plot_aufteilung_CO2, plot_slider_global, my_sidebar_nav
 from auth import check_login
 from core.computing import mechleistunghubwerk, kranfahrt, mechleistungkatzfahrt, berechnungen_pro_tag
 import pandas as pd
@@ -21,6 +21,8 @@ df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
 ist_state = st.session_state["ist_anlage"]
 
 st.title("📊 Auswertung")
+
+
 
 with st.expander("Parameter für Modernisierung", False):
     with st.expander("Allgemeine Anlagendaten", False):
@@ -719,3 +721,5 @@ plot_aufteilung_CO2(soll_anlage_standort,
 button = st.button("Woher kommen die Werte?")
 if button:
     st.switch_page("pages/ModellQuellen.py")
+
+my_sidebar_nav()

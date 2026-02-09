@@ -1,10 +1,12 @@
 # Seite zur Auswahl des Greifers, und Eingabe, bzw. Befüllung der Greiferparameter
 import streamlit as st
-from ui.components import number_standard
+from ui.components import number_standard, my_sidebar_nav
 import config.standards as std
 import time
 from auth import check_login
 from ui.theme import set_background_auto_theme
+
+my_sidebar_nav()
 
 set_background_auto_theme(
     "assets/bg_light.jpg",
@@ -14,6 +16,8 @@ set_background_auto_theme(
 st.set_page_config(layout = "centered")
 
 check_login()
+
+
 
 standard_greifer_hydraulik = std.STANDARDWERTE["Greifer"]["Motor-Mehrschalengreifer MRS Greifer 2-12-31667-1"]
 

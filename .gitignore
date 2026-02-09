@@ -1,4 +1,4 @@
 test.py
-.streamlit/
+.streamlit/secrets.toml
 testplot.py
 README.Docker.md

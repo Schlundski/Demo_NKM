@@ -2,17 +2,6 @@ import streamlit as st
 from auth import check_login
 from ui.theme import set_background_auto_theme
 
-# Navigation ausblenden, solange nicht eingeloggt
-if not st.session_state.get("logged_in", False):
-    st.markdown(
-        """
-        <style>
-        [data-testid="stSidebar"] { display: none; }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
 st.set_page_config(page_title="Anwendung Modernisierung", page_icon="🔒")
 
 set_background_auto_theme(
@@ -23,7 +12,6 @@ set_background_auto_theme(
 check_login()
 
 def startseite():
-
     st.set_page_config(layout = "centered")
 
     st.image("assets/Noell.jpg")
@@ -39,17 +27,4 @@ def startseite():
     if st.button(label="Eingabe der Daten der Anlage"):
         st.switch_page("pages/Anlage.py")
 
-#Navigation konfigurieren
-pg = st.navigation([
-    st.Page(startseite, title="Startseite", icon="🏠"),
-    st.Page("pages/Anlage.py", title="Anlage", icon="🏭"),
-    st.Page("pages/Greifer.py", title="Greifer", icon="🪝"),
-    st.Page("pages/Krananlage.py", title="Kran", icon="🏗️"),
-    st.Page("pages/Wege.py", title="Wege", icon="📐"),
-    st.Page("pages/Rückspeisung.py", title="Rückspeisung", icon="♻️"),
-    st.Page("pages/Auswertung.py", title="Auswertung", icon="📊"),
-    st.Page("pages/ModellQuellen.py", title="Modell&Quellen", icon="📖")]
-    #position = "hidden"
-    )
-pg.run()
-
+startseite()
