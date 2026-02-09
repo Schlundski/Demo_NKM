@@ -19,6 +19,7 @@ st.set_page_config(layout = "centered")
 check_login()
 
 df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
+df_laender = df_laender[df_laender["Land"].str.strip().str.lower() != "co2faktor"]
 
 st.header("Allgemeinen Anlagendaten")
 
