@@ -1,5 +1,7 @@
 # pages/ModellQuellen.py
 import math
+from typing import Any
+
 import pandas as pd
 import streamlit as st
 
@@ -33,31 +35,25 @@ st.caption(
     "(Annahmen, verwendete Tabellenwerte, Quellen und aktuell eingesetzte Parameter). "
     "Zusätzlich wird der Rechenweg mit Formeln und eingesetzten Werten (IST & NEU/SOLL) nachvollziehbar dargestellt."
 )
-def flatten_dict(d: dict, parent_key: str = "") -> list[dict]:
-    rows = []
-    for k, v in d.items():
-        new_parent = f"{parent_key} / {k}" if parent_key else str(k)
-        if isinstance(v, dict):
-            rows.extend(flatten_dict(v, new_parent))
-        else:
-            rows.append({"Pfad": parent_key if parent_key else "ROOT", "Parameter": str(k), "Wert": v})
-    return rows
 
 
-def dict_get(dct: dict | None, path: str, default="—"):
-    """Sicheres Holen aus verschachtelten Dicts via 'a.b.c'-Pfad."""
-    if not isinstance(dct, dict):
-        return default
-    cur = dct
-    for part in path.split("."):
-        if isinstance(cur, dict) and part in cur:
-            cur = cur[part]
-        else:
+# ------------------------------------------------------------
+# Helper (Pylance/Typing-friendly)
+# ------------------------------------------------------------
+def to_int(x: Any, default: int = 0) -> int:
+    """Robust: None/''/— -> default, sonst int(float(x))."""
+    try:
+        if x is None:
             return default
-    return cur
+        if isinstance(x, str) and x.strip() in ("", "—"):
+            return default
+        return int(float(x))
+    except Exception:
+        return default
 
 
-def as_float(x, default=None):
+def as_float(x: Any, default: float | None = None) -> float | None:
+    """Robust: None/''/— -> default, sonst float(x)."""
     try:
         if x is None:
             return default
@@ -68,7 +64,7 @@ def as_float(x, default=None):
         return default
 
 
-def fmt_num(x, unit: str = "", digits: int = 3, fallback: str = "—"):
+def fmt_num(x: Any, unit: str = "", digits: int = 3, fallback: str = "—") -> str:
     v = as_float(x, None)
     if v is None or (isinstance(v, float) and (math.isnan(v) or math.isinf(v))):
         return fallback
@@ -76,8 +72,34 @@ def fmt_num(x, unit: str = "", digits: int = 3, fallback: str = "—"):
     return f"{s} {unit}".rstrip()
 
 
-@st.cache_data(show_spinner=False)
+def flatten_dict(d: dict, parent_key: str = "") -> list[dict]:
+    rows: list[dict] = []
+    for k, v in d.items():
+        new_parent = f"{parent_key} / {k}" if parent_key else str(k)
+        if isinstance(v, dict):
+            rows.extend(flatten_dict(v, new_parent))
+        else:
+            rows.append({"Pfad": parent_key if parent_key else "ROOT", "Parameter": str(k), "Wert": v})
+    return rows
 
+
+def dict_get(dct: dict | None, path: str, default: Any = "—") -> Any:
+    """Sicheres Holen aus verschachtelten Dicts via 'a.b.c'-Pfad."""
+    if not isinstance(dct, dict):
+        return default
+    cur: Any = dct
+    for part in path.split("."):
+        if isinstance(cur, dict) and part in cur:
+            cur = cur[part]
+        else:
+            return default
+    return cur
+
+
+# ------------------------------------------------------------
+# Daten laden
+# ------------------------------------------------------------
+@st.cache_data(show_spinner=False)
 def load_strommix_csv(path: str) -> tuple[pd.DataFrame, pd.Series | None]:
     """
     Liest eure CSV (;) ein.
@@ -110,6 +132,10 @@ def load_strommix_csv(path: str) -> tuple[pd.DataFrame, pd.Series | None]:
 
     return df, co2_row
 
+
+# ------------------------------------------------------------
+# Renderer
+# ------------------------------------------------------------
 def render_standards(standards: dict):
     st.subheader("Standardwerte")
     st.write("Diese Werte sind firmeninterne Erfahrungs- und Durchschnittswerte und dienen nur als Orientierung")
@@ -158,7 +184,6 @@ def render_aktuelle_werte_ist_neu():
             ("Anlage", "Müll Anlieferdauer [h/d]", dict_get(dct, "anlage.müll_anlieferdauer")),
             ("Anlage", "Müll Dichte Beschickung [kg/m³]", dict_get(dct, "anlage.müll_dichte_beschickung_kg_pro_m3")),
             ("Anlage", "Müll Dichte Anlieferung [kg/m³]", dict_get(dct, "anlage.müll_dichte_anlieferung_kg_pro_m3")),
-
             # Greifer
             ("Greifer", "Typ", dict_get(dct, "greifer.typ")),
             ("Greifer", "Leergewicht [kg]", dict_get(dct, "greifer.leergewicht_kg")),
@@ -168,7 +193,6 @@ def render_aktuelle_werte_ist_neu():
             ("Greifer", "Wirkungsgrad Hydraulik [-]", dict_get(dct, "greifer.wirkungsgrad_hydraulik")),
             ("Greifer", "Volumenstrom [l/min]", dict_get(dct, "greifer.volumenstrom_l_pro_min")),
             ("Greifer", "Betriebsdruck [bar]", dict_get(dct, "greifer.betriebsdruck_bar")),
-
             # Wege
             ("Wege", "Heben/Senken [m]", dict_get(dct, "wege.weg_hebensenken_m")),
             ("Wege", "Katzfahrt [m]", dict_get(dct, "wege.weg_katzfahrt_m")),
@@ -188,7 +212,7 @@ def render_aktuelle_werte_ist_neu():
         neu_df = make_table(neu_anlage).rename(columns={"Wert": "NEU/SOLL"})
         cmp_df = ist_df.merge(neu_df, on=["Kategorie", "Parameter"], how="outer")
 
-        def diff(a, b):
+        def diff(a: Any, b: Any):
             try:
                 a_num = float(a)
                 b_num = float(b)
@@ -205,6 +229,7 @@ def render_aktuelle_werte_ist_neu():
                 "- Fehlende Werte erscheinen als „—“.\n"
                 "- Wenn Sie weitere Felder anzeigen wollen: in `make_table()` einfach ergänzen."
             )
+
 
 def render_rechenweg():
     st.subheader("🧮 Rechenweg (Formeln + eingesetzte Werte)")
@@ -231,7 +256,6 @@ def render_rechenweg():
         kran = dct.get("kran_mechanik", {}).get("kranfahrwerk", {})
         wege = dct.get("wege", {})
         rueck = dct.get("rueckspeisung", {})
-
         return anlage, greifer, hub, katz, kran, wege, rueck
 
     def render_for(dct: dict, label: str):
@@ -240,8 +264,8 @@ def render_rechenweg():
         # --- Basisgrößen (sicher ziehen) ---
         n_trichter = as_float(anlage.get("anzahl_trichter"), None)
         verb_trichter = as_float(anlage.get("verbrennung_trichter_kg"), None)  # kg/h pro Trichter
-        anliefer_h = as_float(anlage.get("müll_anlieferung_h_kg"), None)       # kg/h
-        anlieferdauer = as_float(anlage.get("müll_anlieferdauer"), None)      # h/d
+        anliefer_h = as_float(anlage.get("müll_anlieferung_h_kg"), None)  # kg/h
+        anlieferdauer = as_float(anlage.get("müll_anlieferdauer"), None)  # h/d
 
         rho_beschick = as_float(anlage.get("müll_dichte_beschickung_kg_pro_m3"), None)
         rho_anliefer = as_float(anlage.get("müll_dichte_anlieferung_kg_pro_m3"), None)
@@ -261,23 +285,23 @@ def render_rechenweg():
         a_hub = as_float(hub.get("hub_beschleunigung_m_pro_s2"), None)
         eta_hub_getr = as_float(hub.get("wirkungsgrad_getriebe"), None)
         eta_seil = as_float(hub.get("wirkungsgrad_seiltrieb"), None)
-        hub_stufen = int(hub.get("getriebestufen", 1) or 1)
-        hub_motoren = int(hub.get("anzahl_motoren", 1) or 1)
+        hub_stufen = to_int(hub.get("getriebestufen", 1), 1)
+        hub_motoren = to_int(hub.get("anzahl_motoren", 1), 1)
 
         m_katze = as_float(katz.get("gewicht_kg"), None)
         v_katz_mmin = as_float(katz.get("geschwindigkeit_m_pro_min"), None)
         a_katz = as_float(katz.get("beschleunigung_m_pro_s2"), None)
         eta_katz_getr = as_float(katz.get("wirkungsgrad_getriebe"), None)
-        katz_stufen = int(katz.get("getriebestufen", 1) or 1)
-        katz_motoren = int(katz.get("anzahl_motoren", 1) or 1)
+        katz_stufen = to_int(katz.get("getriebestufen", 1), 1)
+        katz_motoren = to_int(katz.get("anzahl_motoren", 1), 1)
         fw_katz = as_float(katz.get("fahrwiderstand_kg_pro_t"), None)
 
         m_kran = as_float(kran.get("gewicht_kg"), None)
         v_kran_mmin = as_float(kran.get("geschwindigkeit_m_pro_min"), None)
         a_kran = as_float(kran.get("beschleunigung_m_pro_s2"), None)
         eta_kran_getr = as_float(kran.get("wirkungsgrad_getriebe"), None)
-        kran_stufen = int(kran.get("getriebestufen", 1) or 1)
-        kran_motoren = int(kran.get("anzahl_motoren", 1) or 1)
+        kran_stufen = to_int(kran.get("getriebestufen", 1), 1)
+        kran_motoren = to_int(kran.get("anzahl_motoren", 1), 1)
         fw_kran = as_float(kran.get("fahrwiderstand_kg_pro_t"), None)
 
         # Wege
@@ -300,7 +324,7 @@ def render_rechenweg():
                 st.warning("Nicht alle Eingangsgrößen vorhanden (Anlage/Müll/Greifer).")
             else:
                 df_muell = muellberechnung(
-                    int(n_trichter),
+                    to_int(n_trichter, 0),
                     float(verb_trichter),
                     float(anliefer_h),
                     float(V),
@@ -308,19 +332,20 @@ def render_rechenweg():
                     float(rho_anliefer),
                     float(anlieferdauer),
                 )
-                # kompakt anzeigen
-                st.table({
-                    "Größe": [
-                        "Mülleinlagerung [kg/Zyklus]",
-                        "Zyklen Einlagerung [1/d]",
-                        "Zyklen Trichter gesamt [1/d]",
-                    ],
-                    "Wert": [
-                        fmt_num(df_muell["Mülleinlagerung kg / Zyklus"], "kg", 1),
-                        fmt_num(df_muell["Anzahl Zyklen Mülleinlagerung / d"], "1/d", 2),
-                        fmt_num(df_muell["Anzahl Zyklen Trichterbeschickung gesamt / d"], "1/d", 2),
-                    ]
-                })
+                st.table(
+                    {
+                        "Größe": [
+                            "Mülleinlagerung [kg/Zyklus]",
+                            "Zyklen Einlagerung [1/d]",
+                            "Zyklen Trichter gesamt [1/d]",
+                        ],
+                        "Wert": [
+                            fmt_num(df_muell["Mülleinlagerung kg / Zyklus"], "kg", 1),
+                            fmt_num(df_muell["Anzahl Zyklen Mülleinlagerung / d"], "1/d", 2),
+                            fmt_num(df_muell["Anzahl Zyklen Trichterbeschickung gesamt / d"], "1/d", 2),
+                        ],
+                    }
+                )
 
         # ------------------------------------------------------------
         # Spielzeiten
@@ -332,21 +357,26 @@ def render_rechenweg():
             st.latex(r"t_\mathrm{konst} = \frac{s - 2 s_\mathrm{acc}}{v}")
             st.latex(r"t_\mathrm{ges} = t_\mathrm{konst} + 2 t_\mathrm{acc}")
 
-            def show_spiel(name, v_mmin, a, s):
-                if None in (v_mmin, a, s) or a == 0:
+            def show_spiel(name: str, v_mmin: Any, a: Any, s: Any):
+                v_mmin_f = as_float(v_mmin, None)
+                a_f = as_float(a, None)
+                s_f = as_float(s, None)
+                if None in (v_mmin_f, a_f, s_f) or a_f == 0:
                     st.warning(f"{name}: fehlende Werte oder a=0.")
                     return None
-                stw = spielzeitenberechnung(v_mmin, a, s)
+                stw = spielzeitenberechnung(float(v_mmin_f), float(a_f), float(s_f))
                 st.markdown(f"**{name}**")
-                st.table({
-                    "Parameter": ["t_acc", "s_acc", "t_konst", "t_ges"],
-                    "Wert": [
-                        fmt_num(stw["Beschleunigungszeit"], "s", 3),
-                        fmt_num(stw["Beschleunigungsweg"], "m", 3),
-                        fmt_num(stw["Kontinuierliche Zeit"], "s", 3),
-                        fmt_num(stw["Summe der Zeit"], "s", 3),
-                    ]
-                })
+                st.table(
+                    {
+                        "Parameter": ["t_acc", "s_acc", "t_konst", "t_ges"],
+                        "Wert": [
+                            fmt_num(stw["Beschleunigungszeit"], "s", 3),
+                            fmt_num(stw["Beschleunigungsweg"], "m", 3),
+                            fmt_num(stw["Kontinuierliche Zeit"], "s", 3),
+                            fmt_num(stw["Summe der Zeit"], "s", 3),
+                        ],
+                    }
+                )
                 return stw
 
             stw_hub = show_spiel("Hubwerk", v_hub_mmin, a_hub, weg_hub)
@@ -414,17 +444,20 @@ def render_rechenweg():
                     getriebestufen=int(katz_stufen),
                     wirkungsgrad_getriebestufe=float(eta_katz_getr),
                     motorzahl=int(katz_motoren),
-                    beschleunigungszeit=float(stw_katz["Beschleunigungszeit"]),
+                    # ✅ Signature erwartet int -> cast
+                    beschleunigungszeit=to_int(stw_katz["Beschleunigungszeit"], 0),
                 )
-                st.table({
-                    "Katzfahrt": ["P_beh (voll)", "P_acc (voll)", "P_beh (leer)", "P_acc (leer)"],
-                    "kW": [
-                        fmt_num(df_katz["Beharrungsleistung"], "kW", 3),
-                        fmt_num(df_katz["Beschleunigungsleistungen"], "kW", 3),
-                        fmt_num(df_katz["Beharrungsleistung_leer"], "kW", 3),
-                        fmt_num(df_katz["Beschleunigungsleistungen_leer"], "kW", 3),
-                    ]
-                })
+                st.table(
+                    {
+                        "Katzfahrt": ["P_beh (voll)", "P_acc (voll)", "P_beh (leer)", "P_acc (leer)"],
+                        "kW": [
+                            fmt_num(df_katz["Beharrungsleistung"], "kW", 3),
+                            fmt_num(df_katz["Beschleunigungsleistungen"], "kW", 3),
+                            fmt_num(df_katz["Beharrungsleistung_leer"], "kW", 3),
+                            fmt_num(df_katz["Beschleunigungsleistungen_leer"], "kW", 3),
+                        ],
+                    }
+                )
 
             if None in (m_seil, m_greifer_leer, V, rho_anliefer, m_katze, m_kran, v_kran_mmin, fw_kran, eta_kran_getr) or not stw_kran:
                 st.warning("Kranfahrt: fehlende Eingangsgrößen.")
@@ -441,17 +474,20 @@ def render_rechenweg():
                     motoranzahl=int(kran_motoren),
                     wirkungsgrad_getriebestufe=float(eta_kran_getr),
                     getriebestufen=int(kran_stufen),
-                    beschleunigungszeit=float(stw_kran["Beschleunigungszeit"]),
+                    # ✅ Signature erwartet int -> cast
+                    beschleunigungszeit=to_int(stw_kran["Beschleunigungszeit"], 0),
                 )
-                st.table({
-                    "Kranfahrt": ["P_beh (voll)", "P_acc (voll)", "P_beh (leer)", "P_acc (leer)"],
-                    "kW": [
-                        fmt_num(df_kran["Beharrungsleistung"], "kW", 3),
-                        fmt_num(df_kran["Beschleunigungsleistungen"], "kW", 3),
-                        fmt_num(df_kran["Beharrungsleistung_leer"], "kW", 3),
-                        fmt_num(df_kran["Beschleunigungsleistungen_leer"], "kW", 3),
-                    ]
-                })
+                st.table(
+                    {
+                        "Kranfahrt": ["P_beh (voll)", "P_acc (voll)", "P_beh (leer)", "P_acc (leer)"],
+                        "kW": [
+                            fmt_num(df_kran["Beharrungsleistung"], "kW", 3),
+                            fmt_num(df_kran["Beschleunigungsleistungen"], "kW", 3),
+                            fmt_num(df_kran["Beharrungsleistung_leer"], "kW", 3),
+                            fmt_num(df_kran["Beschleunigungsleistungen_leer"], "kW", 3),
+                        ],
+                    }
+                )
 
         # ------------------------------------------------------------
         # Greifer: Vierseil vs Hydraulik
@@ -468,19 +504,26 @@ def render_rechenweg():
                 if None in (p, q):
                     st.warning("Hydraulikgreifer: p oder Q fehlt.")
                 else:
-                    df_h = greiferhydraulik(betriebsdruck=float(p), volumenstrom=float(q))
+                    # ✅ Signature erwartet int -> cast
+                    df_h = greiferhydraulik(
+                        betriebsdruck=to_int(p, 0),
+                        volumenstrom=to_int(q, 0),
+                    )
                     p_hyd = df_h["Leistung Beharrung"]
                     st.latex(rf"P_\mathrm{{hydr}}=\frac{{{p:.1f}\cdot {q:.1f}}}{{600}} = {p_hyd:.3f}\ \mathrm{{kW}}")
                     if eta_h is not None and eta_h > 0:
-                        st.latex(rf"P_\mathrm{{el}}=\frac{{P_\mathrm{{hydr}}}}{{\eta}}=\frac{{{p_hyd:.3f}}}{{{eta_h:.3f}}} = {(p_hyd/eta_h):.3f}\ \mathrm{{kW}}")
+                        st.latex(
+                            rf"P_\mathrm{{el}}=\frac{{P_\mathrm{{hydr}}}}{{\eta}}=\frac{{{p_hyd:.3f}}}{{{eta_h:.3f}}} = {(p_hyd/eta_h):.3f}\ \mathrm{{kW}}"
+                        )
                     else:
-                        st.caption("Hinweis: Wirkungsgrad Hydraulik nicht gesetzt oder 0 → elektrische Leistung kann nicht sauber umgerechnet werden.")
+                        st.caption(
+                            "Hinweis: Wirkungsgrad Hydraulik nicht gesetzt oder 0 → elektrische Leistung kann nicht sauber umgerechnet werden."
+                        )
 
             elif greifer_typ == "Vierseil-Greifer":
                 st.caption("Erfahrungswert: Greiferleistung ≈ 1/3 der Hubwerksleistung (beharrend und beschleunigend).")
                 st.latex(r"P_\mathrm{Greifer} = \frac{1}{3} P_\mathrm{Hub}")
 
-                # Wir zeigen das mit den zuvor berechneten Hubwerten (sofern vorhanden)
                 if None in (m_seil, m_greifer_leer, V, rho_anliefer, v_hub_mmin, eta_seil, eta_hub_getr) or not stw_hub:
                     st.warning("Vierseil: Hubwerk-Werte fehlen, um den 1/3-Ansatz zu zeigen.")
                 else:
@@ -500,14 +543,18 @@ def render_rechenweg():
                         df_hub["Beharrungsleistung voll"],
                         df_hub["Gesamtbeschleunigungsleistung voll"],
                     )
-                    st.table({
-                        "Greifer (1/3 Hub)": ["P_beh", "P_acc"],
-                        "kW": [fmt_num(g["Beharrungsleistung"], "kW", 3), fmt_num(g["Beschleunigungsleistung"], "kW", 3)]
-                    })
+                    st.table(
+                        {
+                            "Greifer (1/3 Hub)": ["P_beh", "P_acc"],
+                            "kW": [
+                                fmt_num(g["Beharrungsleistung"], "kW", 3),
+                                fmt_num(g["Beschleunigungsleistung"], "kW", 3),
+                            ],
+                        }
+                    )
             else:
                 st.info("Unbekannter Greifertyp oder noch nicht gewählt.")
 
-    # Render tabs
     with tabs[0]:
         render_for(ist, "IST")
     if neu:
@@ -515,6 +562,7 @@ def render_rechenweg():
             render_for(neu, "NEU/SOLL")
 
     st.caption("Quelle für Formeln: Firmeninterne Berechnungsmethoden und Erfahrungswerte aus der Praxis.")
+
 
 def render_strommix_table():
     st.subheader("⚡ Stromländerpreise + Strommix")
@@ -538,45 +586,63 @@ def render_strommix_table():
     ordered = [
         "Land",
         "Preis in c/kWh",
-        "Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges",
+        "Wasserkraft",
+        "Solar",
+        "Wind",
+        "Atom",
+        "Erdgas",
+        "Kohle",
+        "Öl",
+        "Sonstiges",
         "Summe Strommix [%]",
     ]
     ordered = [c for c in ordered if c in view.columns]
     view = view[ordered]
 
-    pct_cols = [c for c in ["Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges", "Summe Strommix [%]"] if c in view.columns]
-    fmt = {c: "{:.1f}" for c in pct_cols}
+    pct_cols = [
+        c
+        for c in ["Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges", "Summe Strommix [%]"]
+        if c in view.columns
+    ]
+    fmt_map: dict[str, str] = {c: "{:.1f}" for c in pct_cols}
     if "Preis in c/kWh" in view.columns:
-        fmt["Preis in c/kWh"] = "{:.2f}"
+        fmt_map["Preis in c/kWh"] = "{:.2f}"
 
-    st.dataframe(view.style.format(fmt, na_rep="—"), use_container_width=True, hide_index=True)
+    st.dataframe(view.style.format(fmt_map, na_rep="—"), use_container_width=True, hide_index=True)
 
-    st.caption("Quelle Strompreise:")  
-    st.caption("     https://de.statista.com/statistik/daten/studie/151260/umfrage//strompreise-fuer-industriekunden-in-europa/")                    
+    # Deine Quellen (wie gewünscht: nicht als Spalte nötig, sondern unter der Tabelle)
+    st.caption("Quelle Strompreise:")
+    st.caption("     https://de.statista.com/statistik/daten/studie/151260/umfrage//strompreise-fuer-industriekunden-in-europa/")
     st.caption("Quelle Strommix:")
     st.caption("     https://lowcarbonpower.org/de/, Stand 2024")
 
+    if show_sources and source_text:
+        st.caption("Hinweis/Quellen (CSV-Zeile):")
+        st.write(source_text)
 
     if co2_row is not None:
         st.subheader("🌍 CO₂-Faktoren")
 
         co2 = co2_row.copy()
-        co2_src = co2.get("Quellen", None) if "Quellen" in co2.index else None
         co2 = co2.drop(labels=["Land", "Quellen"], errors="ignore")
 
-        items = []
+        items: list[dict[str, Any]] = []
         for k, v in co2.items():
             num = pd.to_numeric(v, errors="coerce")
             if pd.notna(num):
                 items.append({"Energieträger": k, "CO₂-Faktor (wie in CSV)": float(num)})
 
         st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
-        st.caption("Quelle CO₂-Faktoren außer \"Sonstiges\":")
+        st.caption('Quelle CO₂-Faktoren außer "Sonstiges":')
         st.caption("     https://www.ipcc.ch/site/assets/uploads/2018/02/ipcc_wg3_ar5_annex-iii.pdf, Table A.III.2")
-        st.caption("CO₂-Faktor \"Sonstiges\" ist Durchschnittswert des Strommixes: ")
+        st.caption('CO₂-Faktor "Sonstiges" ist Durchschnittswert des Strommixes: ')
         st.caption("     https://www.iea.org/reports/electricity-2025/emissions")
-        st.caption("Qelle CO₂-Faktor \"Öl\" :")
-        st.caption("     https://www.bafa.de/SharedDocs/Downloads/DE/Energie/eew_infoblatt_co2_faktoren_2022.pdf?__blob=publicationFile&v=6, Tabelle 2")
+        st.caption('Quelle CO₂-Faktor "Öl" :')
+        st.caption(
+            "     https://www.bafa.de/SharedDocs/Downloads/DE/Energie/eew_infoblatt_co2_faktoren_2022.pdf?__blob=publicationFile&v=6, Tabelle 2"
+        )
+
+
 # ------------------------------------------------------------
 # Render page
 # ------------------------------------------------------------
@@ -591,4 +657,3 @@ st.divider()
 
 render_strommix_table()
 st.divider()
-
