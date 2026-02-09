@@ -25,5 +25,5 @@ USER appuser
 # Richtiger Port für Streamlit?
 EXPOSE 8501
 
-# Streamlit muss auf 0.0.0.0 lauschen scheinbar
+# hier wird streamlit gestartet, mit den entsprechenden Optionen
 CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
