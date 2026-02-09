@@ -203,7 +203,7 @@ def render_aktuelle_werte_ist_neu():
             st.markdown(
                 "- `Δ` wird nur berechnet, wenn beide Werte numerisch sind.\n"
                 "- Fehlende Werte erscheinen als „—“.\n"
-                "- Wenn ihr weitere Felder anzeigen wollt: in `make_table()` einfach ergänzen."
+                "- Wenn Sie weitere Felder anzeigen wollen: in `make_table()` einfach ergänzen."
             )
 
 def render_rechenweg():
