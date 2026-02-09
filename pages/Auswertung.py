@@ -24,7 +24,7 @@ st.title("📊 Auswertung")
 
 
 
-with st.expander("Parameter für Modernisierung", False):
+with st.expander("Parameter für Modernisierung", True):
     with st.expander("Allgemeine Anlagendaten", False):
         st.header("Allgemeinen Anlagendaten")
         # Neuen session states container initialisieren
