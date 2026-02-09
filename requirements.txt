@@ -47,4 +47,4 @@ urllib3==2.5.0
 watchdog==6.0.0
 wheel==0.45.1
 
-# Benötigte Pakete: Python, Streamlit, plotly, matplotlib, numpy, pandas
+# Benötigte Pakete: python, streamlit, plotly, matplotlib, numpy, pandas
