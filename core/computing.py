@@ -1,11 +1,10 @@
-
 ## Hier werden die Berechnungen in Funktionen geschrieben, welche dictionarys ausgeben, sodass man über den key
 ## immer genau abrufen kann, was man haben möchte
 import numpy
 from config.standards import Motorleistungen
 
 # Fehlermeldung "Variable is possibly unbound" ignorieren, da zwingend einer der zwei Greiferfälle ist
-# pyright: reportPossiblyUnboundVariable=false
+## pyright: reportPossiblyUnboundVariable=false
 
 # Allgemeine Berechnungen
 def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
@@ -268,6 +267,35 @@ def berechnungen_pro_tag(dict):
     dict_rueckspeisung = dict["rueckspeisung"]
 
     ## Variablen deklarieren
+    # Vordeklaration, damit "possibly unbound"-probleme vermieden werden
+
+    # Mechanik Greifer
+    df_mechleist_oeffnenschliessen_vierseil = {"Beharrungsleistung": 0.0, "Beschleunigungsleistung": 0.0}
+    df_mechleist_oeffnenschliessen_hydraulik = {"Leistung Beharrung": 0.0}
+
+    # Mechanische Energien Greifer
+    df_mechenergie_greifer_oeffnenschliessen_vierseil = 0.0
+    df_mechenergie_greifer_oeffnen_hydraulik = 0.0
+    df_mechenergie_greifer_schliessen_hydraulik = 0.0
+    df_mechenergie_greifer_oeffnenschliessen_hydraulik = 0.0
+
+    # Elektrische Energien Greifer
+    df_elenergie_greifer_vierseil_oeffnen = 0.0
+    df_elenergie_greifer_vierseil_schliessen = 0.0
+    df_elenergie_greifer_vierseil_oeffnen_rueckspeisung = 0.0
+    df_elenergie_greifer_vierseil_schliessen_rueckspeisung = 0.0
+
+    df_elenergie_greifer_oeffnen_hydraulik = 0.0
+    df_elenergie_greifer_schliessen_hydraulik = 0.0
+    df_elenergie_greifer_hydraulik_oeffnenschliessen = 0.0
+
+    # Zyklusenergien
+    df_elenergie_einlager_verbrauch_zyklus = 0.0
+    df_elenergie_einlager_rueckspeisung_zyklus = 0.0
+    df_elenergie_beschick_verbrauch_zyklus = 0.0
+    df_elenergie_beschick_rueckspeisung_zyklus = 0.0
+
+    ## Deklarationen für Short-Cuts, Übersicht, etc.
     # Anlage
     anlage_anzahl_trichter = dict_anlage["anzahl_trichter"]
     anlage_verbrennung_trichter_kg = dict_anlage["verbrennung_trichter_kg"]
@@ -289,7 +317,7 @@ def berechnungen_pro_tag(dict):
     greifer_schliesszeit_s = dict_greifer["schliesszeit_s"]
     greifer_oeffnungszeit_s = dict_greifer["oeffnungszeit_s"]
 
-    # Kranmechanikr
+    # Kranmechanik
     # Hubwerk
     hubwerk_seilgewicht_kg = dict_hub["seilgewicht_kg"]
     hubwerk_hub_geschwindigkeit_m_pro_min = dict_hub["hub_geschwindigkeit_m_pro_min"]

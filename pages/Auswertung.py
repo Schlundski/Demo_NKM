@@ -319,8 +319,8 @@ with st.expander("Parameter für Modernisierung", True):
             # Anzeigen des Ausgewählten Motors
             soll_motor_hub = mechleistunghubwerk(
                 gewicht_seile = soll_seilgewicht,
-                gewicht_greifer_leer = soll_gew_greifer_leer,   # type: ignore[possibly-unbound]
-                greifer_volumen = soll_vol_greifer,             # type: ignore[possibly-unbound]
+                gewicht_greifer_leer = soll_gew_greifer_leer,
+                greifer_volumen = soll_vol_greifer,
                 muell_dichte = soll_müll_dichte_beschickung,
                 geschwindigkeit_mmin = soll_hub_geschwindigkeit,
                 beschleunigung_zeit = soll_hub_geschwindigkeit / 60 / soll_hub_beschleunigung,
@@ -408,8 +408,8 @@ with st.expander("Parameter für Modernisierung", True):
             # Motor berechnen und anzeigen. User kann noch Werte ändern
             soll_mot_katze=mechleistungkatzfahrt(
                 gewicht_seile = soll_seilgewicht,
-                gewicht_greifer_leer = soll_gew_greifer_leer,   # type: ignore[possibly-unbound]
-                greifer_volumen = soll_vol_greifer,             # type: ignore[possibly-unbound]
+                gewicht_greifer_leer = soll_gew_greifer_leer,    
+                greifer_volumen = soll_vol_greifer,              
                 muell_dichte = soll_müll_dichte_beschickung,
                 gewicht_katze = soll_gewicht_katze,
                 geschwindigkeit_mmin = soll_geschwindigkeit_katze,
@@ -501,8 +501,8 @@ with st.expander("Parameter für Modernisierung", True):
 
             # Motor berechnen und anzeigen. User kann noch die Werte verändern
             soll_motor_kran = kranfahrt(
-                gewicht_greifer_leer = soll_gew_greifer_leer,   # type: ignore[possibly-unbound]
-                greifer_volumen = soll_vol_greifer,             # type: ignore[possibly-unbound]
+                gewicht_greifer_leer = soll_gew_greifer_leer,    
+                greifer_volumen = soll_vol_greifer,              
                 muell_dichte = soll_müll_dichte_beschickung,
                 gewicht_katze = soll_gewicht_katze,
                 gewicht_kran = soll_gewicht_kran,
