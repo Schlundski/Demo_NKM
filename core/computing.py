@@ -3,9 +3,6 @@
 import numpy
 from config.standards import Motorleistungen
 
-# Fehlermeldung "Variable is possibly unbound" ignorieren, da zwingend einer der zwei Greiferfälle ist
-## pyright: reportPossiblyUnboundVariable=false
-
 # Allgemeine Berechnungen
 def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
 
