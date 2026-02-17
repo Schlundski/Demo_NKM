@@ -278,22 +278,18 @@ def berechnungen_pro_tag(dict):
     anlage_müll_anlieferdauer = dict_anlage["müll_anlieferdauer"]
 
     # Greifer
-    if dict_greifer["typ"] == "Vierseil-Greifer":
-        greifer_leergewicht_kg = dict_greifer["leergewicht_kg"]
-        greifer_volumen_m3 = dict_greifer["volumen_m3"]
-        greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
-        greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
-        greifer_typ = dict_greifer["typ"]
-    elif dict_greifer["typ"] == "Hydraulikgreifer":
-        greifer_leergewicht_kg = dict_greifer["leergewicht_kg"]
-        greifer_volumen_m3 = dict_greifer["volumen_m3"]
-        greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
-        greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
-        greifer_typ = dict_greifer["typ"]
-        greifer_volumenstrom_l_pro_min = dict_greifer["volumenstrom_l_pro_min"]
-        greifer_betriebsdruck_bar = dict_greifer["betriebsdruck_bar"]
+    greifer_parameter_typ = dict_greifer["auswahl_parameter"]
+    greifer_leergewicht_kg = dict_greifer["leergewicht_kg"]
+    greifer_volumen_m3 = dict_greifer["volumen_m3"]
+    greifer_geschwindigkeit_m_pro_min = dict_greifer["geschwindigkeit_m_pro_min"]
+    greifer_beschleunigung_m_pro_s2 = dict_greifer["beschleunigung_m_pro_s2"]
+    greifer_typ = dict_greifer["typ"]
+    greifer_volumenstrom_l_pro_min = dict_greifer["volumenstrom_l_pro_min"]
+    greifer_betriebsdruck_bar = dict_greifer["betriebsdruck_bar"]
+    greifer_schliesszeit_s = dict_greifer["schliesszeit_s"]
+    greifer_oeffnungszeit_s = dict_greifer["oeffnungszeit_s"]
 
-    # Kranmechanik
+    # Kranmechanikr
     # Hubwerk
     hubwerk_seilgewicht_kg = dict_hub["seilgewicht_kg"]
     hubwerk_hub_geschwindigkeit_m_pro_min = dict_hub["hub_geschwindigkeit_m_pro_min"]
@@ -433,10 +429,18 @@ def berechnungen_pro_tag(dict):
             )
         
     elif greifer_typ == "Hydraulikgreifer":
-        df_mechenergie_greifer_oeffnenschliessen_hydraulik = (
-            df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
-            + df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Kontinuierliche Zeit"] 
-        )
+        if greifer_parameter_typ == "Schließ/Öffnungszeit":
+            df_mechenergie_greifer_oeffnen_hydraulik = (
+                df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * greifer_oeffnungszeit_s 
+            )
+            df_mechenergie_greifer_schliessen_hydraulik = (
+                df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * greifer_schliesszeit_s
+            )
+        else:
+            df_mechenergie_greifer_oeffnenschliessen_hydraulik = (
+                df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
+                + df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Kontinuierliche Zeit"] 
+            )
     # endregion Greifer
     # endregion mechanische Energieberechnung
 
@@ -590,17 +594,33 @@ def berechnungen_pro_tag(dict):
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_greifer_vierseil_oeffnen = (
             -1 * (df_mechenergie_greifer_oeffnenschliessen_vierseil) /dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor greifer"] * dict_rueckspeisung["FU-Wirkungsgrad greifer"]
         )
         df_elenergie_greifer_vierseil_schliessen = (
             df_mechenergie_greifer_oeffnenschliessen_vierseil / dict_hub["wirkungsgrad_motor_hub"]
             - (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            * dict_rueckspeisung["faktor greifer"] * dict_rueckspeisung["FU-Wirkungsgrad greifer"]
+        )
+        df_elenergie_greifer_vierseil_oeffnen_rueckspeisung = (
+            (df_mechenergie_greifer_oeffnenschliessen_vierseil) /dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor greifer"] * dict_rueckspeisung["FU-Wirkungsgrad greifer"]
+        )
+        df_elenergie_greifer_vierseil_schliessen_rueckspeisung = (
+            (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor greifer"] * dict_rueckspeisung["FU-Wirkungsgrad greifer"]
         )
     elif greifer_typ == "Hydraulikgreifer":
-        df_elenergie_greifer_hydraulik_oeffnenschliessen = (
-            df_mechenergie_greifer_oeffnenschliessen_hydraulik / dict_greifer["wirkungsgrad_hydraulik"]
-        )
+        if greifer_parameter_typ == "Schließ/Öffnungszeit":
+            df_elenergie_greifer_oeffnen_hydraulik = (
+                (df_mechenergie_greifer_oeffnen_hydraulik) / dict_greifer["wirkungsgrad_hydraulik"]
+            )
+            df_elenergie_greifer_schliessen_hydraulik = (
+                df_mechenergie_greifer_schliessen_hydraulik / dict_greifer["wirkungsgrad_hydraulik"]
+            )
+        else:
+            df_elenergie_greifer_hydraulik_oeffnenschliessen = (
+                df_mechenergie_greifer_oeffnenschliessen_hydraulik / dict_greifer["wirkungsgrad_hydraulik"]
+            )
     # endregion el Energie Greifer
     
     # endregion Elektrische Energieberechnung
@@ -625,28 +645,44 @@ def berechnungen_pro_tag(dict):
             df_elenergie_hub_einlager_leer["Verbrauch"]
         )
     elif greifer_typ == "Hydraulikgreifer":
-        df_elenergie_einlager_verbrauch_zyklus = (
-            df_elenergie_greifer_hydraulik_oeffnenschliessen + 
-            df_elenergie_hub_einlager_voll["Verbrauch"] + 
-            df_elenergie_katz_einlager_voll["Verbrauch"] + 
-            df_elenergie_kran_einlager_voll["Verbrauch"] + 
-            df_elenergie_hub_einlager_voll["Verbrauch"] +
-            df_elenergie_greifer_hydraulik_oeffnenschliessen +
-            df_elenergie_hub_einlager_leer["Verbrauch"] +
-            df_elenergie_kran_einlager_leer["Verbrauch"] +
-            df_elenergie_katz_einlager_leer["Verbrauch"] +
-            df_elenergie_hub_einlager_leer["Verbrauch"]
-        )
+        if greifer_parameter_typ == "Schließ/Öffnungszeit":
+            df_elenergie_einlager_verbrauch_zyklus = (
+                df_elenergie_greifer_schliessen_hydraulik + 
+                df_elenergie_hub_einlager_voll["Verbrauch"] + 
+                df_elenergie_katz_einlager_voll["Verbrauch"] + 
+                df_elenergie_kran_einlager_voll["Verbrauch"] + 
+                df_elenergie_hub_einlager_voll["Verbrauch"] +
+                df_elenergie_greifer_oeffnen_hydraulik +
+                df_elenergie_hub_einlager_leer["Verbrauch"] +
+                df_elenergie_kran_einlager_leer["Verbrauch"] +
+                df_elenergie_katz_einlager_leer["Verbrauch"] +
+                df_elenergie_hub_einlager_leer["Verbrauch"]
+            )
+        else:
+            df_elenergie_einlager_verbrauch_zyklus = (
+                df_elenergie_greifer_hydraulik_oeffnenschliessen + 
+                df_elenergie_hub_einlager_voll["Verbrauch"] + 
+                df_elenergie_katz_einlager_voll["Verbrauch"] + 
+                df_elenergie_kran_einlager_voll["Verbrauch"] + 
+                df_elenergie_hub_einlager_voll["Verbrauch"] +
+                df_elenergie_greifer_hydraulik_oeffnenschliessen +
+                df_elenergie_hub_einlager_leer["Verbrauch"] +
+                df_elenergie_kran_einlager_leer["Verbrauch"] +
+                df_elenergie_katz_einlager_leer["Verbrauch"] +
+                df_elenergie_hub_einlager_leer["Verbrauch"]
+            )
     df_elenergie_einlager_verbrauch_d = df_elenergie_einlager_verbrauch_zyklus * df_zyklen_einlager_d
     
     # Rückspeisung
 
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_einlager_rueckspeisung_zyklus = (
+            df_elenergie_greifer_vierseil_schliessen_rueckspeisung +
             df_elenergie_hub_einlager_voll["Rückspeisung"] + 
             df_elenergie_katz_einlager_voll["Rückspeisung"] + 
             df_elenergie_kran_einlager_voll["Rückspeisung"] + 
             df_elenergie_hub_einlager_voll["Rückspeisung"] +
+            df_elenergie_greifer_vierseil_oeffnen_rueckspeisung +
             df_elenergie_hub_einlager_leer["Rückspeisung"] +
             df_elenergie_kran_einlager_leer["Rückspeisung"] +
             df_elenergie_katz_einlager_leer["Rückspeisung"] +
@@ -685,25 +721,38 @@ def berechnungen_pro_tag(dict):
             df_elenergie_hub_beschick_leer["Verbrauch"]
         )
     if greifer_typ == "Hydraulikgreifer":
-        df_elenergie_beschick_verbrauch_zyklus = (
-            df_elenergie_greifer_hydraulik_oeffnenschliessen + 
-            df_elenergie_hub_beschick_voll["Verbrauch"] +
-            df_elenergie_kran_beschick_voll["Verbrauch"] +
-            df_elenergie_katz_beschick_voll["Verbrauch"] +
-            df_elenergie_greifer_hydraulik_oeffnenschliessen +
-            df_elenergie_katz_beschick_leer["Verbrauch"] +
-            df_elenergie_kran_beschick_leer["Verbrauch"] +
-            df_elenergie_hub_beschick_leer["Verbrauch"]
-        )
+        if greifer_parameter_typ == "Schließ/Öffnungszeit":
+            df_elenergie_beschick_verbrauch_zyklus = (
+                df_elenergie_greifer_schliessen_hydraulik + 
+                df_elenergie_hub_beschick_voll["Verbrauch"] +
+                df_elenergie_kran_beschick_voll["Verbrauch"] +
+                df_elenergie_katz_beschick_voll["Verbrauch"] +
+                df_elenergie_greifer_oeffnen_hydraulik +
+                df_elenergie_katz_beschick_leer["Verbrauch"] +
+                df_elenergie_kran_beschick_leer["Verbrauch"] +
+                df_elenergie_hub_beschick_leer["Verbrauch"]
+            )
+        else:
+            df_elenergie_beschick_verbrauch_zyklus = (
+                df_elenergie_greifer_hydraulik_oeffnenschliessen + 
+                df_elenergie_hub_beschick_voll["Verbrauch"] +
+                df_elenergie_kran_beschick_voll["Verbrauch"] +
+                df_elenergie_katz_beschick_voll["Verbrauch"] +
+                df_elenergie_greifer_hydraulik_oeffnenschliessen +
+                df_elenergie_katz_beschick_leer["Verbrauch"] +
+                df_elenergie_kran_beschick_leer["Verbrauch"] +
+                df_elenergie_hub_beschick_leer["Verbrauch"]
+            )
     df_elenergie_beschick_verbrauch_d = df_elenergie_beschick_verbrauch_zyklus * df_zyklen_beschick_d
 
     # Rückspeisung 
 
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_beschick_rueckspeisung_zyklus = (
+            df_elenergie_greifer_vierseil_schliessen_rueckspeisung +
             df_elenergie_hub_beschick_voll["Rückspeisung"] +
             df_elenergie_kran_beschick_voll["Rückspeisung"] +
-            df_elenergie_katz_beschick_voll["Rückspeisung"] +
+            df_elenergie_greifer_vierseil_oeffnen_rueckspeisung +
             df_elenergie_katz_beschick_leer["Rückspeisung"] +
             df_elenergie_kran_beschick_leer["Rückspeisung"] +
             df_elenergie_hub_beschick_leer["Rückspeisung"]

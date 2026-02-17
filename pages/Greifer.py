@@ -27,18 +27,28 @@ st.title("Greiferkonfiguration")
 ist_state = st.session_state["ist_anlage"]
 greifer_state = ist_state.setdefault("greifer", {})
 
+# Vorzeitige Deklaration, um theoretisch ungebundene Werte zu vermeiden
+oeffnungszeit_greifen = std.hydr["Oeffnungszeit"]
+schliesszeit_greifen = std.hydr["Schliesszeit"]
+p_hydr_motor = std.hydr["Motorleistung"]
+n_hydr_motor = std.hydr["Wirkungsgrad"]
+volumenstrom = std.hydr["Volumenstrom"]
+betriebsdruck = std.hydr["Betriebsdruck"]
+gew_greifer_leer = std.hydr["Leergewicht"]
+vol_greifer = std.hydr["Greifervolumen"]
+ges_greifen = std.hydr["Greifgeschwindigkeit"]
+bes_greifen = std.hydr["Greifbeschleunigung"]
+auswahl_parameter = "Schließ/Öffnungszeit"
+
 # Radio Buttons erstellen
 greifer_Arten = [std.viers["Greiferart"], std.hydr["Greiferart"]]
-auswahl = st.radio("Greiferart:", greifer_Arten, key="radio_greifer_Arten")
+auswahl_greifer = st.radio("Greiferart:", greifer_Arten, key="radio_greifer_Arten")
+if auswahl_greifer not in greifer_Arten:
+    auswahl_greifer = std.viers["Greiferart"]  # Standardwert setzen, falls ungültige Auswahl getroffen wird
 
-# Platzhalter für gemeinsame Variablen
-gew_greifer_leer = None
-vol_greifer = None
-ges_greifen = None
-bes_greifen = None
 
 # Vierseil-Greifer
-if auswahl == std.viers["Greiferart"]:
+if auswahl_greifer == std.viers["Greiferart"]:
     gew_greifer_leer = number_standard(
         "Leergewicht des Greifers [kg]",
         std.viers["Leergewicht"],
@@ -65,7 +75,7 @@ if auswahl == std.viers["Greiferart"]:
     )
 
 # Hydraulikgreifer
-elif auswahl == std.hydr["Greiferart"]:
+elif auswahl_greifer == std.hydr["Greiferart"]:
     gew_greifer_leer = number_standard(
         "Leergewicht des Greifers [kg]",
         std.hydr["Leergewicht"],
@@ -78,18 +88,40 @@ elif auswahl == std.hydr["Greiferart"]:
         0, 0.1, 15,
         "volgreif",
     )
-    ges_greifen = number_standard(
-        "Greifergeschwindigkeit beim Öffnen/Schließen [m/min]",
-        std.hydr["Greifgeschwindigkeit"],
-        0, 1, 200,
-        "gesgreif",
-    )
-    bes_greifen = number_standard(
-        "Greiferbeschleunigung beim Öffnen/Schließen [m/s²]",
-        std.hydr["Greifbeschleunigung"],
-        0, 0.1, 10,
-        "besgreif",
-    )
+    # Die Auswahl, ob Schließ/Öffnungszeit oder Geschwindigkeit/Beschleunigung eingegeben werden soll
+    auswahl_parameter = st.radio("Schließ/Öffnungszeit oder Geschwindigkeit/Beschleunigung eingeben?", 
+             ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"], key="radio_greifer_oeffnen_schliessen")
+    if auswahl_parameter not in ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"]:
+        auswahl_parameter = "Schließ/Öffnungszeit"  # Standardwert setzen, falls ungültige Auswahl getroffen wird
+
+    if auswahl_parameter == "Schließ/Öffnungszeit":
+        oeffnungszeit_greifen = number_standard(
+            "Öffnungszeit [s]",
+            std.hydr["Oeffnungszeit"],
+            0, 1, 30,
+            "oeffnzeit",
+        )
+        schliesszeit_greifen = number_standard(
+            "Schließzeit [s]",
+            std.hydr["Schliesszeit"],
+            0, 1, 30,
+            "schliesszeit",
+        )
+
+    if auswahl_parameter == "Geschwindigkeit/Beschleunigung":
+        ges_greifen = number_standard(
+            "Greifergeschwindigkeit beim Öffnen/Schließen [m/s]",
+            std.hydr["Greifgeschwindigkeit"],
+            0, 1, 200,
+            "gesgreif",
+        )
+        bes_greifen = number_standard(
+            "Greiferbeschleunigung beim Öffnen/Schließen [m/s²]",
+            std.hydr["Greifbeschleunigung"],
+            0, 0.1, 10,
+            "besgreif",
+        )
+    
     p_hydr_motor = number_standard(
         "Motorleistung [kW]",
         std.hydr["Motorleistung"],
@@ -123,33 +155,20 @@ if button:
     # Basisdaten immer, egal welcher Typ
     greifer_state.update(
         {
+            "auswahl_parameter": auswahl_parameter,
             "leergewicht_kg": gew_greifer_leer,
             "volumen_m3": vol_greifer,
             "geschwindigkeit_m_pro_min": ges_greifen,
             "beschleunigung_m_pro_s2": bes_greifen,
+            "oeffnungszeit_s": oeffnungszeit_greifen,
+            "schliesszeit_s": schliesszeit_greifen,
+            "typ": auswahl_greifer,
+            "motorleistung_kw": p_hydr_motor,
+            "wirkungsgrad_hydraulik": n_hydr_motor,
+            "volumenstrom_l_pro_min": volumenstrom,
+            "betriebsdruck_bar": betriebsdruck,
         }
     )
-    if auswahl == std.viers["Greiferart"]:
-        greifer_state.update(
-            {
-                "typ": "Vierseil-Greifer",
-                "motorleistung_kw": standard_greifer_hydraulik["Motorleistung"],
-                "wirkungsgrad_hydraulik": standard_greifer_hydraulik["Wirkungsgrad"],
-                "volumenstrom_l_pro_min": standard_greifer_hydraulik["Volumenstrom"],
-                "betriebsdruck_bar": standard_greifer_hydraulik["Betriebsdruck"]
-            }
-        )
-    elif auswahl == std.hydr["Greiferart"]:
-        greifer_state.update(
-            {
-                "typ": "Hydraulikgreifer",
-                "motorleistung_kw": p_hydr_motor,       # type: ignore[possibly-unbound]
-                "wirkungsgrad_hydraulik": n_hydr_motor, # type: ignore[possibly-unbound]
-                "volumenstrom_l_pro_min": volumenstrom, # type: ignore[possibly-unbound]
-                "betriebsdruck_bar": betriebsdruck,     # type: ignore[possibly-unbound]
-            }
-        )
-    
 
     st.write(":green[Erfolgreich gespeichert✅]")
     time.sleep(2)

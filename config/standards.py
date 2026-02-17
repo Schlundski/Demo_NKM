@@ -110,7 +110,7 @@ STANDARDWERTE = {
         "Beschleunigung": 0.3,                  #m/s²
         "Motordrehzahl": 1461,                  #1/s
         "Massentraegheit": 0.098,               #kg*m²
-        "AnzahlMotoren": 4,                     #Stk
+        "AnzahlMotoren": 2,                     #Stk
         "WirkungsgradGetrStufe": 0.98,
         "WirkungsgradVorgelege": 1.0,
         "Getriebestufen": 3,

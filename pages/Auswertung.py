@@ -20,9 +20,8 @@ df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
 
 ist_state = st.session_state["ist_anlage"]
 
+
 st.title("📊 Auswertung")
-
-
 
 with st.expander("Parameter für Modernisierung", True):
     with st.expander("Allgemeine Anlagendaten", False):
@@ -112,16 +111,32 @@ with st.expander("Parameter für Modernisierung", True):
         soll_greifer_state = st.session_state["neu_anlage"]["greifer"]
         ist_greifer_state = ist_state["greifer"]
 
+        # Vorzeitige Deklaration, um theoretisch ungebundene Werte zu vermeiden
+        soll_oeffnungszeit_greifen = ist_greifer_state["oeffnungszeit_s"]
+        soll_schliesszeit_greifen = ist_greifer_state["schliesszeit_s"]
+        soll_p_hydr_motor = ist_greifer_state["motorleistung_kw"]
+        soll_n_hydr_motor = ist_greifer_state["wirkungsgrad_hydraulik"]
+        soll_volumenstrom = ist_greifer_state["volumenstrom_l_pro_min"]
+        soll_betriebsdruck = ist_greifer_state["betriebsdruck_bar"]
+        soll_gew_greifer_leer = ist_greifer_state["leergewicht_kg"]
+        soll_vol_greifer = ist_greifer_state["volumen_m3"]
+        soll_ges_greifen = ist_greifer_state["geschwindigkeit_m_pro_min"]
+        soll_bes_greifen = ist_greifer_state["beschleunigung_m_pro_s2"]
+        soll_auswahl_parameter = ist_greifer_state["auswahl_parameter"]
+
         # Radio Buttons erstellen
-        soll_greifer_Arten = [std.viers["Greiferart"], std.hydr["Greiferart"]]
+        soll_greifer_arten = [std.viers["Greiferart"], std.hydr["Greiferart"]]
         if ist_greifer_state["typ"] == "Vierseil-Greifer": 
             standard_index=0 
         else: 
             standard_index=1
-        soll_auswahl = st.radio("Greiferart:", soll_greifer_Arten, key="soll_radio_greifer_Arten", index=standard_index)
+        soll_auswahl_greifer = st.radio("Greiferart:", soll_greifer_arten, 
+                                key="soll_radio_greifer_Arten", index=standard_index)
+        if soll_auswahl_greifer not in soll_greifer_arten:
+            soll_auswahl_greifer = std.viers["Greiferart"]  # Standardwert setzen, falls ungültige Auswahl getroffen wird
 
         # Vierseil-Greifer
-        if soll_auswahl == std.viers["Greiferart"]:
+        if soll_auswahl_greifer == std.viers["Greiferart"]:
             soll_gew_greifer_leer = number_soll(
                 "Leergewicht des Greifers [kg]",
                 ist_greifer_state["leergewicht_kg"],
@@ -148,7 +163,7 @@ with st.expander("Parameter für Modernisierung", True):
             )
 
         # Hydraulikgreifer
-        elif soll_auswahl == std.hydr["Greiferart"]:
+        elif soll_auswahl_greifer == std.hydr["Greiferart"]:
             soll_gew_greifer_leer = number_soll(
                 "Leergewicht des Greifers [kg]",
                 ist_greifer_state["leergewicht_kg"],
@@ -161,18 +176,44 @@ with st.expander("Parameter für Modernisierung", True):
                 0, 0.1, 15,
                 "soll_volgreif",
             )
-            soll_ges_greifen = number_soll(
-                "Greifergeschwindigkeit beim Öffnen/Schließen [m/min]",
-                ist_greifer_state["geschwindigkeit_m_pro_min"],
-                0, 1, 200,
-                "soll_gesgreif",
-            )
-            soll_bes_greifen = number_soll(
-                "Greiferbeschleunigung beim Öffnen/Schließen [m/s²]",
-                ist_greifer_state["beschleunigung_m_pro_s2"],
-                0, 0.1, 10,
-                "soll_besgreif",
-            )
+
+            # Die Auswahl, ob Schließ/Öffnungszeit oder Geschwindigkeit/Beschleunigung eingegeben werden soll
+            if soll_auswahl_parameter == "Schließ/Öffnungszeit":
+                parameter_index = 0
+            else:
+                parameter_index = 1
+            soll_auswahl_parameter = st.radio("Schließ/Öffnungszeit oder Geschwindigkeit/Beschleunigung eingeben?", 
+                    ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"], key="soll_radio_greifer_oeffnen_schliessen", index=parameter_index)
+            if soll_auswahl_parameter not in ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"]:
+                soll_auswahl_parameter = "Schließ/Öffnungszeit"  # Standardwert setzen, falls ungültige Auswahl getroffen wird
+
+            if soll_auswahl_parameter == "Schließ/Öffnungszeit":
+                soll_oeffnungszeit_greifen = number_standard(
+                    "Öffnungszeit [s]",
+                    ist_greifer_state["oeffnungszeit_s"],
+                    0, 1, 30,
+                    "soll_oeffnzeit",
+                )
+                soll_schliesszeit_greifen = number_standard(
+                    "Schließzeit [s]",
+                    ist_greifer_state["schliesszeit_s"],
+                    0, 1, 30,
+                    "soll_schliesszeit",
+                )
+
+            if soll_auswahl_parameter == "Geschwindigkeit/Beschleunigung":
+                soll_ges_greifen = number_soll(
+                    "Greifergeschwindigkeit beim Öffnen/Schließen [m/min]",
+                    ist_greifer_state["geschwindigkeit_m_pro_min"],
+                    0, 1, 200,
+                    "soll_gesgreif",
+                )
+                soll_bes_greifen = number_soll(
+                    "Greiferbeschleunigung beim Öffnen/Schließen [m/s²]",
+                    ist_greifer_state["beschleunigung_m_pro_s2"],
+                    0, 0.1, 10,
+                    "soll_besgreif",
+                )
             soll_p_hydr_motor = number_soll(
                 "Motorleistung [kW]",
                 ist_greifer_state["motorleistung_kw"],
@@ -197,8 +238,6 @@ with st.expander("Parameter für Modernisierung", True):
                 0, 1, 300,
                 "soll_betdruck",
             )
-        else:
-            st.write("Bitte wählen Sie die Art des Greifers aus")
 
     with st.expander("Krananlage", False):
         st.title("Mechanische Krandaten")
@@ -561,7 +600,7 @@ with st.expander("Parameter für Modernisierung", True):
         soll_rueckspeisung_state = st.session_state["neu_anlage"]["rueckspeisung"]
         ist_rueckspeisung_state = ist_state["rueckspeisung"]
 
-        if (soll_auswahl=="Vierseil-Greifer"):
+        if (soll_auswahl_greifer=="Vierseil-Greifer"):
             soll_rueckspeisung_greifer = rueckspeisung_standard(
                 "Rückspeisung Greifer", 
                 ist_rueckspeisung_state["FU-Wirkungsgrad greifer"] or STANDARDWERTE["Rückspeisung"]["FU-Wirkungsgrad Greifer"], 
@@ -614,28 +653,20 @@ soll_anlage_state.update(
 )    
 soll_greifer_state.update(
     {
-        "leergewicht_kg": soll_gew_greifer_leer,        # type: ignore[possibly-unbound]
-        "volumen_m3": soll_vol_greifer,                 # type: ignore[possibly-unbound]
-        "geschwindigkeit_m_pro_min": soll_ges_greifen,  # type: ignore[possibly-unbound]
-        "beschleunigung_m_pro_s2": soll_bes_greifen,    # type: ignore[possibly-unbound]
+        "auswahl_parameter": soll_auswahl_parameter,
+        "leergewicht_kg": soll_gew_greifer_leer,
+        "volumen_m3": soll_vol_greifer,
+        "geschwindigkeit_m_pro_min": soll_ges_greifen,
+        "beschleunigung_m_pro_s2": soll_bes_greifen,
+        "oeffnungszeit_s": soll_oeffnungszeit_greifen,
+        "schliesszeit_s": soll_schliesszeit_greifen,
+        "typ": soll_auswahl_greifer,
+        "motorleistung_kw": soll_p_hydr_motor,
+        "wirkungsgrad_hydraulik": soll_n_hydr_motor,
+        "volumenstrom_l_pro_min": soll_volumenstrom,
+        "betriebsdruck_bar": soll_betriebsdruck,
     }
-)
-if soll_auswahl == std.viers["Greiferart"]:
-    soll_greifer_state.update(
-    {
-        "typ": "Vierseil-Greifer",
-    }
-)
-elif soll_auswahl == std.hydr["Greiferart"]:
-        soll_greifer_state.update(
-        {
-            "typ": "Hydraulikgreifer",
-            "motorleistung_kw": soll_p_hydr_motor,      # type: ignore[possibly-unbound]
-            "wirkungsgrad_hydraulik": soll_n_hydr_motor,# type: ignore[possibly-unbound]
-            "volumenstrom_l_pro_min": soll_volumenstrom,# type: ignore[possibly-unbound]
-            "betriebsdruck_bar": soll_betriebsdruck,    # type: ignore[possibly-unbound]
-        }
-        )   
+)  
 soll_kran_state.update(
     {
         "hubwerk": {
@@ -707,7 +738,7 @@ plot_ldaten_rdiagramm("Energierückspeisung", "kWh",
                       berechnungen_pro_tag(st.session_state["neu_anlage"])["Rückspeisung"],
                       faktor, "normal"
                       )
-plot_ldaten_rdiagramm(f"Approximierte Betriebskosten in {st.session_state["ist_anlage"]["anlage"]["anlage_standort"]}", "EUR€",
+plot_ldaten_rdiagramm(f"Approximierte Betriebskosten in {st.session_state['ist_anlage']['anlage']['anlage_standort']}", "EUR€",
                       berechnungen_pro_tag(st.session_state["ist_anlage"])["Kosten"],
                       berechnungen_pro_tag(st.session_state["neu_anlage"])["Kosten"],
                       faktor
