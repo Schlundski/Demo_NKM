@@ -762,8 +762,8 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
                         faktor
                         )
     plot_vergleich_ldaten_rdiagramm("Energierückspeisung", "kWh",
-                        berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
-                        berechnungen_pro_tag(st.session_state["neu_anlage"])["rueckspeisung"],
+                        -1* berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
+                        -1* berechnungen_pro_tag(st.session_state["neu_anlage"])["rueckspeisung"],
                         faktor, "normal"
                         )
     plot_vergleich_ldaten_rdiagramm(f"Approximierte Betriebskosten in {st.session_state['ist_anlage']['anlage']['anlage_standort']}", "EUR€",
@@ -783,7 +783,7 @@ else:
                         faktor
                         )
     plot_ldaten_rdiagramm("Energierückspeisung", "kWh",
-                        berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
+                        -1* berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
                         faktor
                         )
     plot_ldaten_rdiagramm(f"Approximierte Betriebskosten in {st.session_state['ist_anlage']['anlage']['anlage_standort']}", "EUR€",
