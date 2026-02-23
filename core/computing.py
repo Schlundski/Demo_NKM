@@ -10,11 +10,11 @@ def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
 
     Ausgegeben wird über ein Dictionary die values über folgende keys:
 
-        "Beschleunigungszeit"
-        "Beschleunigungsweg"
-        "Kontinuierliche Zeit"
-        "Kontinuierlicher Weg"
-        "Summe der Zeit"
+        "beschleunigungszeit"
+        "beschleunigungsweg"
+        "kontinuierliche_zeit"
+        "kontinuierlicher_weg"
+        "summe_der_zeit"
 
         """
 
@@ -26,11 +26,11 @@ def spielzeitenberechnung(geschwindigkeit_mmin, beschleunigung_mss, weg):
     summe_zeit = kontinuierlich_zeit + (2* beschleunigung_zeit)             # [s]   = [s] + ( 2 * [s] )
 
     return {
-        "Beschleunigungszeit": beschleunigung_zeit, 
-        "Beschleunigungsweg": beschleunigung_weg,
-        "Kontinuierliche Zeit": kontinuierlich_zeit,
-        "Kontinuierlicher Weg": kontinuierlich_weg,
-        "Summe der Zeit": summe_zeit
+        "beschleunigungszeit": beschleunigung_zeit, 
+        "beschleunigungsweg": beschleunigung_weg,
+        "kontinuierliche_zeit": kontinuierlich_zeit,
+        "kontinuierlicher_weg": kontinuierlich_weg,
+        "summe_der_zeit": summe_zeit
         }
 
 def muellberechnung(
@@ -42,14 +42,14 @@ def muellberechnung(
     
     Ausgegeben wird ein Dictionary mit values zu folgenden keys:
 
-        "Gesamter zu transportierender Müll kg / h"
-        "Mülleinlagerung kg / Zyklus"
-        "Anzahl Zyklen Mülleinlagerung / h"
-        "Anzahl Zyklen Mülleinlagerung / d"
-        "Trichterbeschickungsmüll kg / Zyklus"
-        "Anzahl Zyklen Trichterbeschickung / h"
-        "Anzahl Zyklen Trichterbeschickung / d"
-        "Anzahl Zyklen Trichterbeschickung gesamt / d"
+        "gesamtbeschleunigungsleistung_voll"
+        "muelleinlagerung_kg_pro_zyklus"
+        "anzahl_zyklen_muelleinlagerung_pro_h"
+        "anzahl_zyklen_muelleinlagerung_pro_d"
+        "trichterbeschickungsmuell_kg_pro_zyklus"
+        "anzahl_zyklen_trichterbeschickung_pro_h"
+        "anzahl_zyklen_trichterbeschickung_pro_d"
+        "anzahl_zyklen_trichterbeschickung_gesamt_pro_d"
     """
 
     muell_gesamt_proh = (anzahl_trichter * verbrennung_je_trichter_proh) + anliefermenge_stunde # [kg/h]    = ([1] * [kg]) + [kg/h]
@@ -62,14 +62,14 @@ def muellberechnung(
     anzahl_zyklen_beschickung_gesamt_prod = anzahl_zyklen_beschickung_prod * anzahl_trichter    # [1/d]     = [1/d] * [1]
 
     return {
-        "Gesamter zu transportierender Müll kg / h": muell_gesamt_proh,
-        "Mülleinlagerung kg / Zyklus": muell_einlagerung_prozyklus,
-        "Anzahl Zyklen Mülleinlagerung / h": anzahl_zyklen_muelleinlagerung_proh,
-        "Anzahl Zyklen Mülleinlagerung / d": anzahl_zyklen_muelleinlagerung_prod,
-        "Trichterbeschickungsmüll kg / Zyklus": beschickung_prozyklus,
-        "Anzahl Zyklen Trichterbeschickung / h": anzahl_zyklen_beschickung_proh,
-        "Anzahl Zyklen Trichterbeschickung / d": anzahl_zyklen_beschickung_prod,
-        "Anzahl Zyklen Trichterbeschickung gesamt / d": anzahl_zyklen_beschickung_gesamt_prod
+        "gesamtbeschleunigungsleistung_voll": muell_gesamt_proh,
+        "muelleinlagerung_kg_pro_zyklus": muell_einlagerung_prozyklus,
+        "anzahl_zyklen_muelleinlagerung_pro_h": anzahl_zyklen_muelleinlagerung_proh,
+        "anzahl_zyklen_muelleinlagerung_pro_d": anzahl_zyklen_muelleinlagerung_prod,
+        "trichterbeschickungsmuell_kg_pro_zyklus": beschickung_prozyklus,
+        "anzahl_zyklen_trichterbeschickung_pro_h": anzahl_zyklen_beschickung_proh,
+        "anzahl_zyklen_trichterbeschickung_pro_d": anzahl_zyklen_beschickung_prod,
+        "anzahl_zyklen_trichterbeschickung_gesamt_pro_d": anzahl_zyklen_beschickung_gesamt_prod
     }
 
 # Mechanische Leistungsberechnungen
@@ -80,11 +80,11 @@ def mechleistungkatzfahrt(gewicht_seile, gewicht_greifer_leer, greifer_volumen, 
     """
     Funktion zur Berechnung der mech Leistung der Katzfahrt
     Ausgegeben wird ein Dict mit folgenden keys:
-                Motorauswahl
-                Beschleunigungsleistungen
-                Beharrungsleistung
-                Beschleunigungsleistungen_leer
-                Beharrungsleistung_leer
+                motorauswahl
+                beschleunigungsleistungen
+                beharrungsleistung
+                beschleunigungsleistungen_leer
+                beharrungsleistung_leer
     """
  
     # Greifer voll
@@ -117,11 +117,11 @@ def mechleistungkatzfahrt(gewicht_seile, gewicht_greifer_leer, greifer_volumen, 
                                         / beschleunigungszeit / wirkungsgrad_getriebe / 1000                            # [kW] = [kg] * [1] * [(m/s)²] / ([m/s] / [m/s²]) * [1] / 1000                                                                 # [kW] = ([kW] + [kW]) / [1]
  
     return {
-                "Motorauswahl": motor_auswahl,
-                "Beschleunigungsleistungen": motor_leistung_beschl,
-                "Beharrungsleistung": motor_leistung_beharrung,
-                "Beschleunigungsleistungen_leer": motor_leistung_beschl_leer,
-                "Beharrungsleistung_leer": motor_leistung_beharrung_leer
+                "motorauswahl": motor_auswahl,
+                "beschleunigungsleistungen": motor_leistung_beschl,
+                "beharrungsleistung": motor_leistung_beharrung,
+                "beschleunigungsleistungen_leer": motor_leistung_beschl_leer,
+                "beharrungsleistung_leer": motor_leistung_beharrung_leer
     }
 
 def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, muell_dichte, geschwindigkeit_mmin, 
@@ -129,11 +129,11 @@ def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, mu
                          getriebestufen, motor_anzahl, belastungsfaktor=1.55):
     
     """ Berechnen der mechanischen Leistungswerte des Hubwerkes. Ausgegeben wird ein Dict mit folgenden Keys:
-        Motorauswahl
-        Gesamtbeschleunigungsleistung voll
-        Beharrungsleistung voll
-        Gesamtbeschleunigungsleistung leer
-        Beharrungleistung leer
+        motorauswahl
+        gesamtbeschleunigungsleistung_voll
+        beharrungsleistung voll
+        gesamtbeschleunigungsleistung_leer
+        beharrungsleistung_leer
     """
 
     #  Grundlegende Berechnungen
@@ -167,24 +167,24 @@ def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, mu
         geschwindigkeit_ms**2) / (beschleunigung_zeit * wirkungsgrad_gesamt) / 1000             # [kW] = [kg] * 0.5 * [m²/s²] / [s] / [1] / 1000
 
     return {
-        "Motorauswahl": motor_auswahl,
-        "Gesamtbeschleunigungsleistung voll": voll_motor_leistung_beschleunigung_gesamt,
-        "Beharrungsleistung voll": voll_motor_leistung_beharrung,
-        "Gesamtbeschleunigungsleistung leer": leer_motor_leistung_beschleunigung_gesamt,
-        "Beharrungsleistung leer": leer_motor_leistung_beharrung,
+        "motorauswahl": motor_auswahl,
+        "gesamtbeschleunigungsleistung_voll": voll_motor_leistung_beschleunigung_gesamt,
+        "beharrungsleistung voll": voll_motor_leistung_beharrung,
+        "gesamtbeschleunigungsleistung_leer": leer_motor_leistung_beschleunigung_gesamt,
+        "beharrungsleistung_leer": leer_motor_leistung_beharrung,
     }
 
 def greiferhydraulik(betriebsdruck=170, volumenstrom=66):
 
-    """ Berechnung der benötigten elektrischen und mechanischen Leistung des Hydraulikgreifers
+    """ Berechnung der benötigten mechanischen Leistung des Hydraulikgreifers
         Ausgegeben wird ein Dictionary mit folgenden Keys:
         
-        Leistung Beharrung
-        Leistung Beschleunigung"""
+        leistung_beharrung"""
+    
     leistung_hydraulisch_beharrung = betriebsdruck * volumenstrom / 600                          # [kW] = [bar] * [l/min] / 600
 
     return { 
-        "Leistung Beharrung": leistung_hydraulisch_beharrung,
+        "leistung_beharrung": leistung_hydraulisch_beharrung,
             }
 
 def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze, gewicht_kran, gewicht_seile,
@@ -193,14 +193,14 @@ def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze
    
     """
         Funktion berechnet die mech Leistung der Kranfahrt und gibt die Mindestleistung und den nächstgrößeren Motor aus.
-        Ebenfalls wird die Summe der Beschleunigungsleistungen ausgegeben (Ohne weitere Berechnung, wie aufteilung auf Motoren etc.)
+        Ebenfalls wird die Summe der beschleunigungsleistungen ausgegeben (Ohne weitere Berechnung, wie aufteilung auf Motoren etc.)
  
         Ausgegeben wird ein Dict mit folgenden Keys:
-        Motorauswahl
-        Beschleunigungsleistungen
-        Beharrungsleistung
-        Beschleunigungsleistungen_leer
-        Beharrungsleistung_leer
+        motorauswahl
+        beschleunigungsleistungen
+        beharrungsleistung
+        beschleunigungsleistungen_leer
+        beharrungsleistung_leer
     """
    
     gewicht_greifer_voll = (greifer_volumen * muell_dichte) + gewicht_greifer_leer                      # [kg] = ([m³] * [kg/m³]) + [kg]
@@ -234,22 +234,22 @@ def kranfahrt(gewicht_greifer_leer, greifer_volumen, muell_dichte, gewicht_katze
  
    
     return {
-        "Motorauswahl" : motor_auswahl,
-        "Beschleunigungsleistungen": motor_leistung_beschl,
-        "Beharrungsleistung": motor_leistung_beharrung,
-        "Beschleunigungsleistungen_leer": motor_leistung_beschl_leer,
-        "Beharrungsleistung_leer": motor_leistung_beharrung_leer
+        "motorauswahl" : motor_auswahl,
+        "beschleunigungsleistungen": motor_leistung_beschl,
+        "beharrungsleistung": motor_leistung_beharrung,
+        "beschleunigungsleistungen_leer": motor_leistung_beschl_leer,
+        "beharrungsleistung_leer": motor_leistung_beharrung_leer
     }
  
 def mechleistunggreifervierseil(hubvorgang_beharrung_leistung, hubvorgang_beschl_leistung):
     """Die mechanische Leistungsberechnung des Greifers ergibt sich als Erfahrungswert aus einem Drittel des Hubvorganges
-    Ausgegeben wird ein Dictionary mit den Key 'Beharrungsleistung' und 'Beschleunigungsleistung'
+    Ausgegeben wird ein Dictionary mit den Key 'beharrungsleistung' und 'Beschleunigungsleistung'
     """
 
     beharrung_greifer = hubvorgang_beharrung_leistung / 3
     beschl_greifer = hubvorgang_beschl_leistung / 3
 
-    return {"Beharrungsleistung": beharrung_greifer,
+    return {"beharrungsleistung": beharrung_greifer,
             "Beschleunigungsleistung": beschl_greifer}
 
 def berechnungen_pro_tag(dict):
@@ -267,8 +267,8 @@ def berechnungen_pro_tag(dict):
     # Vordeklaration, damit "possibly unbound"-probleme vermieden werden
 
     # Mechanik Greifer
-    df_mechleist_oeffnenschliessen_vierseil = {"Beharrungsleistung": 0.0, "Beschleunigungsleistung": 0.0}
-    df_mechleist_oeffnenschliessen_hydraulik = {"Leistung Beharrung": 0.0}
+    df_mechleist_oeffnenschliessen_vierseil = {"beharrungsleistung": 0.0, "Beschleunigungsleistung": 0.0}
+    df_mechleist_oeffnenschliessen_hydraulik = {"leistung_beharrung": 0.0}
 
     # Mechanische Energien Greifer
     df_mechenergie_greifer_oeffnenschliessen_vierseil = 0.0
@@ -296,11 +296,11 @@ def berechnungen_pro_tag(dict):
     # Anlage
     anlage_anzahl_trichter = dict_anlage["anzahl_trichter"]
     anlage_verbrennung_trichter_kg = dict_anlage["verbrennung_trichter_kg"]
-    anlage_muell_anlieferung_h_kg = dict_anlage["müll_anlieferung_h_kg"]
-    anlage_müll_dichte_beschickung_kg_pro_m3 = dict_anlage["müll_dichte_beschickung_kg_pro_m3"]
-    anlage_müll_dichte_anlieferung_kg_pro_m3 = dict_anlage["müll_dichte_anlieferung_kg_pro_m3"]
+    anlage_muell_anlieferung_h_kg = dict_anlage["muell_anlieferung_h_kg"]
+    anlage_muell_dichte_beschickung_kg_pro_m3 = dict_anlage["muell_dichte_beschickung_kg_pro_m3"]
+    anlage_muell_dichte_anlieferung_kg_pro_m3 = dict_anlage["muell_dichte_anlieferung_kg_pro_m3"]
     anlage_energie_kosten = dict_anlage["energie_kosten"]
-    anlage_müll_anlieferdauer = dict_anlage["müll_anlieferdauer"]
+    anlage_muell_anlieferdauer = dict_anlage["muell_anlieferdauer"]
 
     # Greifer
     greifer_parameter_typ = dict_greifer["auswahl_parameter"]
@@ -350,7 +350,7 @@ def berechnungen_pro_tag(dict):
 
     # region Grundfunktionen
     df_muell = muellberechnung(anlage_anzahl_trichter, anlage_verbrennung_trichter_kg, anlage_muell_anlieferung_h_kg, greifer_volumen_m3,
-                   anlage_müll_dichte_beschickung_kg_pro_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, anlage_müll_anlieferdauer)
+                   anlage_muell_dichte_beschickung_kg_pro_m3, anlage_muell_dichte_anlieferung_kg_pro_m3, anlage_muell_anlieferdauer)
     df_spielzeiten_hub = spielzeitenberechnung(hubwerk_hub_geschwindigkeit_m_pro_min, hubwerk_hub_beschleunigung_m_pro_s2, wege_weg_hebensenken_m)
     df_spielzeiten_katze = spielzeitenberechnung(katze_geschwindigkeit_m_pro_min, katze_beschleunigung_m_pro_s2, wege_weg_katzfahrt_m)
     df_spielzeiten_kran_einlager = spielzeitenberechnung(kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_beschleunigung_m_pro_s2, wege_weg_kranfahrt_einlagern_m)
@@ -360,26 +360,26 @@ def berechnungen_pro_tag(dict):
     # endregion
 
     # region grundlegende mechanische Leistungsberechnungen
-    df_mechleist_katz_einlager = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg,
+    df_mechleist_katz_einlager = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_muell_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg,
                                                        katze_geschwindigkeit_m_pro_min, katze_fahrwiderstand_kg_pro_t, katze_getriebestufen, katze_wirkungsgrad_getriebe, katze_anzahl_motoren,
-                                                       df_spielzeiten_katze["Beschleunigungszeit"])
-    df_mechleist_katz_beschick = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, katze_gewicht_kg,
+                                                       df_spielzeiten_katze["beschleunigungszeit"])
+    df_mechleist_katz_beschick = mechleistungkatzfahrt(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_muell_dichte_beschickung_kg_pro_m3, katze_gewicht_kg,
                                                        katze_geschwindigkeit_m_pro_min, katze_fahrwiderstand_kg_pro_t, katze_getriebestufen, katze_wirkungsgrad_getriebe, katze_anzahl_motoren,
-                                                       df_spielzeiten_katze["Beschleunigungszeit"])
-    df_mechleist_hub_einlager = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
-                                                    df_spielzeiten_hub["Beschleunigungszeit"], hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_getriebestufen, 
+                                                       df_spielzeiten_katze["beschleunigungszeit"])
+    df_mechleist_hub_einlager = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_muell_dichte_anlieferung_kg_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
+                                                    df_spielzeiten_hub["beschleunigungszeit"], hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_getriebestufen, 
                                                     hubwerk_anzahl_motoren)
-    df_mechleist_hub_beschick = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
-                                                    df_spielzeiten_hub["Beschleunigungszeit"], hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_getriebestufen, 
+    df_mechleist_hub_beschick = mechleistunghubwerk(hubwerk_seilgewicht_kg, greifer_leergewicht_kg, greifer_volumen_m3, anlage_muell_dichte_beschickung_kg_pro_m3, hubwerk_hub_geschwindigkeit_m_pro_min, 
+                                                    df_spielzeiten_hub["beschleunigungszeit"], hubwerk_wirkungsgrad_seiltrieb, hubwerk_wirkungsgrad_getriebe, hubwerk_getriebestufen, 
                                                     hubwerk_anzahl_motoren)
-    df_mechleist_kran_einlager = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg,
+    df_mechleist_kran_einlager = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_muell_dichte_anlieferung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg,
                                            kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren,
-                                           kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen, df_spielzeiten_kran_einlager["Beschleunigungszeit"])
-    df_mechleist_kran_beschick = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_müll_dichte_beschickung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg,
+                                           kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen, df_spielzeiten_kran_einlager["beschleunigungszeit"])
+    df_mechleist_kran_beschick = kranfahrt(greifer_leergewicht_kg, greifer_volumen_m3, anlage_muell_dichte_beschickung_kg_pro_m3, katze_gewicht_kg, kranfahrwerk_gewicht_kg, hubwerk_seilgewicht_kg,
                                            kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren,
-                                           kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen, df_spielzeiten_kran_beschick["Beschleunigungszeit"])
+                                           kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen, df_spielzeiten_kran_beschick["beschleunigungszeit"])
     if greifer_typ == "Vierseil-Greifer":
-        df_mechleist_oeffnenschliessen_vierseil = mechleistunggreifervierseil(df_mechleist_hub_einlager["Beharrungsleistung voll"], df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung voll"])
+        df_mechleist_oeffnenschliessen_vierseil = mechleistunggreifervierseil(df_mechleist_hub_einlager["beharrungsleistung voll"], df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_voll"])
     elif greifer_typ == "Hydraulikgreifer":
         df_mechleist_oeffnenschliessen_hydraulik = greiferhydraulik(greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min)
     # endregion
@@ -389,82 +389,82 @@ def berechnungen_pro_tag(dict):
     # region Katze
 
     df_mechenergie_katz_einlager_voll = (
-        df_mechleist_katz_einlager["Beschleunigungsleistungen"] * df_spielzeiten_katze["Beschleunigungszeit"]
-        + df_mechleist_katz_einlager["Beharrungsleistung"] * df_spielzeiten_katze["Kontinuierliche Zeit"]
+        df_mechleist_katz_einlager["beschleunigungsleistungen"] * df_spielzeiten_katze["beschleunigungszeit"]
+        + df_mechleist_katz_einlager["beharrungsleistung"] * df_spielzeiten_katze["kontinuierliche_zeit"]
     )
     df_mechenergie_katz_einlager_leer = (
-        df_mechleist_katz_einlager["Beschleunigungsleistungen_leer"] * df_spielzeiten_katze["Beschleunigungszeit"]
-        + df_mechleist_katz_einlager["Beharrungsleistung_leer"] * df_spielzeiten_katze["Kontinuierliche Zeit"] 
+        df_mechleist_katz_einlager["beschleunigungsleistungen_leer"] * df_spielzeiten_katze["beschleunigungszeit"]
+        + df_mechleist_katz_einlager["beharrungsleistung_leer"] * df_spielzeiten_katze["kontinuierliche_zeit"] 
     )
     df_mechenergie_katz_beschick_voll = (
-        df_mechleist_katz_beschick["Beschleunigungsleistungen"] * df_spielzeiten_katze["Beschleunigungszeit"]
-        + df_mechleist_katz_beschick["Beharrungsleistung"] * df_spielzeiten_katze["Kontinuierliche Zeit"]
+        df_mechleist_katz_beschick["beschleunigungsleistungen"] * df_spielzeiten_katze["beschleunigungszeit"]
+        + df_mechleist_katz_beschick["beharrungsleistung"] * df_spielzeiten_katze["kontinuierliche_zeit"]
     )
     df_mechenergie_katz_beschick_leer = (
-        df_mechleist_katz_beschick["Beschleunigungsleistungen_leer"] * df_spielzeiten_katze["Beschleunigungszeit"]
-        + df_mechleist_katz_beschick["Beharrungsleistung_leer"] * df_spielzeiten_katze["Kontinuierliche Zeit"] 
+        df_mechleist_katz_beschick["beschleunigungsleistungen_leer"] * df_spielzeiten_katze["beschleunigungszeit"]
+        + df_mechleist_katz_beschick["beharrungsleistung_leer"] * df_spielzeiten_katze["kontinuierliche_zeit"] 
     )
     #endregion Katze
 
     # region Hub
 
     df_mechenergie_hub_einlager_voll = (
-        df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]
-        + df_mechleist_hub_einlager["Beharrungsleistung voll"] * df_spielzeiten_hub["Kontinuierliche Zeit"]
+        df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_voll"] * df_spielzeiten_hub["beschleunigungszeit"]
+        + df_mechleist_hub_einlager["beharrungsleistung voll"] * df_spielzeiten_hub["kontinuierliche_zeit"]
     )
     df_mechenergie_hub_einlager_leer = (
-        df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]
-        + df_mechleist_hub_einlager["Beharrungsleistung leer"] * df_spielzeiten_hub["Kontinuierliche Zeit"]
+        df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_leer"] * df_spielzeiten_hub["beschleunigungszeit"]
+        + df_mechleist_hub_einlager["beharrungsleistung_leer"] * df_spielzeiten_hub["kontinuierliche_zeit"]
     )
     df_mechenergie_hub_beschick_voll = (
-        df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]
-        + df_mechleist_hub_beschick["Beharrungsleistung voll"] * df_spielzeiten_hub["Kontinuierliche Zeit"]
+        df_mechleist_hub_beschick["gesamtbeschleunigungsleistung_voll"] * df_spielzeiten_hub["beschleunigungszeit"]
+        + df_mechleist_hub_beschick["beharrungsleistung voll"] * df_spielzeiten_hub["kontinuierliche_zeit"]
     )
     df_mechenergie_hub_beschick_leer = (
-        df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]
-        + df_mechleist_hub_beschick["Beharrungsleistung leer"] * df_spielzeiten_hub["Kontinuierliche Zeit"]
+        df_mechleist_hub_beschick["gesamtbeschleunigungsleistung_leer"] * df_spielzeiten_hub["beschleunigungszeit"]
+        + df_mechleist_hub_beschick["beharrungsleistung_leer"] * df_spielzeiten_hub["kontinuierliche_zeit"]
     )
     # endregion Hub
 
     # region Kran
 
     df_mechenergie_kran_einlager_voll = (
-        df_mechleist_kran_einlager["Beschleunigungsleistungen"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]
-        + df_mechleist_kran_einlager["Beharrungsleistung"] * df_spielzeiten_kran_einlager["Kontinuierliche Zeit"]
+        df_mechleist_kran_einlager["beschleunigungsleistungen"] * df_spielzeiten_kran_einlager["beschleunigungszeit"]
+        + df_mechleist_kran_einlager["beharrungsleistung"] * df_spielzeiten_kran_einlager["kontinuierliche_zeit"]
     )
     df_mechenergie_kran_einlager_leer = (
-        df_mechleist_kran_einlager["Beschleunigungsleistungen_leer"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]
-        + df_mechleist_kran_einlager["Beharrungsleistung_leer"] * df_spielzeiten_kran_einlager["Kontinuierliche Zeit"]
+        df_mechleist_kran_einlager["beschleunigungsleistungen_leer"] * df_spielzeiten_kran_einlager["beschleunigungszeit"]
+        + df_mechleist_kran_einlager["beharrungsleistung_leer"] * df_spielzeiten_kran_einlager["kontinuierliche_zeit"]
     )
     df_mechenergie_kran_beschick_voll = (
-        df_mechleist_kran_beschick["Beschleunigungsleistungen"] * df_spielzeiten_kran_beschick["Beschleunigungszeit"]
-        + df_mechleist_kran_beschick["Beharrungsleistung"] * df_spielzeiten_kran_beschick["Kontinuierliche Zeit"]
+        df_mechleist_kran_beschick["beschleunigungsleistungen"] * df_spielzeiten_kran_beschick["beschleunigungszeit"]
+        + df_mechleist_kran_beschick["beharrungsleistung"] * df_spielzeiten_kran_beschick["kontinuierliche_zeit"]
     )
     df_mechenergie_kran_beschick_leer = (
-        df_mechleist_kran_beschick["Beschleunigungsleistungen_leer"] * df_spielzeiten_kran_beschick["Beschleunigungszeit"]
-        + df_mechleist_kran_beschick["Beharrungsleistung_leer"] * df_spielzeiten_kran_beschick["Kontinuierliche Zeit"]
+        df_mechleist_kran_beschick["beschleunigungsleistungen_leer"] * df_spielzeiten_kran_beschick["beschleunigungszeit"]
+        + df_mechleist_kran_beschick["beharrungsleistung_leer"] * df_spielzeiten_kran_beschick["kontinuierliche_zeit"]
     )
     # endregion Kran
 
     # region Greifer
     if greifer_typ == "Vierseil-Greifer":
         df_mechenergie_greifer_oeffnenschliessen_vierseil = (
-                df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
-                + df_mechleist_oeffnenschliessen_vierseil["Beharrungsleistung"] * df_spielzeiten_greifer["Kontinuierliche Zeit"] 
+                df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"] 
+                + df_mechleist_oeffnenschliessen_vierseil["beharrungsleistung"] * df_spielzeiten_greifer["kontinuierliche_zeit"] 
             )
         
     elif greifer_typ == "Hydraulikgreifer":
         if greifer_parameter_typ == "Schließ/Öffnungszeit":
             df_mechenergie_greifer_oeffnen_hydraulik = (
-                df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * greifer_oeffnungszeit_s 
+                df_mechleist_oeffnenschliessen_hydraulik["leistung_beharrung"] * greifer_oeffnungszeit_s 
             )
             df_mechenergie_greifer_schliessen_hydraulik = (
-                df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * greifer_schliesszeit_s
+                df_mechleist_oeffnenschliessen_hydraulik["leistung_beharrung"] * greifer_schliesszeit_s
             )
         else:
             df_mechenergie_greifer_oeffnenschliessen_hydraulik = (
-                df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Beschleunigungszeit"] 
-                + df_mechleist_oeffnenschliessen_hydraulik["Leistung Beharrung"] * df_spielzeiten_greifer["Kontinuierliche Zeit"] 
+                df_mechleist_oeffnenschliessen_hydraulik["leistung_beharrung"] * df_spielzeiten_greifer["beschleunigungszeit"] 
+                + df_mechleist_oeffnenschliessen_hydraulik["leistung_beharrung"] * df_spielzeiten_greifer["kontinuierliche_zeit"] 
             )
     # endregion Greifer
     # endregion mechanische Energieberechnung
@@ -473,47 +473,47 @@ def berechnungen_pro_tag(dict):
 
     # region el Energie Katze
     df_elenergie_katz_einlager_voll = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_katz_einlager_voll / dict_katz["wirkungsgrad_motor_katze"]
-            - (df_mechleist_katz_einlager["Beschleunigungsleistungen"] * df_spielzeiten_katze["Beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
-            * dict_rueckspeisung["faktor katze"] * dict_rueckspeisung["FU-Wirkungsgrad katze"]
+            - (df_mechleist_katz_einlager["beschleunigungsleistungen"] * df_spielzeiten_katze["beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
+            * dict_rueckspeisung["faktor_katze"] * dict_rueckspeisung["fu_wirkungsgrad_katze"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_katz_einlager["Beschleunigungsleistungen"] * df_spielzeiten_katze["Beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
-            * dict_rueckspeisung["faktor katze"] * dict_rueckspeisung["FU-Wirkungsgrad katze"]
+        "rueckspeisung": (
+            (df_mechleist_katz_einlager["beschleunigungsleistungen"] * df_spielzeiten_katze["beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
+            * dict_rueckspeisung["faktor_katze"] * dict_rueckspeisung["fu_wirkungsgrad_katze"]
         )
     }
     df_elenergie_katz_einlager_leer = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_katz_einlager_leer / dict_katz["wirkungsgrad_motor_katze"]
-            - (df_mechleist_katz_einlager["Beschleunigungsleistungen_leer"] * df_spielzeiten_katze["Beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
-            * dict_rueckspeisung["faktor katze"] * dict_rueckspeisung["FU-Wirkungsgrad katze"]
+            - (df_mechleist_katz_einlager["beschleunigungsleistungen_leer"] * df_spielzeiten_katze["beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
+            * dict_rueckspeisung["faktor_katze"] * dict_rueckspeisung["fu_wirkungsgrad_katze"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_katz_einlager["Beschleunigungsleistungen_leer"] * df_spielzeiten_katze["Beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
-            * dict_rueckspeisung["faktor katze"] * dict_rueckspeisung["FU-Wirkungsgrad katze"]
+        "rueckspeisung": (
+            (df_mechleist_katz_einlager["beschleunigungsleistungen_leer"] * df_spielzeiten_katze["beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
+            * dict_rueckspeisung["faktor_katze"] * dict_rueckspeisung["fu_wirkungsgrad_katze"]
         )
     }
     df_elenergie_katz_beschick_voll = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_katz_beschick_voll / dict_katz["wirkungsgrad_motor_katze"]
-            - (df_mechleist_katz_beschick["Beschleunigungsleistungen"] * df_spielzeiten_katze["Beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
-            * dict_rueckspeisung["faktor katze"] * dict_rueckspeisung["FU-Wirkungsgrad katze"]
+            - (df_mechleist_katz_beschick["beschleunigungsleistungen"] * df_spielzeiten_katze["beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
+            * dict_rueckspeisung["faktor_katze"] * dict_rueckspeisung["fu_wirkungsgrad_katze"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_katz_beschick["Beschleunigungsleistungen"] * df_spielzeiten_katze["Beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
-            * dict_rueckspeisung["faktor katze"] * dict_rueckspeisung["FU-Wirkungsgrad katze"]
+        "rueckspeisung": (
+            (df_mechleist_katz_beschick["beschleunigungsleistungen"] * df_spielzeiten_katze["beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
+            * dict_rueckspeisung["faktor_katze"] * dict_rueckspeisung["fu_wirkungsgrad_katze"]
         )
     }
     df_elenergie_katz_beschick_leer = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_katz_beschick_leer / dict_katz["wirkungsgrad_motor_katze"]
-            - (df_mechleist_katz_beschick["Beschleunigungsleistungen_leer"] * df_spielzeiten_katze["Beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
-            * dict_rueckspeisung["faktor katze"] * dict_rueckspeisung["FU-Wirkungsgrad katze"]
+            - (df_mechleist_katz_beschick["beschleunigungsleistungen_leer"] * df_spielzeiten_katze["beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
+            * dict_rueckspeisung["faktor_katze"] * dict_rueckspeisung["fu_wirkungsgrad_katze"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_katz_beschick["Beschleunigungsleistungen_leer"] * df_spielzeiten_katze["Beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
-            * dict_rueckspeisung["faktor katze"] * dict_rueckspeisung["FU-Wirkungsgrad katze"]
+        "rueckspeisung": (
+            (df_mechleist_katz_beschick["beschleunigungsleistungen_leer"] * df_spielzeiten_katze["beschleunigungszeit"]) / dict_katz["wirkungsgrad_motor_katze"]
+            * dict_rueckspeisung["faktor_katze"] * dict_rueckspeisung["fu_wirkungsgrad_katze"]
         )
     }
     # endregion el Energie Katze
@@ -521,47 +521,47 @@ def berechnungen_pro_tag(dict):
     # region el Energie Hub
 
     df_elenergie_hub_einlager_voll = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_hub_einlager_voll / dict_hub["wirkungsgrad_motor_hub"]
-            - (df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            - (df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_voll"] * df_spielzeiten_hub["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_hub"] * dict_rueckspeisung["fu_wirkungsgrad_hub"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+        "rueckspeisung": (
+            (df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_voll"] * df_spielzeiten_hub["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_hub"] * dict_rueckspeisung["fu_wirkungsgrad_hub"]
         )
     }
     df_elenergie_hub_einlager_leer = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_hub_einlager_leer / dict_hub["wirkungsgrad_motor_hub"]
-            - (df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            - (df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_leer"] * df_spielzeiten_hub["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_hub"] * dict_rueckspeisung["fu_wirkungsgrad_hub"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_hub_einlager["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+        "rueckspeisung": (
+            (df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_leer"] * df_spielzeiten_hub["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_hub"] * dict_rueckspeisung["fu_wirkungsgrad_hub"]
         )
     }
     df_elenergie_hub_beschick_voll = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_hub_beschick_voll / dict_hub["wirkungsgrad_motor_hub"]
-            - (df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            - (df_mechleist_hub_beschick["gesamtbeschleunigungsleistung_voll"] * df_spielzeiten_hub["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_hub"] * dict_rueckspeisung["fu_wirkungsgrad_hub"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung voll"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+        "rueckspeisung": (
+            (df_mechleist_hub_beschick["gesamtbeschleunigungsleistung_voll"] * df_spielzeiten_hub["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_hub"] * dict_rueckspeisung["fu_wirkungsgrad_hub"]
         )
     }
     df_elenergie_hub_beschick_leer = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_hub_beschick_leer / dict_hub["wirkungsgrad_motor_hub"]
-            - (df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+            - (df_mechleist_hub_beschick["gesamtbeschleunigungsleistung_leer"] * df_spielzeiten_hub["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_hub"] * dict_rueckspeisung["fu_wirkungsgrad_hub"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_hub_beschick["Gesamtbeschleunigungsleistung leer"] * df_spielzeiten_hub["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor hub"] * dict_rueckspeisung["FU-Wirkungsgrad hub"]
+        "rueckspeisung": (
+            (df_mechleist_hub_beschick["gesamtbeschleunigungsleistung_leer"] * df_spielzeiten_hub["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_hub"] * dict_rueckspeisung["fu_wirkungsgrad_hub"]
         )
         }
     # endregion el Energie Hub
@@ -569,47 +569,47 @@ def berechnungen_pro_tag(dict):
     # region el Energie Kran
 
     df_elenergie_kran_einlager_voll = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_kran_einlager_voll / dict_kran["wirkungsgrad_motor_kran"]
-            - (df_mechleist_kran_einlager["Beschleunigungsleistungen"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
+            - (df_mechleist_kran_einlager["beschleunigungsleistungen"] * df_spielzeiten_kran_einlager["beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
+            * dict_rueckspeisung["faktor_kran"] * dict_rueckspeisung["fu_wirkungsgrad_kran"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_kran_einlager["Beschleunigungsleistungen"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
+        "rueckspeisung": (
+            (df_mechleist_kran_einlager["beschleunigungsleistungen"] * df_spielzeiten_kran_einlager["beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
+            * dict_rueckspeisung["faktor_kran"] * dict_rueckspeisung["fu_wirkungsgrad_kran"]
         )
     }
     df_elenergie_kran_einlager_leer = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_kran_einlager_leer / dict_kran["wirkungsgrad_motor_kran"]
-            - (df_mechleist_kran_einlager["Beschleunigungsleistungen_leer"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
+            - (df_mechleist_kran_einlager["beschleunigungsleistungen_leer"] * df_spielzeiten_kran_einlager["beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
+            * dict_rueckspeisung["faktor_kran"] * dict_rueckspeisung["fu_wirkungsgrad_kran"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_kran_einlager["Beschleunigungsleistungen_leer"] * df_spielzeiten_kran_einlager["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
+        "rueckspeisung": (
+            (df_mechleist_kran_einlager["beschleunigungsleistungen_leer"] * df_spielzeiten_kran_einlager["beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
+            * dict_rueckspeisung["faktor_kran"] * dict_rueckspeisung["fu_wirkungsgrad_kran"]
         )
     }
     df_elenergie_kran_beschick_voll = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_kran_beschick_voll / dict_kran["wirkungsgrad_motor_kran"]
-            - (df_mechleist_kran_beschick["Beschleunigungsleistungen"] * df_spielzeiten_kran_beschick["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
+            - (df_mechleist_kran_beschick["beschleunigungsleistungen"] * df_spielzeiten_kran_beschick["beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
+            * dict_rueckspeisung["faktor_kran"] * dict_rueckspeisung["fu_wirkungsgrad_kran"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_kran_beschick["Beschleunigungsleistungen"] * df_spielzeiten_kran_beschick["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
+        "rueckspeisung": (
+            (df_mechleist_kran_beschick["beschleunigungsleistungen"] * df_spielzeiten_kran_beschick["beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
+            * dict_rueckspeisung["faktor_kran"] * dict_rueckspeisung["fu_wirkungsgrad_kran"]
         )
     }
     df_elenergie_kran_beschick_leer = {
-        "Verbrauch": (
+        "verbrauch": (
             df_mechenergie_kran_beschick_leer / dict_kran["wirkungsgrad_motor_kran"]
-            - (df_mechleist_kran_beschick["Beschleunigungsleistungen_leer"] * df_spielzeiten_kran_beschick["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
+            - (df_mechleist_kran_beschick["beschleunigungsleistungen_leer"] * df_spielzeiten_kran_beschick["beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
+            * dict_rueckspeisung["faktor_kran"] * dict_rueckspeisung["fu_wirkungsgrad_kran"]
         ),
-        "Rückspeisung": (
-            (df_mechleist_kran_beschick["Beschleunigungsleistungen_leer"] * df_spielzeiten_kran_beschick["Beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
-            * dict_rueckspeisung["faktor kran"] * dict_rueckspeisung["FU-Wirkungsgrad kran"]
+        "rueckspeisung": (
+            (df_mechleist_kran_beschick["beschleunigungsleistungen_leer"] * df_spielzeiten_kran_beschick["beschleunigungszeit"]) /dict_kran["wirkungsgrad_motor_kran"]
+            * dict_rueckspeisung["faktor_kran"] * dict_rueckspeisung["fu_wirkungsgrad_kran"]
         )
     }
     # endregion el Energie Kran
@@ -619,20 +619,20 @@ def berechnungen_pro_tag(dict):
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_greifer_vierseil_oeffnen = (
             -1 * (df_mechenergie_greifer_oeffnenschliessen_vierseil) /dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor greifer"] * dict_rueckspeisung["FU-Wirkungsgrad greifer"]
+            * dict_rueckspeisung["faktor_greifer"] * dict_rueckspeisung["fu_wirkungsgrad_greifer"]
         )
         df_elenergie_greifer_vierseil_schliessen = (
             df_mechenergie_greifer_oeffnenschliessen_vierseil / dict_hub["wirkungsgrad_motor_hub"]
-            - (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor greifer"] * dict_rueckspeisung["FU-Wirkungsgrad greifer"]
+            - (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_greifer"] * dict_rueckspeisung["fu_wirkungsgrad_greifer"]
         )
         df_elenergie_greifer_vierseil_oeffnen_rueckspeisung = (
             (df_mechenergie_greifer_oeffnenschliessen_vierseil) /dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor greifer"] * dict_rueckspeisung["FU-Wirkungsgrad greifer"]
+            * dict_rueckspeisung["faktor_greifer"] * dict_rueckspeisung["fu_wirkungsgrad_greifer"]
         )
         df_elenergie_greifer_vierseil_schliessen_rueckspeisung = (
-            (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["Beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
-            * dict_rueckspeisung["faktor greifer"] * dict_rueckspeisung["FU-Wirkungsgrad greifer"]
+            (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            * dict_rueckspeisung["faktor_greifer"] * dict_rueckspeisung["fu_wirkungsgrad_greifer"]
         )
     elif greifer_typ == "Hydraulikgreifer":
         if greifer_parameter_typ == "Schließ/Öffnungszeit":
@@ -652,49 +652,49 @@ def berechnungen_pro_tag(dict):
 
     # region Tagesberechnungen Einlagerung (Greifer schließen -> Heben -> Katzfahrt -> Kranfahrt -> Senken -> Greifer öffnen -> Heben -> Katzfahrt -> Kranfahrt -> Senken)
     
-    df_zyklen_einlager_d = df_muell["Anzahl Zyklen Mülleinlagerung / d"]
+    df_zyklen_einlager_d = df_muell["anzahl_zyklen_muelleinlagerung_pro_d"]
 
     # Verbrauch
 
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_einlager_verbrauch_zyklus = (
             df_elenergie_greifer_vierseil_schliessen + 
-            df_elenergie_hub_einlager_voll["Verbrauch"] + 
-            df_elenergie_katz_einlager_voll["Verbrauch"] + 
-            df_elenergie_kran_einlager_voll["Verbrauch"] + 
-            df_elenergie_hub_einlager_voll["Verbrauch"] +
+            df_elenergie_hub_einlager_voll["verbrauch"] + 
+            df_elenergie_katz_einlager_voll["verbrauch"] + 
+            df_elenergie_kran_einlager_voll["verbrauch"] + 
+            df_elenergie_hub_einlager_voll["verbrauch"] +
             df_elenergie_greifer_vierseil_oeffnen +
-            df_elenergie_hub_einlager_leer["Verbrauch"] +
-            df_elenergie_kran_einlager_leer["Verbrauch"] +
-            df_elenergie_katz_einlager_leer["Verbrauch"] +
-            df_elenergie_hub_einlager_leer["Verbrauch"]
+            df_elenergie_hub_einlager_leer["verbrauch"] +
+            df_elenergie_kran_einlager_leer["verbrauch"] +
+            df_elenergie_katz_einlager_leer["verbrauch"] +
+            df_elenergie_hub_einlager_leer["verbrauch"]
         )
     elif greifer_typ == "Hydraulikgreifer":
         if greifer_parameter_typ == "Schließ/Öffnungszeit":
             df_elenergie_einlager_verbrauch_zyklus = (
                 df_elenergie_greifer_schliessen_hydraulik + 
-                df_elenergie_hub_einlager_voll["Verbrauch"] + 
-                df_elenergie_katz_einlager_voll["Verbrauch"] + 
-                df_elenergie_kran_einlager_voll["Verbrauch"] + 
-                df_elenergie_hub_einlager_voll["Verbrauch"] +
+                df_elenergie_hub_einlager_voll["verbrauch"] + 
+                df_elenergie_katz_einlager_voll["verbrauch"] + 
+                df_elenergie_kran_einlager_voll["verbrauch"] + 
+                df_elenergie_hub_einlager_voll["verbrauch"] +
                 df_elenergie_greifer_oeffnen_hydraulik +
-                df_elenergie_hub_einlager_leer["Verbrauch"] +
-                df_elenergie_kran_einlager_leer["Verbrauch"] +
-                df_elenergie_katz_einlager_leer["Verbrauch"] +
-                df_elenergie_hub_einlager_leer["Verbrauch"]
+                df_elenergie_hub_einlager_leer["verbrauch"] +
+                df_elenergie_kran_einlager_leer["verbrauch"] +
+                df_elenergie_katz_einlager_leer["verbrauch"] +
+                df_elenergie_hub_einlager_leer["verbrauch"]
             )
         else:
             df_elenergie_einlager_verbrauch_zyklus = (
                 df_elenergie_greifer_hydraulik_oeffnenschliessen + 
-                df_elenergie_hub_einlager_voll["Verbrauch"] + 
-                df_elenergie_katz_einlager_voll["Verbrauch"] + 
-                df_elenergie_kran_einlager_voll["Verbrauch"] + 
-                df_elenergie_hub_einlager_voll["Verbrauch"] +
+                df_elenergie_hub_einlager_voll["verbrauch"] + 
+                df_elenergie_katz_einlager_voll["verbrauch"] + 
+                df_elenergie_kran_einlager_voll["verbrauch"] + 
+                df_elenergie_hub_einlager_voll["verbrauch"] +
                 df_elenergie_greifer_hydraulik_oeffnenschliessen +
-                df_elenergie_hub_einlager_leer["Verbrauch"] +
-                df_elenergie_kran_einlager_leer["Verbrauch"] +
-                df_elenergie_katz_einlager_leer["Verbrauch"] +
-                df_elenergie_hub_einlager_leer["Verbrauch"]
+                df_elenergie_hub_einlager_leer["verbrauch"] +
+                df_elenergie_kran_einlager_leer["verbrauch"] +
+                df_elenergie_katz_einlager_leer["verbrauch"] +
+                df_elenergie_hub_einlager_leer["verbrauch"]
             )
     df_elenergie_einlager_verbrauch_d = df_elenergie_einlager_verbrauch_zyklus * df_zyklen_einlager_d
     
@@ -703,26 +703,26 @@ def berechnungen_pro_tag(dict):
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_einlager_rueckspeisung_zyklus = (
             df_elenergie_greifer_vierseil_schliessen_rueckspeisung +
-            df_elenergie_hub_einlager_voll["Rückspeisung"] + 
-            df_elenergie_katz_einlager_voll["Rückspeisung"] + 
-            df_elenergie_kran_einlager_voll["Rückspeisung"] + 
-            df_elenergie_hub_einlager_voll["Rückspeisung"] +
+            df_elenergie_hub_einlager_voll["rueckspeisung"] + 
+            df_elenergie_katz_einlager_voll["rueckspeisung"] + 
+            df_elenergie_kran_einlager_voll["rueckspeisung"] + 
+            df_elenergie_hub_einlager_voll["rueckspeisung"] +
             df_elenergie_greifer_vierseil_oeffnen_rueckspeisung +
-            df_elenergie_hub_einlager_leer["Rückspeisung"] +
-            df_elenergie_kran_einlager_leer["Rückspeisung"] +
-            df_elenergie_katz_einlager_leer["Rückspeisung"] +
-            df_elenergie_hub_einlager_leer["Rückspeisung"]
+            df_elenergie_hub_einlager_leer["rueckspeisung"] +
+            df_elenergie_kran_einlager_leer["rueckspeisung"] +
+            df_elenergie_katz_einlager_leer["rueckspeisung"] +
+            df_elenergie_hub_einlager_leer["rueckspeisung"]
         )
     elif greifer_typ == "Hydraulikgreifer":
         df_elenergie_einlager_rueckspeisung_zyklus = (
-            df_elenergie_hub_einlager_voll["Rückspeisung"] + 
-            df_elenergie_katz_einlager_voll["Rückspeisung"] + 
-            df_elenergie_kran_einlager_voll["Rückspeisung"] + 
-            df_elenergie_hub_einlager_voll["Rückspeisung"] +
-            df_elenergie_hub_einlager_leer["Rückspeisung"] +
-            df_elenergie_kran_einlager_leer["Rückspeisung"] +
-            df_elenergie_katz_einlager_leer["Rückspeisung"] +
-            df_elenergie_hub_einlager_leer["Rückspeisung"]
+            df_elenergie_hub_einlager_voll["rueckspeisung"] + 
+            df_elenergie_katz_einlager_voll["rueckspeisung"] + 
+            df_elenergie_kran_einlager_voll["rueckspeisung"] + 
+            df_elenergie_hub_einlager_voll["rueckspeisung"] +
+            df_elenergie_hub_einlager_leer["rueckspeisung"] +
+            df_elenergie_kran_einlager_leer["rueckspeisung"] +
+            df_elenergie_katz_einlager_leer["rueckspeisung"] +
+            df_elenergie_hub_einlager_leer["rueckspeisung"]
         )
     df_elenergie_einlager_rueckspeisung_d = df_elenergie_einlager_rueckspeisung_zyklus * df_zyklen_einlager_d
 
@@ -730,43 +730,43 @@ def berechnungen_pro_tag(dict):
 
     # region Tagesberechnungen Beschickung (Greifer schließen -> Heben -> Kranfahrt -> Katzfahrt -> Greifer öffnen -> Katzfahrt -> Kranfahrt -> Senken)
 
-    df_zyklen_beschick_d = df_muell["Anzahl Zyklen Trichterbeschickung gesamt / d"]
+    df_zyklen_beschick_d = df_muell["anzahl_zyklen_trichterbeschickung_gesamt_pro_d"]
 
     # Verbrauch
 
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_beschick_verbrauch_zyklus = (
             df_elenergie_greifer_vierseil_schliessen + 
-            df_elenergie_hub_beschick_voll["Verbrauch"] +
-            df_elenergie_kran_beschick_voll["Verbrauch"] +
-            df_elenergie_katz_beschick_voll["Verbrauch"] +
+            df_elenergie_hub_beschick_voll["verbrauch"] +
+            df_elenergie_kran_beschick_voll["verbrauch"] +
+            df_elenergie_katz_beschick_voll["verbrauch"] +
             df_elenergie_greifer_vierseil_oeffnen +
-            df_elenergie_katz_beschick_leer["Verbrauch"] +
-            df_elenergie_kran_beschick_leer["Verbrauch"] +
-            df_elenergie_hub_beschick_leer["Verbrauch"]
+            df_elenergie_katz_beschick_leer["verbrauch"] +
+            df_elenergie_kran_beschick_leer["verbrauch"] +
+            df_elenergie_hub_beschick_leer["verbrauch"]
         )
     if greifer_typ == "Hydraulikgreifer":
         if greifer_parameter_typ == "Schließ/Öffnungszeit":
             df_elenergie_beschick_verbrauch_zyklus = (
                 df_elenergie_greifer_schliessen_hydraulik + 
-                df_elenergie_hub_beschick_voll["Verbrauch"] +
-                df_elenergie_kran_beschick_voll["Verbrauch"] +
-                df_elenergie_katz_beschick_voll["Verbrauch"] +
+                df_elenergie_hub_beschick_voll["verbrauch"] +
+                df_elenergie_kran_beschick_voll["verbrauch"] +
+                df_elenergie_katz_beschick_voll["verbrauch"] +
                 df_elenergie_greifer_oeffnen_hydraulik +
-                df_elenergie_katz_beschick_leer["Verbrauch"] +
-                df_elenergie_kran_beschick_leer["Verbrauch"] +
-                df_elenergie_hub_beschick_leer["Verbrauch"]
+                df_elenergie_katz_beschick_leer["verbrauch"] +
+                df_elenergie_kran_beschick_leer["verbrauch"] +
+                df_elenergie_hub_beschick_leer["verbrauch"]
             )
         else:
             df_elenergie_beschick_verbrauch_zyklus = (
                 df_elenergie_greifer_hydraulik_oeffnenschliessen + 
-                df_elenergie_hub_beschick_voll["Verbrauch"] +
-                df_elenergie_kran_beschick_voll["Verbrauch"] +
-                df_elenergie_katz_beschick_voll["Verbrauch"] +
+                df_elenergie_hub_beschick_voll["verbrauch"] +
+                df_elenergie_kran_beschick_voll["verbrauch"] +
+                df_elenergie_katz_beschick_voll["verbrauch"] +
                 df_elenergie_greifer_hydraulik_oeffnenschliessen +
-                df_elenergie_katz_beschick_leer["Verbrauch"] +
-                df_elenergie_kran_beschick_leer["Verbrauch"] +
-                df_elenergie_hub_beschick_leer["Verbrauch"]
+                df_elenergie_katz_beschick_leer["verbrauch"] +
+                df_elenergie_kran_beschick_leer["verbrauch"] +
+                df_elenergie_hub_beschick_leer["verbrauch"]
             )
     df_elenergie_beschick_verbrauch_d = df_elenergie_beschick_verbrauch_zyklus * df_zyklen_beschick_d
 
@@ -775,21 +775,21 @@ def berechnungen_pro_tag(dict):
     if greifer_typ == "Vierseil-Greifer":
         df_elenergie_beschick_rueckspeisung_zyklus = (
             df_elenergie_greifer_vierseil_schliessen_rueckspeisung +
-            df_elenergie_hub_beschick_voll["Rückspeisung"] +
-            df_elenergie_kran_beschick_voll["Rückspeisung"] +
+            df_elenergie_hub_beschick_voll["rueckspeisung"] +
+            df_elenergie_kran_beschick_voll["rueckspeisung"] +
             df_elenergie_greifer_vierseil_oeffnen_rueckspeisung +
-            df_elenergie_katz_beschick_leer["Rückspeisung"] +
-            df_elenergie_kran_beschick_leer["Rückspeisung"] +
-            df_elenergie_hub_beschick_leer["Rückspeisung"]
+            df_elenergie_katz_beschick_leer["rueckspeisung"] +
+            df_elenergie_kran_beschick_leer["rueckspeisung"] +
+            df_elenergie_hub_beschick_leer["rueckspeisung"]
         )
     if greifer_typ == "Hydraulikgreifer":
         df_elenergie_beschick_rueckspeisung_zyklus = (
-            df_elenergie_hub_beschick_voll["Rückspeisung"] +
-            df_elenergie_kran_beschick_voll["Rückspeisung"] +
-            df_elenergie_katz_beschick_voll["Rückspeisung"] +
-            df_elenergie_katz_beschick_leer["Rückspeisung"] +
-            df_elenergie_kran_beschick_leer["Rückspeisung"] +
-            df_elenergie_hub_beschick_leer["Rückspeisung"]
+            df_elenergie_hub_beschick_voll["rueckspeisung"] +
+            df_elenergie_kran_beschick_voll["rueckspeisung"] +
+            df_elenergie_katz_beschick_voll["rueckspeisung"] +
+            df_elenergie_katz_beschick_leer["rueckspeisung"] +
+            df_elenergie_kran_beschick_leer["rueckspeisung"] +
+            df_elenergie_hub_beschick_leer["rueckspeisung"]
         )
     df_elenergie_beschick_rueckspeisung_d = df_elenergie_beschick_rueckspeisung_zyklus * df_zyklen_beschick_d
 
@@ -806,9 +806,9 @@ def berechnungen_pro_tag(dict):
 
 
     return {
-        "Verbrauch": df_elenergie_verbrauch_kwh,
-        "Rückspeisung": df_elenergie_rueckspeisung_kwh,
-        "Kosten": df_elenergie_kosten_eur,
+        "verbrauch": df_elenergie_verbrauch_kwh,
+        "rueckspeisung": df_elenergie_rueckspeisung_kwh,
+        "kosten": df_elenergie_kosten_eur,
         #"CO2": pass,
     }
 

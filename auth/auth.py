@@ -1,8 +1,8 @@
 ## Hier findet die Autorisierung statt, ist tatsächlich recht simpel und funktioniert sehr gut
 
-
+# Importieren nötiger Module
 import streamlit as st
-
+# Seiteneinstellungen
 st.set_page_config(layout = "centered")
 
 def check_login():

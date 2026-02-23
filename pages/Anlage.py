@@ -1,97 +1,104 @@
+### Seite für die Eingabe der allgemeinen Anlagendaten
+## Importieren nötiger Funktionen und Module
+# Bibliotheken
 import streamlit as st
 import pandas as pd
-from auth import check_login
-from ui.components import number_standard, selectbox_standard, my_sidebar_nav
-from config.standards import STANDARDWERTE
-import time
+# Eigene Module mit Funktionen
+from ui.components import number_standard, selectbox_standard
 from typing import cast
-from ui.theme import set_background_auto_theme
+from common.page_init import page_init
+from common.flow import success_feedback
+# Standardwerte
+from config.standards import anlage, muell
 
-my_sidebar_nav()
+## Seiteneinstellungen, Hintergrund und Login-Überprüfung
+page_init("Anlagendaten", "🏭", "centered")
 
-set_background_auto_theme(
-    "assets/bg_light.jpg",
-    "assets/bg_dark.jpg",
-)
-
-st.set_page_config(layout = "centered")
-
-check_login()
-
+## Länderpreise für automatischen Tarifvorschlag laden
 df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
-df_laender = df_laender[df_laender["Land"].str.strip().str.lower() != "co2faktor"]
+df_laender = df_laender[df_laender["Land"].str.strip().str.lower() != "co2faktor"] # Zeile CO2-Faktoren rausnehmen
 
-st.header("Allgemeinen Anlagendaten")
-
-# Container für diese Seite im Session State
+## Container für diese Seite im Session State erstellen, sofern noch nicht vorhanden
 ist_state = st.session_state.setdefault("ist_anlage", {})
 anlage_state = ist_state.setdefault("anlage", {})
 
+## UI-Inhalte der Anlagenseite
+st.title("🏭Allgemeinen Anlagendaten")
+st.info("Auf dieser Seite erfassen Sie die grundlegenden technischen und betrieblichen Kenndaten der bestehenden Anlage.\n\n"
+        "Diese Werte bilden die Grundlage für die anschließende Energie-, Kosten- und CO₂-Berechnung.")
+
 # Allgemeine Daten
-st.write("# :grey[Allgemeine Daten]")
+st.subheader(":grey[Allgemeine Daten]")
 anzahl_kraene = number_standard(
     "Anzahl der Kräne",
-    STANDARDWERTE["Anlage"]["Anzahl Kräne"],
+    anlage["anzahl_kraene"],
     1, 1, 10,
     "anzl_kraene",
-    "Anzahl der Krane in der Anlage",
+    "Wie viele Krananlagen gleichzeitig zur Beschickung/Handhabung genutzt werden. Wird zur Skalierung von Energie, Kosten und CO₂ verwendet",
     0
 )
 anzahl_trichter = number_standard(
     "Anzahl der Trichter/Schuren",
-    STANDARDWERTE["Anlage"]["Anzahl Trichter"],
+    anlage["anzahl_trichter"],
     1, 1, 10,
     "anzl_trichter",
-    "Anzahl der Trichter/Schuren zum Beschicken",
+    "Wie viele Beschickungsstellen (Trichter/Schuren) die Anlage besitzt. Relevant für die Abschätzung von Spielzyklen und Materialumschlag.",
     0
 )
 verbrennung_trichter = number_standard(
-    "Verbrennung je Trichter/Schure [kg]",
-    STANDARDWERTE["Anlage"]["Verbrennung je Trichter"],
+    "Verbrennung je Trichter/Schure in der Stunde [kg/h]",
+    anlage["verbrennung_je_trichter_kg"],
     0, 100, 100_000,
     "vbrng_trichter",
-    "Verbrennung pro Trichter/Schure in kg"
+    "Masse, die je Trichter/Schure pro Stunde umgesetzt wird. Bestimmt die erforderliche Umschlagmenge und damit Betriebszeiten."
 )
 
 # Mülldaten
-st.write("# :grey[Eingabe der Mülldaten]")
-müll_anlieferung_h = number_standard(
+st.subheader(":grey[Eingabe der Mülldaten]")
+muell_anlieferung_h = number_standard(
     "Durchschnittliche Müllanliefermenge pro Stunde [kg]",
-    STANDARDWERTE["Müll"]["Müll Anliefermenge in der Stunde[kg]"],
+    muell["anliefermenge_kg_pro_stunde"],
     0, 100, 1_000_000,
     "ml_anlfrmg",
+    "„Durchschnittlicher Massenstrom der Anlieferung. Grundlage für die tägliche Umschlagmenge und die Auslastung."
 )
-müll_dichte_beschickung = number_standard(
+muell_dichte_beschickung = number_standard(
     "Müll Dichte bei Beschickung [kg/m³]",
-    STANDARDWERTE["Müll"]["Müll Dichte Beschickung[kg/m³]"],
+    muell["dichte_beschickung_kg_m3"],
     0, 100, 2_000,
     "ml_dcht_beschickung",
+    "Schüttdichte im Greifer bei der Beschickung. Einfluss auf Greifervolumen, Zyklenanzahl und Spielzeit."
 )
-müll_dichte_anlieferung = number_standard(
+muell_dichte_anlieferung = number_standard(
     "Müll Dichte bei Einlagerung [kg/m³]",
-    STANDARDWERTE["Müll"]["Müll Dichte Einlagerung[kg/m³]"],
+    muell["dichte_einlagerung_kg_m3"],
     0, 100, 2_000,
     "ml_dcht_anlieferung",
+    "Schüttdichte im Bunker/bei Einlagerung. Wird genutzt, um Volumen- und Weg-/Zeitanteile realistisch zu bewerten."
 )
-müll_anlieferdauer = number_standard(
+muell_anlieferdauer = number_standard(
     "Müll Anlieferdauer [h/d]",
-    STANDARDWERTE["Müll"]["Müll Anlieferdauer Stunden[h]"],
+    muell["anlieferdauer_stunden_pro_tag"],
     1, 1, 24,
     "ml_anlieferdr",
-    "Durchschnittliche tägliche Anlieferdauer in Stunden",
+    "Wie viele Stunden pro Tag Müll angeliefert wird. Bestimmt die tägliche Gesamtmenge (Massenstrom * Zeit).",
     0
 )
 
 # Kosten etc.
+st.subheader(":grey[Standort und Kosten]")
 anlage_standort = selectbox_standard(
-    titel = "Standort der Anlage",
-    standard = STANDARDWERTE["Anlage"]["Standort"],
-    auswahl = df_laender["Land"].tolist(),
-    key = "anl_standort",
-    helptext = "In welchem Land befindet sich die Anlage?"
+    "Standort der Anlage",
+    anlage["standort"],
+    df_laender["Land"].tolist(),
+    "anl_standort",
+    "Land/Region der Anlage. Daraus werden Strompreis und CO₂-Faktoren abgeleitet."
 )
-s = cast(pd.Series, df_laender.loc[df_laender["Land"] == anlage_standort, "Preis in c/kWh"]) 
-preis = s.iloc[0] # Länderpreis direkt nach vorheriger Eingabe raussuchen
+
+# Automatischer Tarifvorschlag basierend auf Standort
+auswahl_land = cast(pd.Series, df_laender.loc[df_laender["Land"] == anlage_standort, "Preis in c/kWh"]) 
+preis = auswahl_land.iloc[0]
+
 energie_kosten = number_standard(
     "Höhe der Tarifenergiekosten des Standortes [c/kWh]",
     preis,
@@ -99,27 +106,25 @@ energie_kosten = number_standard(
     0.1,
     200,
     "enrgy_kostn",
-    "Quelle zu automatischem Tarifvorschlag: https://de.statista.com/statistik/daten/studie/151260/umfrage//strompreise-fuer-industriekunden-in-europa/",
+    "Strompreis für die Berechnung der Betriebskosten. Vorschlag wird aus der Ländertabelle übernommen, kann aber manuell angepasst werden.",
 )
 
-button = st.button("Speichern und weiter")
+button = st.button("Speichern", f"speichern_anlage")
 
 if button:
-    # alles in den Session-State schreiben
     anlage_state.update(
         {
             "anzahl_kraene": anzahl_kraene,
             "anzahl_trichter": anzahl_trichter,
             "verbrennung_trichter_kg": verbrennung_trichter,
-            "müll_anlieferung_h_kg": müll_anlieferung_h,
-            "müll_dichte_beschickung_kg_pro_m3": müll_dichte_beschickung,
-            "müll_dichte_anlieferung_kg_pro_m3": müll_dichte_anlieferung,
+            "muell_anlieferung_h_kg": muell_anlieferung_h,
+            "muell_dichte_beschickung_kg_pro_m3": muell_dichte_beschickung,
+            "muell_dichte_anlieferung_kg_pro_m3": muell_dichte_anlieferung,
             "anlage_standort": anlage_standort,
             "energie_kosten": energie_kosten,
-            "müll_anlieferdauer": müll_anlieferdauer
+            "muell_anlieferdauer": muell_anlieferdauer
         }
     )
+    st.session_state["anlage_saved"] = True
 
-    st.write(":green[Erfolgreich gespeichert✅]")
-    time.sleep(2)
-    st.switch_page("pages/Greifer.py")
+success_feedback("anlage", "greifer")

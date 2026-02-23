@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from typing import Literal
 
+DeltaColor = Literal["normal", "inverse", "off"] # Auswahl für deltacolor festlegen, um schreibfehler zu verhindern
+
 df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
 
 ## Helper für die Faktoreneingabe---------------------------------------------------------------
@@ -243,60 +245,7 @@ def text_soll(
 
 ## Visualisierung-------------------------------------------------------------------------------
 # Helper für das Erstellen der Plots mit links den Daten und rechts dem Plot plus Slider für die Hochrechnungen auf verschiedene Zeiträume
-DeltaColor = Literal["normal", "inverse", "off"] # Auswahl für deltacolor festlegen, um schreibfehler zu verhindern
-def plot_slider_global():
-    label = st.select_slider(
-        "Zeitraum wählen",
-        options=["1 Tag", "1 Woche", "1 Monat", "1 Jahr",
-                "2 Jahre", "3 Jahre", "5 Jahre", "10 Jahre", "20 Jahre"],
-        value="1 Jahr",
-        key="slider_global"
-    )
-
-    faktor_map = {
-        "1 Tag": 1,
-        "1 Woche": 7,
-        "1 Monat": 30,
-        "1 Jahr": 365,
-        "2 Jahre": 730,
-        "3 Jahre": 1095,
-        "5 Jahre": 1825,
-        "10 Jahre": 3650,
-        "20 Jahre": 7300,
-    }
-    faktor = faktor_map[label]
-
-    return faktor
-
-def plot_ldaten_rdiagramm(titel, wertart, ist_tag, neu_tag, faktor, unterschied: DeltaColor = "inverse"):
-    
-    st.divider()
-    st.header(titel)
-
-    ist_summe = ist_tag * faktor
-    neu_summe = neu_tag * faktor
-    einsparung = (ist_summe - neu_summe) *-1
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write("## ")
-        st.subheader("Errechnete Werte")
-        st.metric(f"{wertart} (Ist)", f"{ist_summe:,.2f}".replace(".","buffer").replace(",",".").replace("buffer",","))
-        st.metric(f"{wertart} (Neu)", f"{neu_summe:,.2f}".replace(".","buffer").replace(",",".").replace("buffer",","), delta=f"{einsparung:,.2f}".replace(".","buffer").replace(",",".").replace("buffer",","), delta_color=unterschied)
-
-    with col2:
-        df = pd.DataFrame({"Variante": ["Ist", "Neu"], wertart: [ist_summe, neu_summe]})
-        fig = px.bar(df, x="Variante", y=wertart, color="Variante", text_auto=True, color_discrete_map={"Ist": "#d9534f", "Neu": "#5cb85c",})
-        st.plotly_chart(fig, use_container_width=True)
-
-    st.divider()
-
-import pandas as pd
-import streamlit as st
-import plotly.graph_objects as go
-
-
-def _zeitraum_suffix_from_factor(faktor: float) -> str:
+def zeitraum_suffix_from_factor(faktor: float) -> str:
     """
     Wandelt typische Faktoren in ein schönes Label um.
     Erwartung: faktor skaliert von "pro Tag" auf Zeitraum.
@@ -334,17 +283,58 @@ def _zeitraum_suffix_from_factor(faktor: float) -> str:
 
     return "Zeitraum"
 
-
-def _fmt_kg_de(value_kg: float) -> str:
+def fmt_kg_de(value_kg: float) -> str:
     return f"{value_kg:,.2f} kg".replace(",", "X").replace(".", ",").replace("X", ".")
 
+def plot_slider_global():
+    label = st.select_slider(
+        "Zeitraum wählen",
+        options=["1 Tag", "1 Woche", "1 Monat", "1 Jahr",
+                "2 Jahre", "3 Jahre", "5 Jahre", "10 Jahre", "20 Jahre"],
+        value="1 Jahr",
+        key="slider_global"
+    )
 
-def plot_aufteilung_CO2(
-    standort: str,
-    kWh_ist_proTag: float,
-    kWh_neu_proTag: float,
-    zeitraum_faktor: float,
-):
+    faktor_map = {
+        "1 Tag": 1,
+        "1 Woche": 7,
+        "1 Monat": 30,
+        "1 Jahr": 365,
+        "2 Jahre": 730,
+        "3 Jahre": 1095,
+        "5 Jahre": 1825,
+        "10 Jahre": 3650,
+        "20 Jahre": 7300,
+    }
+    faktor = faktor_map[label]
+
+    return faktor
+
+def plot_vergleich_ldaten_rdiagramm(titel, wertart, ist_tag, neu_tag, faktor, unterschied: DeltaColor = "inverse"):
+    
+    st.divider()
+    st.header(titel)
+
+    ist_summe = ist_tag * faktor
+    neu_summe = neu_tag * faktor
+    einsparung = (ist_summe - neu_summe) *-1
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("## ")
+        st.subheader("Errechnete Werte")
+        st.metric(f"{wertart} (Ist)", f"{ist_summe:,.2f}".replace(".","buffer").replace(",",".").replace("buffer",","))
+        st.metric(f"{wertart} (Neu)", f"{neu_summe:,.2f}".replace(".","buffer").replace(",",".").replace("buffer",","), delta=f"{einsparung:,.2f}".replace(".","buffer").replace(",",".").replace("buffer",","), delta_color=unterschied)
+
+    with col2:
+        df = pd.DataFrame({"Variante": ["Ist", "Neu"], wertart: [ist_summe, neu_summe]})
+        fig = px.bar(df, x="Variante", y=wertart, color="Variante", text_auto=True, color_discrete_map={"Ist": "#d9534f", "Neu": "#5cb85c",})
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+def plot_vergleich_aufteilung_co2(standort: str, kWh_ist_proTag: float, kWh_neu_proTag: float, zeitraum_faktor: float):
+
     ENERGIE_SPALTEN = ["Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges"]
 
     # --- Zeile für das Land holen ---
@@ -380,7 +370,7 @@ def plot_aufteilung_CO2(
     gesamt_neu_kg = float(co2_neu_g.sum()) / 1000.0
     diff_kg = gesamt_ist_kg - gesamt_neu_kg
 
-    suffix = _zeitraum_suffix_from_factor(zeitraum_faktor)  # "Tag", "Woche", "Monat", "Jahr", "20 Jahre", ...
+    suffix = zeitraum_suffix_from_factor(zeitraum_faktor)  # "Tag", "Woche", "Monat", "Jahr", "20 Jahre", ...
 
 
     st.header(f"CO₂-Aufteilung pro {suffix} in {standort}")
@@ -405,18 +395,111 @@ def plot_aufteilung_CO2(
 
     # --- Kennzahlen (Labels dynamisch) ---
     c1, c2, c3 = st.columns(3)
-    c1.metric(f"IST CO₂ / {suffix}", _fmt_kg_de(gesamt_ist_kg))
-    c2.metric(f"NEU CO₂ / {suffix}", _fmt_kg_de(gesamt_neu_kg))
-    c3.metric(f"Ersparnis / {suffix}", _fmt_kg_de(diff_kg))
+    c1.metric(f"IST CO₂ / {suffix}", fmt_kg_de(gesamt_ist_kg))
+    c2.metric(f"NEU CO₂ / {suffix}", fmt_kg_de(gesamt_neu_kg))
+    c3.metric(f"Ersparnis / {suffix}", fmt_kg_de(diff_kg))
 
+def plot_ldaten_rdiagramm(
+    titel,
+    wertart,
+    ist_tag,
+    faktor,
+):
+    st.divider()
+    st.header(titel)
+
+    ist_summe = ist_tag * faktor
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("## ")
+        st.subheader("Erechnete werte")
+        st.metric(
+            f"{wertart}",
+            f"{ist_summe:,.2f}".replace(".", "buffer").replace(",", ".").replace("buffer", ","),
+        )
+
+    with col2:
+        df = pd.DataFrame({"variante": ["ist"], wertart: [ist_summe]})
+        fig = px.bar(
+            df,
+            x="variante",
+            y=wertart,
+            color="variante",
+            text_auto=True,
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+def plot_aufteilung_co2(standort: str, kwh_ist_pro_tag: float, zeitraum_faktor: float):
+
+    ENERGIE_SPALTEN = ["Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges"]
+
+    # --- zeile fuer das land holen ---
+    row_df = df_laender.loc[df_laender["Land"] == standort]
+    if row_df.empty:
+        st.error(f"Land '{standort}' nicht gefunden.")
+        return
+    land_row = row_df.iloc[0]
+
+    # --- co2-faktor-zeile holen ---
+    co2_df = df_laender.loc[df_laender["Land"] == "CO2Faktor"]
+    if co2_df.empty:
+        st.error("Zeile 'CO2Faktor' nicht gefunden.")
+        return
+    co2_row = co2_df.iloc[0]
+
+    # --- werte in floats ---
+    anteile_pct = pd.to_numeric(land_row[ENERGIE_SPALTEN], errors="coerce").fillna(0.0)   # %
+    co2_faktoren = pd.to_numeric(co2_row[ENERGIE_SPALTEN], errors="coerce").fillna(0.0)  # gco2/kwh
+
+    # --- co2 je quelle (g/tag) ---
+    def co2_g_pro_tag(kwh_pro_tag: float) -> pd.Series:
+        return kwh_pro_tag * (anteile_pct / 100.0) * co2_faktoren
+
+    co2_ist_g_tag = co2_g_pro_tag(kwh_ist_pro_tag)
+
+    # --- skalierung auf zeitraum ---
+    co2_ist_g = co2_ist_g_tag * float(zeitraum_faktor)
+
+    gesamt_ist_kg = float(co2_ist_g.sum()) / 1000.0
+
+    suffix = zeitraum_suffix_from_factor(zeitraum_faktor)  # "tag", "woche", "monat", "jahr", "20 jahre", ...
+
+    st.header(f"CO₂-Aufteilung pro {suffix} in {standort}")
+
+    # --- plot (immer aufteilung) ---
+    fig = go.Figure()
+    for quelle in ENERGIE_SPALTEN:
+        fig.add_trace(go.Bar(
+            x=["IST"],
+            y=[float(co2_ist_g[quelle]) / 1000.0],
+            name=quelle
+        ))
+
+    fig.update_layout(
+        title="",
+        xaxis_title="Variante",
+        yaxis_title=f"CO2 (kg/{suffix})",
+        barmode="stack",
+        legend_title="Energiequelle"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # --- kennzahl ---
+    st.metric(f"IST CO2 / {suffix}", fmt_kg_de(gesamt_ist_kg))
+    
+# Anzeige Navigationsleiste
 def my_sidebar_nav():
-    if "neu_anlage" in st.session_state:
+    if st.session_state.get("marker_navigation", False):
         with st.sidebar:
-            st.page_link("app.py", label="🏠 Startseite")
-            st.page_link("pages/Anlage.py", label="🏭 Anlage")
-            st.page_link("pages/Greifer.py", label="🪝 Greifer")
-            st.page_link("pages/Krananlage.py", label="🏗️ Kran")
-            st.page_link("pages/Wege.py", label="📐 Wege")
-            st.page_link("pages/Rückspeisung.py", label="♻️ Rückspeisung")
-            st.page_link("pages/Auswertung.py", label="📊 Auswertung")
-            st.page_link("pages/ModellQuellen.py", label="📖 Modell & Quellen")
+            st.page_link("pages/startseite.py", label="🏠 Startseite")
+            st.page_link("pages/anlage.py", label="🏭 Anlage")
+            st.page_link("pages/greifer.py", label="🪝 Greifer")
+            st.page_link("pages/krananlage.py", label="🏗️ Kran")
+            st.page_link("pages/wege.py", label="📐 Wege")
+            st.page_link("pages/rueckspeisung.py", label="♻️ Rückspeisung")
+            st.page_link("pages/auswertung.py", label="📊 Auswertung")
+            st.page_link("pages/modell_quellen.py", label="📖 Modell & Quellen")
