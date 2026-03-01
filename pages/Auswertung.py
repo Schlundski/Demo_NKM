@@ -16,7 +16,7 @@ from config.standards import hydr, viers, wege, ruecksp
 # Marker für Navigationsleiste aktivieren
 st.session_state.setdefault("marker_navigation", True)
 page_init("Auswertung", "📊", "wide")
-
+st.write(st.session_state)
 ## Container für diese Seite im Session State erstellen, sofern noch nicht vorhanden
 # Bestandsanlagen #
 ist_state = st.session_state.get("ist_anlage", {})
@@ -222,7 +222,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
                 )
 
                 # Die Auswahl, ob Schließ/Öffnungszeit oder Geschwindigkeit/Beschleunigung eingegeben werden soll
-                if soll_auswahl_parameter == "schliess_oeffnungszeit":
+                if soll_auswahl_parameter == "Schließ/Öffnungszeit":
                     parameter_index = 0
                 else:
                     parameter_index = 1
@@ -231,7 +231,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
                 if soll_auswahl_parameter not in ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"]:
                     soll_auswahl_parameter = "Schließ/Öffnungszeit"  # Standardwert setzen, falls ungültige Auswahl getroffen wird
 
-                if soll_auswahl_parameter == "schliess_oeffnungszeit":
+                if soll_auswahl_parameter == "Schließ/Öffnungszeit":
                     soll_oeffnungszeit_greifen = number_standard(
                         "Öffnungszeit [s]",
                         ist_greifer_state["oeffnungszeit_s"],
@@ -245,7 +245,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
                         "soll_schliesszeit",
                     )
 
-                if soll_auswahl_parameter == "geschwindigkeit_beschleunigung":
+                if soll_auswahl_parameter == "Geschwindigkeit/Beschleunigung":
                     soll_ges_greifen = number_soll(
                         "Greifergeschwindigkeit beim Öffnen/Schließen [m/min]",
                         ist_greifer_state["geschwindigkeit_m_pro_min"],
@@ -756,6 +756,9 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
     # Visualisierung der Berechnungen
     faktor = plot_slider_global()
 
+    st.write(st.session_state["ist_anlage"])
+    st.write(st.session_state["neu_anlage"])
+
     plot_vergleich_ldaten_rdiagramm("Energieverbrauch", "kWh",  
                         berechnungen_pro_tag(st.session_state["ist_anlage"])["verbrauch"],
                         berechnungen_pro_tag(st.session_state["neu_anlage"])["verbrauch"],
@@ -764,7 +767,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
     plot_vergleich_ldaten_rdiagramm("Energierückspeisung", "kWh",
                         -1* berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
                         -1* berechnungen_pro_tag(st.session_state["neu_anlage"])["rueckspeisung"],
-                        faktor, "normal"
+                        faktor, "inverse"
                         )
     plot_vergleich_ldaten_rdiagramm(f"Approximierte Betriebskosten in {st.session_state['ist_anlage']['anlage']['anlage_standort']}", "EUR€",
                         berechnungen_pro_tag(st.session_state["ist_anlage"])["kosten"],

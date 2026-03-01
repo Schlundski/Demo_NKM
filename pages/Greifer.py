@@ -160,10 +160,14 @@ elif auswahl_greifer == hydr["greiferart"]:
         "Typischer Arbeitsdruck im Hydrauliksystem. Grundlage für Leistungs-/Energieabschätzung."
     )
 
-button = st.button("Speichern", "speichern_greifer")
 
-if button:
-    greifer_state.update(
+# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
+col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
+with col1:
+    button = st.button("Speichern", key="speichern_greifer")
+
+    if button:
+        greifer_state.update(
         # alles in den Session-State speichern, damit es auf den folgenden Seiten verfügbar ist
         {
             "auswahl_parameter": auswahl_parameter,
@@ -179,8 +183,12 @@ if button:
             "volumenstrom_l_pro_min": volumenstrom,
             "betriebsdruck_bar": betriebsdruck,
         }
-    )
-    st.session_state["greifer_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
+        )
+        st.session_state["greifer_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
 
-# Feedback und Weiterleitung zur nächsten Seite, wenn gespeichert wurde
-success_feedback("greifer", "krananlage")
+if st.session_state.get("greifer_saved", False):
+    with col2:       
+        st.success(f'Eingaben der Seite Greifer erfolgreich gespeichert ✅') 
+
+    with col3:
+        success_feedback("greifer", "krananlage")

@@ -339,46 +339,53 @@ with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open
           st.session_state["expander_kran_open"] = False
           st.rerun()
 
-button = st.button("Speichern", "speichern_krananlage")
+# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
+col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
+with col1:
+    button = st.button("Speichern", "speichern_krananlage")
 
-if button:
+    if button:
     # Alle eingegebenen Werte in den Session State speichern, damit sie auf den folgenden Seiten verfügbar sind
-    kran_state.update(
-        {
-            "hubwerk": {
-                "seilgewicht_kg": seilgewicht_kg,
-                "hub_geschwindigkeit_m_pro_min": hub_geschwindigkeit_m_min,
-                "hub_beschleunigung_m_pro_s2": hub_beschleunigung_m_s2,
-                "anzahl_motoren": anzahl_motoren_hub,
-                "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_hub,
-                "wirkungsgrad_seiltrieb": wirkungsgrad_seiltrieb,
-                "getriebestufen": getriebestufen_hub,
-                "wirkungsgrad_motor_hub": wirkungsgrad_motor_hub
-            },
-            "katze": {
-                "gewicht_kg": gewicht_katze_kg,
-                "geschwindigkeit_m_pro_min": geschwindigkeit_katze_m_min,
-                "beschleunigung_m_pro_s2": beschleunigung_katze_m_s2,
-                "anzahl_motoren": anzahl_motoren_katze,
-                "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_katze,
-                "getriebestufen": getriebestufen_katze,
-                "fahrwiderstand_kg_pro_t": fahrwiderstand_katze_kg_t,
-                "wirkungsgrad_motor_katze": wirkungsgrad_motor_katze
-            },
-            "kranfahrwerk": {
-                "gewicht_kg": gewicht_kran_kg,
-                "geschwindigkeit_m_pro_min": geschwindigkeit_kran_m_min,
-                "beschleunigung_m_pro_s2": beschleunigung_kran_m_s2,
-                "anzahl_motoren": anzahl_motoren_kran,
-                "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_kran,
-                "wirkungsgrad_vorgelege": wirkungsgrad_vorgelege,
-                "getriebestufen": getriebestufen_kran,
-                "fahrwiderstand_kg_pro_t": fahrwiderstand_kran_kg_t,
-                "wirkungsgrad_motor_kran": wirkungsgrad_motor_kran
-            },
-        }
-    )
-    st.session_state["krananlage_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
+        kran_state.update(
+            {
+                "hubwerk": {
+                    "seilgewicht_kg": seilgewicht_kg,
+                    "hub_geschwindigkeit_m_pro_min": hub_geschwindigkeit_m_min,
+                    "hub_beschleunigung_m_pro_s2": hub_beschleunigung_m_s2,
+                    "anzahl_motoren": anzahl_motoren_hub,
+                    "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_hub,
+                    "wirkungsgrad_seiltrieb": wirkungsgrad_seiltrieb,
+                    "getriebestufen": getriebestufen_hub,
+                    "wirkungsgrad_motor_hub": wirkungsgrad_motor_hub
+                },
+                "katze": {
+                    "gewicht_kg": gewicht_katze_kg,
+                    "geschwindigkeit_m_pro_min": geschwindigkeit_katze_m_min,
+                    "beschleunigung_m_pro_s2": beschleunigung_katze_m_s2,
+                    "anzahl_motoren": anzahl_motoren_katze,
+                    "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_katze,
+                    "getriebestufen": getriebestufen_katze,
+                    "fahrwiderstand_kg_pro_t": fahrwiderstand_katze_kg_t,
+                    "wirkungsgrad_motor_katze": wirkungsgrad_motor_katze
+                },
+                "kranfahrwerk": {
+                    "gewicht_kg": gewicht_kran_kg,
+                    "geschwindigkeit_m_pro_min": geschwindigkeit_kran_m_min,
+                    "beschleunigung_m_pro_s2": beschleunigung_kran_m_s2,
+                    "anzahl_motoren": anzahl_motoren_kran,
+                    "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_kran,
+                    "wirkungsgrad_vorgelege": wirkungsgrad_vorgelege,
+                    "getriebestufen": getriebestufen_kran,
+                    "fahrwiderstand_kg_pro_t": fahrwiderstand_kran_kg_t,
+                    "wirkungsgrad_motor_kran": wirkungsgrad_motor_kran
+                },
+            }
+        )
+        st.session_state["krananlage_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
 
-# Feedback und Weiterleitung zur nächsten Seite, wenn gespeichert wurde
-success_feedback("krananlage", "wege")
+if st.session_state.get("krananlage_saved", False):
+    with col2:       
+        st.success(f'Eingaben der Seite Krananlage erfolgreich gespeichert ✅') 
+
+    with col3:
+        success_feedback("krananlage", "wege")

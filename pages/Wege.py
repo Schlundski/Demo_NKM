@@ -56,7 +56,7 @@ weg_kranfahrt_m = number_standard(
     "Typische Fahrstrecke des Krans beim Einlagern pro Zyklus. Beeinflusst Spielzeit und Energiebedarf der Kranfahrt.",
     0
 )
-if ist_state.get("greifer", {}).get("typ") == "vierseil_greifer":
+if ist_state.get("greifer", {}).get("typ") == "Vierseil-Greifer":
     weg_oeffnenschliessn_m = number_standard(
         "Referenzweg Greifer Öffnen/Schließen",
         wege["oeffnen_schliessen_m"],
@@ -86,10 +86,14 @@ if anzahl_trichter > 0:
 else:
     st.warning("Bitte zuerst in der Seite \"Anlage\" die Anzahl der Trichter eingeben.")
 
-button = st.button("Speichern", "speichern_wege")
 
-if button:
-    wege_state.update(
+# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
+col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
+with col1:
+    button = st.button("Speichern", "speichern_wege")
+
+    if button:
+        wege_state.update(
         # alles in den Session-State speichern, damit sie auf den folgenden Seiten verfügbar ist
         {
             "weg_hebensenken_m": weg_hebensenken_m,
@@ -98,8 +102,12 @@ if button:
             "weg_oeffnen_schliessen_m": weg_oeffnenschliessn_m,
             "weg_trichter_m": weg_trichter,
         }
-    )
-    st.session_state["wege_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
+        )
+        st.session_state["wege_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
 
-# Feedback und Weiterleitung zur nächsten Seite, wenn gespeichert wurde
-success_feedback("wege", "rueckspeisung")
+if st.session_state.get("wege_saved", False):
+    with col2:       
+        st.success(f'Eingaben der Seite Wege erfolgreich gespeichert ✅') 
+
+    with col3:
+        success_feedback("wege", "rueckspeisung")

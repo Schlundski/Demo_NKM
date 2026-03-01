@@ -73,10 +73,13 @@ rueckspeisung_katz = rueckspeisung_standard(
     2
 )
 
-button = st.button("Speichern", "speichern_rueckspeisung")
+# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
+col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
+with col1:
+    button = st.button("Speichern", "speichern_rueckspeisung")
 
-if button:
-    rueckspeisung_state.update(
+    if button:
+        rueckspeisung_state.update(
         # alles in den Session-State speichern, damit es auf den folgenden Seiten verfügbar ist
         {
             "faktor_greifer": rueckspeisung_greifer[1],
@@ -88,8 +91,12 @@ if button:
             "faktor_katze": rueckspeisung_katz[1],
             "fu_wirkungsgrad_katze": rueckspeisung_katz[0]
         }
-    )
-    st.session_state["rueckspeisung_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
+        )
+        st.session_state["rueckspeisung_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
 
-# Feedback und Weiterleitung zur nächsten Seite, wenn gespeichert wurde
-success_feedback("rueckspeisung", "auswertung")
+if st.session_state.get("rueckspeisung_saved", False):
+    with col2:       
+        st.success(f'Eingaben der Seite Rückspeisung erfolgreich gespeichert ✅') 
+
+    with col3:
+        success_feedback("rueckspeisung", "auswertung")

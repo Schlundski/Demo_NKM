@@ -109,22 +109,30 @@ energie_kosten = number_standard(
     "Strompreis für die Berechnung der Betriebskosten. Vorschlag wird aus der Ländertabelle übernommen, kann aber manuell angepasst werden.",
 )
 
-button = st.button("Speichern", f"speichern_anlage")
+# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
+col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
+with col1:
+    button = st.button("Speichern", key="speichern_anlage")
 
-if button:
-    anlage_state.update(
-        {
-            "anzahl_kraene": anzahl_kraene,
-            "anzahl_trichter": anzahl_trichter,
-            "verbrennung_trichter_kg": verbrennung_trichter,
-            "muell_anlieferung_h_kg": muell_anlieferung_h,
-            "muell_dichte_beschickung_kg_pro_m3": muell_dichte_beschickung,
-            "muell_dichte_anlieferung_kg_pro_m3": muell_dichte_anlieferung,
-            "anlage_standort": anlage_standort,
-            "energie_kosten": energie_kosten,
-            "muell_anlieferdauer": muell_anlieferdauer
-        }
-    )
-    st.session_state["anlage_saved"] = True
+    if button:
+        anlage_state.update(
+            {
+                "anzahl_kraene": anzahl_kraene,
+                "anzahl_trichter": anzahl_trichter,
+                "verbrennung_trichter_kg": verbrennung_trichter,
+                "muell_anlieferung_h_kg": muell_anlieferung_h,
+                "muell_dichte_beschickung_kg_pro_m3": muell_dichte_beschickung,
+                "muell_dichte_anlieferung_kg_pro_m3": muell_dichte_anlieferung,
+                "anlage_standort": anlage_standort,
+                "energie_kosten": energie_kosten,
+                "muell_anlieferdauer": muell_anlieferdauer
+            }
+        )
+        st.session_state["anlage_saved"] = True
 
-success_feedback("anlage", "greifer")
+if st.session_state.get("anlage_saved", False):
+    with col2:       
+        st.success(f'Eingaben der Seite Anlage erfolgreich gespeichert ✅') 
+
+    with col3:
+        success_feedback("anlage", "greifer")

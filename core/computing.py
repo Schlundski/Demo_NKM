@@ -108,7 +108,7 @@ def mechleistungkatzfahrt(gewicht_seile, gewicht_greifer_leer, greifer_volumen, 
             motor_auswahl = leistung
             break
  
-    # Greifer leer                                     # [1] = [1] ** [1]
+    # Greifer leer                                 
     gewicht_gesamt_leer =           gewicht_greifer_leer + gewicht_katze + gewicht_seile                                # [kg] = [kg] + [kg] + [kg]
  
     motor_leistung_beharrung_leer = (fahrwerkwiderstand / 1000) * gewicht_gesamt_leer * 9.81 * geschwindigkeit_ms \
@@ -799,7 +799,7 @@ def berechnungen_pro_tag(dict):
 
     df_elenergie_verbrauch_kwh      = (df_elenergie_beschick_verbrauch_d + df_elenergie_einlager_verbrauch_d) / 3600
     df_elenergie_rueckspeisung_kwh  = (df_elenergie_beschick_rueckspeisung_d + df_elenergie_einlager_rueckspeisung_d) / 3600
-
+    
     # region Tagesberechnungen Energiekosten nach Region
 
     df_elenergie_kosten_eur = df_elenergie_verbrauch_kwh * anlage_energie_kosten / 100  # Euro für gesamtverbrauch
