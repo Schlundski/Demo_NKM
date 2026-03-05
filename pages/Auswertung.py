@@ -227,7 +227,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
                 else:
                     parameter_index = 1
                 soll_auswahl_parameter = st.radio("Schließ/Öffnungszeit oder Geschwindigkeit/Beschleunigung eingeben?", 
-                        ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"], key="soll_radio_greifer_oeffnen_schliessen", index=parameter_index)
+                        ["Schließ/Öffnungszeit (empfohlen)", "Geschwindigkeit/Beschleunigung"], key="soll_radio_greifer_oeffnen_schliessen", index=parameter_index)
                 if soll_auswahl_parameter not in ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"]:
                     soll_auswahl_parameter = "Schließ/Öffnungszeit"  # Standardwert setzen, falls ungültige Auswahl getroffen wird
 
