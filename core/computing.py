@@ -356,7 +356,13 @@ def berechnungen_pro_tag(dict):
     df_spielzeiten_kran_einlager = spielzeitenberechnung(kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_beschleunigung_m_pro_s2, wege_weg_kranfahrt_einlagern_m)
     df_kran_beschick_wege_mittel = sum(wege_weg_trichter_m.values()) / len(wege_weg_trichter_m)
     df_spielzeiten_kran_beschick = spielzeitenberechnung(kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_beschleunigung_m_pro_s2, df_kran_beschick_wege_mittel)
-    df_spielzeiten_greifer = spielzeitenberechnung(greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2, wege_weg_oeffnen_schliessen_m)
+    if greifer_typ == "Hydraulikgreifer":
+        if greifer_parameter_typ == "Schließ/Öffnungszeit":
+            df_spielzeiten_greifer = greifer_schliesszeit_s + greifer_oeffnungszeit_s
+        else:
+            df_spielzeiten_greifer = spielzeitenberechnung(greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2, wege_weg_oeffnen_schliessen_m)
+    else:
+        df_spielzeiten_greifer = spielzeitenberechnung(greifer_geschwindigkeit_m_pro_min, greifer_beschleunigung_m_pro_s2, wege_weg_oeffnen_schliessen_m)
     # endregion
 
     # region grundlegende mechanische Leistungsberechnungen

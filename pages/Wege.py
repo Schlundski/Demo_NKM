@@ -56,19 +56,30 @@ weg_kranfahrt_m = number_standard(
     "Typische Fahrstrecke des Krans beim Einlagern pro Zyklus. Beeinflusst Spielzeit und Energiebedarf der Kranfahrt.",
     0
 )
-if ist_state.get("greifer", {}).get("typ") == "Vierseil-Greifer":
+if ist_state["greifer"]["typ"] == "Hydraulikgreifer":
     weg_oeffnenschliessn_m = number_standard(
         "Referenzweg Greifer Öffnen/Schließen",
-        wege["oeffnen_schliessen_m"],
+        wege["oeffnen_schliessen_m_hydraulik"],
+        0,
+        1,
+        10,
+        "wg_ofnschl_m",
+        "Typischer Bewegungsweg beim Öffnen/Schließen. Wird zur Abschätzung der Zeit-/Energieanteile dieser Bewegung verwendet.\n" \
+        "Bei Hydraulikgreifern wird der Weg der Schaufelspitzen verwendet, bei Vierseil-Greifern der die Strecke der Zugseile.",
+        0
+    )
+else:
+    weg_oeffnenschliessn_m = number_standard(
+        "Referenzweg Greifer Öffnen/Schließen",
+        wege["oeffnen_schliessen_m_vierseil"],
         0,
         1,
         200,
         "wg_ofnschl_m",
-        "Typischer Bewegungsweg beim Öffnen/Schließen. Wird zur Abschätzung der Zeit-/Energieanteile dieser Bewegung verwendet.",
+        "Typischer Bewegungsweg beim Öffnen/Schließen. Wird zur Abschätzung der Zeit-/Energieanteile dieser Bewegung verwendet.\n" \
+        "Bei Hydraulikgreifern wird der Weg der Schaufelspitzen verwendet, bei Vierseil-Greifern der die Strecke der Zugseile.",
         0
     )
-else: 
-    weg_oeffnenschliessn_m = 0 # Bei Hydraulikgreifer wird der Öffnen/Schließen-Weg nicht berücksichtigt, da die Bewegung nicht direkt mechanisch über Rollen erfolgt
 
 if anzahl_trichter > 0:
     for zahl in range(anzahl_trichter):

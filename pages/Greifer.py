@@ -93,7 +93,7 @@ elif auswahl_greifer == hydr["greiferart"]:
 
     # Auswahl, ob Schließ/Öffnungszeit oder Geschwindigkeit/Beschleunigung eingegeben werden soll
     auswahl_parameter = st.radio("Schließ/Öffnungszeit oder Geschwindigkeit/Beschleunigung eingeben?", 
-             ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"], 0, key="radio_greifer_oeffnen_schliessen",
+             ["Schließ/Öffnungszeit (empfohlen)", "Geschwindigkeit/Beschleunigung"], 0, key="radio_greifer_oeffnen_schliessen",
              help="Wählen Sie, ob Sie Zeiten direkt angeben oder aus Geschwindigkeit/Beschleunigung ableiten möchten.")
     
     if auswahl_parameter not in ["Schließ/Öffnungszeit", "Geschwindigkeit/Beschleunigung"]:
