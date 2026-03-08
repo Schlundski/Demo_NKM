@@ -27,7 +27,8 @@ greifer_typ = ist_state.get("greifer", {}).get("typ")
 if (greifer_typ=="Vierseil-Greifer"):
     rueckspeisung_greifer = rueckspeisung_standard(
         "Rückspeisung Greifer", 
-        ruecksp["fu_wirkungsgrad_greifer"], 
+        rueckspeisung_state.get("fu_wirkungsgrad_greifer", ruecksp["fu_wirkungsgrad_greifer"]), 
+        rueckspeisung_state.get("faktor_greifer", ruecksp["faktor_greifer"]),
         0, 0.01, 1, 
         "rckspng_grfr", 
         "Gibt an, ob und in welchem Umfang beim Öffnen/Schließen des Greifers Energie in das Netz zurückgespeist wird. \n"
@@ -39,7 +40,8 @@ else:
 
 rueckspeisung_hub = rueckspeisung_standard(
     "Rückspeisung Hubfahrt",
-    ruecksp["fu_wirkungsgrad_hubfahrt"],
+    rueckspeisung_state.get("fu_wirkungsgrad_hubfahrt", ruecksp["fu_wirkungsgrad_hubfahrt"]),
+    rueckspeisung_state.get("faktor_hub", ruecksp["faktor_hubfahrt"]),
     0,
     0.01,
     1,
@@ -51,7 +53,8 @@ rueckspeisung_hub = rueckspeisung_standard(
 
 rueckspeisung_kran = rueckspeisung_standard(
     "Rückspeisung Kranfahrt",
-    ruecksp["fu_wirkungsgrad_kranfahrt"],
+    rueckspeisung_state.get("fu_wirkungsgrad_kranfahrt", ruecksp["fu_wirkungsgrad_kranfahrt"]),
+    rueckspeisung_state.get("faktor_kran", ruecksp["faktor_kranfahrt"]),
     0,
     0.01,
     1,
@@ -63,7 +66,8 @@ rueckspeisung_kran = rueckspeisung_standard(
 
 rueckspeisung_katz = rueckspeisung_standard(
     "Rückspeisung Katzfahrt",
-    ruecksp["fu_wirkungsgrad_katzfahrt"],
+    rueckspeisung_state.get("fu_wirkungsgrad_katzfahrt", ruecksp["fu_wirkungsgrad_katzfahrt"]),
+    rueckspeisung_state.get("faktor_katze", ruecksp["faktor_katzfahrt"]),
     0,
     0.01,
     1,
@@ -73,30 +77,21 @@ rueckspeisung_katz = rueckspeisung_standard(
     2
 )
 
-# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
-col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
-with col1:
-    button = st.button("Speichern", "speichern_rueckspeisung")
+success_feedback("rueckspeisung", "auswertung")
 
-    if button:
-        rueckspeisung_state.update(
-        # alles in den Session-State speichern, damit es auf den folgenden Seiten verfügbar ist
-        {
-            "faktor_greifer": rueckspeisung_greifer[1],
-            "fu_wirkungsgrad_greifer": rueckspeisung_greifer[0],
-            "faktor_hub": rueckspeisung_hub[1],
-            "fu_wirkungsgrad_hub": rueckspeisung_hub[0],
-            "faktor_kran": rueckspeisung_kran[1],
-            "fu_wirkungsgrad_kran": rueckspeisung_kran[0],
-            "faktor_katze": rueckspeisung_katz[1],
-            "fu_wirkungsgrad_katze": rueckspeisung_katz[0]
-        }
-        )
-        st.session_state["rueckspeisung_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
-
-if st.session_state.get("rueckspeisung_saved", False):
-    with col2:       
-        st.success(f'Eingaben der Seite Rückspeisung erfolgreich gespeichert ✅') 
-
-    with col3:
-        success_feedback("rueckspeisung", "auswertung")
+if st.session_state.get("speichern_rueckspeisung"):
+    rueckspeisung_state.update(
+    # alles in den Session-State speichern, damit es auf den folgenden Seiten verfügbar ist
+    {
+        "faktor_greifer": rueckspeisung_greifer[1],
+        "fu_wirkungsgrad_greifer": rueckspeisung_greifer[0],
+        "faktor_hub": rueckspeisung_hub[1],
+        "fu_wirkungsgrad_hub": rueckspeisung_hub[0],
+        "faktor_kran": rueckspeisung_kran[1],
+        "fu_wirkungsgrad_kran": rueckspeisung_kran[0],
+        "faktor_katze": rueckspeisung_katz[1],
+        "fu_wirkungsgrad_katze": rueckspeisung_katz[0]
+    }
+    )
+    st.session_state["rueckspeisung_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
+    st.rerun() # Rerun, damit der Weiter-Button erscheint

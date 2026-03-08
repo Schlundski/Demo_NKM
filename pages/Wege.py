@@ -29,6 +29,7 @@ st.info("Auf dieser Seite erfassen Sie Referenzwege für die einzelnen Bewegunge
 weg_hebensenken_m = number_standard(
     "Referenzweg Heben senken [m]",
     wege["heben_senken_m"],
+    wege_state.get("weg_hebensenken_m", wege["heben_senken_m"]),
     0,
     1,
     200,
@@ -39,6 +40,7 @@ weg_hebensenken_m = number_standard(
 weg_katzfahrt_m = number_standard(
     "Referenzweg Katzfahrt [m]",
     wege["katzfahrt_m"],
+    wege_state.get("weg_katzfahrt_m", wege["katzfahrt_m"]),
     0,
     1,
     200,
@@ -49,6 +51,7 @@ weg_katzfahrt_m = number_standard(
 weg_kranfahrt_m = number_standard(
     "Referenzweg Kranfahrt Einlagern [m]",
     wege["kranfahrt_einlagern_m"],
+    wege_state.get("weg_kranfahrt_einlagern_m", wege["kranfahrt_einlagern_m"]),
     0,
     1,
     200,
@@ -60,6 +63,7 @@ if ist_state["greifer"]["typ"] == "Hydraulikgreifer":
     weg_oeffnenschliessn_m = number_standard(
         "Referenzweg Greifer Öffnen/Schließen",
         wege["oeffnen_schliessen_m_hydraulik"],
+        wege_state.get("weg_oeffnen_schliessen_m", wege["oeffnen_schliessen_m_hydraulik"]),
         0,
         1,
         10,
@@ -72,6 +76,7 @@ else:
     weg_oeffnenschliessn_m = number_standard(
         "Referenzweg Greifer Öffnen/Schließen",
         wege["oeffnen_schliessen_m_vierseil"],
+        wege_state.get("weg_oeffnen_schliessen_m", wege["oeffnen_schliessen_m_vierseil"]),
         0,
         1,
         200,
@@ -87,6 +92,7 @@ if anzahl_trichter > 0:
         weg_trichter[zahl] = number_standard(
             f"Referenzweg Trichter {zahl + 1}",
             wege[key],
+            wege_state.get("weg_trichter_m", {}).get(str(zahl), wege[key]),
             0,
             1,
             200,
@@ -95,30 +101,23 @@ if anzahl_trichter > 0:
             0,
         )
 else:
-    st.warning("Bitte zuerst in der Seite \"Anlage\" die Anzahl der Trichter eingeben.")
+    st.warning('Bitte zuerst in der Seite "Anlage" die Anzahl der Trichter eingeben.')
 
 
-# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
-col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
-with col1:
-    button = st.button("Speichern", "speichern_wege")
+success_feedback("wege", "rueckspeisung")
 
-    if button:
-        wege_state.update(
-        # alles in den Session-State speichern, damit sie auf den folgenden Seiten verfügbar ist
-        {
-            "weg_hebensenken_m": weg_hebensenken_m,
-            "weg_katzfahrt_m": weg_katzfahrt_m,
-            "weg_kranfahrt_einlagern_m": weg_kranfahrt_m,
-            "weg_oeffnen_schliessen_m": weg_oeffnenschliessn_m,
-            "weg_trichter_m": weg_trichter,
-        }
-        )
-        st.session_state["wege_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
+if st.session_state.get("speichern_wege"):
+    wege_state.update(
+    # alles in den Session-State speichern, damit sie auf den folgenden Seiten verfügbar ist
+    {
+        "weg_hebensenken_m": weg_hebensenken_m,
+        "weg_katzfahrt_m": weg_katzfahrt_m,
+        "weg_kranfahrt_einlagern_m": weg_kranfahrt_m,
+        "weg_oeffnen_schliessen_m": weg_oeffnenschliessn_m,
+        "weg_trichter_m": weg_trichter,
+    }
+    )
+    st.session_state["wege_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
+    st.rerun() # Rerun, damit der Weiter-Button erscheint
 
-if st.session_state.get("wege_saved", False):
-    with col2:       
-        st.success(f'Eingaben der Seite Wege erfolgreich gespeichert ✅') 
-
-    with col3:
-        success_feedback("wege", "rueckspeisung")
+        

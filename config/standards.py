@@ -117,9 +117,13 @@ STANDARDWERTE = {
 
     "rueckspeisung": {
         "fu_wirkungsgrad_greifer": 0.98,
+        "faktor_greifer": 0,
         "fu_wirkungsgrad_hubfahrt": 0.98,
+        "faktor_hubfahrt": 0,
         "fu_wirkungsgrad_kranfahrt": 0.98,
-        "fu_wirkungsgrad_katzfahrt": 0.98
+        "faktor_kranfahrt": 0,
+        "fu_wirkungsgrad_katzfahrt": 0.98,
+        "faktor_katzfahrt": 0
     }
 }
 

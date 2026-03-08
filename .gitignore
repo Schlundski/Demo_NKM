@@ -2,7 +2,6 @@ test.py
 .streamlit/secrets.toml
 testplot.py
 README.Docker.md
-
 __pycache__/
-*.pyc
+.pyc
 .vscode/settings.json

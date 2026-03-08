@@ -13,6 +13,7 @@ df_laender = pd.read_csv("tabellen/Stromländerpreise+CO2.csv", sep=';')
 def number_standard(
         titel="not defined",
         standard=0.0,
+        wert = 0.0,
         min=0.0,
         steps=0.1,
         max=15,
@@ -35,7 +36,7 @@ def number_standard(
 
     ausgabe = st.number_input(
         titel,
-        value=float(standard),
+        value=(float(wert) or float(standard)),
         min_value=float(min),
         max_value=float(max),
         step=float(steps),
@@ -50,6 +51,7 @@ def number_standard(
 def selectbox_standard(
         titel="not defined",
         standard = "not defined",
+        wert = None,
         auswahl = ["nicht definiert"],
         key="not_defined",
         helptext=None
@@ -57,7 +59,7 @@ def selectbox_standard(
 
     "Unser UI Standart für Texteingaben, returned nur den Eingabe- bzw. Standartwert"
 
-    index_converted = auswahl.index(standard)
+    index_converted = auswahl.index(wert or standard)
 
     col1, col2 = st.columns([5, 2])
     with col1:
@@ -85,6 +87,7 @@ def selectbox_standard(
 def text_standard(
         titel="not defined",
         standard="Hier Text eingeben",
+        wert=None,
         key="not_defined",
         helptext=None
         ):
@@ -104,7 +107,7 @@ def text_standard(
 
     ausgabe = st.text_input(
         titel,
-        value=standard,
+        value=wert or standard,
         disabled=True if use_std else False,
         key= key2,
         label_visibility="collapsed",
@@ -117,6 +120,7 @@ def text_standard(
 def rueckspeisung_standard(        
         titel="not defined",
         standard=0.98,
+        checked=False,
         min=0.0,
         steps=0.01,
         max=1.0,
@@ -127,7 +131,7 @@ def rueckspeisung_standard(
     
     "Unser UI Standart für Werteeingaben, returned nur den True/False und je nachdem vielleicht den Wert"
 
-    ausgabe_checkbox = st.checkbox(titel, False, f"{key}_check", help=helptext)
+    ausgabe_checkbox = st.checkbox(titel, checked, f"{key}_check", help=helptext)
     if ausgabe_checkbox == True:
         ausgabe_numberbox = st.number_input(
             f"FU-Wirkungsgrad für {titel}",
@@ -491,7 +495,7 @@ def plot_aufteilung_co2(standort: str, kwh_ist_pro_tag: float, zeitraum_faktor: 
     # --- kennzahl ---
     st.metric(f"IST CO2 / {suffix}", fmt_kg_de(gesamt_ist_kg))
     
-# Anzeige Navigationsleiste
+## Anzeige Navigationsleiste
 def my_sidebar_nav():
     if st.session_state.get("marker_navigation", False):
         with st.sidebar:
@@ -503,3 +507,4 @@ def my_sidebar_nav():
             st.page_link("pages/rueckspeisung.py", label="♻️ Rückspeisung")
             st.page_link("pages/auswertung.py", label="📊 Auswertung")
             st.page_link("pages/modell_quellen.py", label="📖 Modell & Quellen")
+            st.page_link("pages/reset.py", label="🔄 Reset aller Eingaben")

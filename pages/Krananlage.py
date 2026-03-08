@@ -22,6 +22,9 @@ ist_state = st.session_state.setdefault("ist_anlage", {})
 kran_state = ist_state.setdefault("kran_mechanik", {})
 greifer_state = ist_state.setdefault("greifer", {})
 anlage_state = ist_state.setdefault("anlage", {})
+hub_state = kran_state.setdefault("hubwerk", {})
+katze_state = kran_state.setdefault("katze", {})
+kranfahr_state = kran_state.setdefault("kranfahrwerk", {})
 
 ## UI-Inhalte der Krananlagenseite
 st.title("🏗️ Mechanische Krandaten")
@@ -33,6 +36,7 @@ with st.expander("Hubwerk", expanded = st.session_state["expander_hubwerk_open"]
     seilgewicht_kg = number_standard(
         "Seilgewicht [kg]", 
         hubw["seilgewicht_kg"], 
+        hub_state.get("seilgewicht_kg", hubw["seilgewicht_kg"]),
         0, 1, 500, 
         "seilgew", 
         "Eigengewicht der Hubseile. Beeinflusst die zu bewegende Masse und damit die erforderliche Motorleistung des Hubwerks."
@@ -40,6 +44,7 @@ with st.expander("Hubwerk", expanded = st.session_state["expander_hubwerk_open"]
     hub_geschwindigkeit_m_min = number_standard(
         "Hubgeschwindigkeit [m/min]",
         hubw["geschwindigkeit_m_min"],
+        hub_state.get("hub_geschwindigkeit_m_pro_min", hubw["geschwindigkeit_m_min"]),
         0,
         1,
         100,
@@ -49,6 +54,7 @@ with st.expander("Hubwerk", expanded = st.session_state["expander_hubwerk_open"]
     hub_beschleunigung_m_s2 = number_standard(
         "Hubbeschleunigung [m/s²]",
         hubw["beschleunigung_m_s2"],
+        hub_state.get("hub_beschleunigung_m_pro_s2", hubw["beschleunigung_m_s2"]),
         0,
         0.01,
         5,
@@ -58,6 +64,7 @@ with st.expander("Hubwerk", expanded = st.session_state["expander_hubwerk_open"]
     anzahl_motoren_hub = number_standard(
         "Anzahl Motoren Hubwerk",
         hubw["anzahl_motoren"],
+        hub_state.get("anzahl_motoren", hubw["anzahl_motoren"]),
         1,
         1,
         10,
@@ -68,6 +75,7 @@ with st.expander("Hubwerk", expanded = st.session_state["expander_hubwerk_open"]
     wirkungsgrad_getr_stufe_hub = number_standard(
         "Wirkungsgrad Getriebestufe Hubwerk",
         hubw["wirkungsgrad_getr_stufe"],
+        hub_state.get("wirkungsgrad_getriebe", hubw["wirkungsgrad_getr_stufe"]),
         0,
         0.01,
         1,
@@ -77,6 +85,7 @@ with st.expander("Hubwerk", expanded = st.session_state["expander_hubwerk_open"]
     wirkungsgrad_seiltrieb = number_standard(
         "Wirkungsgrad Seiltrieb",
         hubw["wirkungsgrad_seiltrieb"],
+        hub_state.get("wirkungsgrad_seiltrieb", hubw["wirkungsgrad_seiltrieb"]),
         0,
         0.01,
         1,
@@ -86,6 +95,7 @@ with st.expander("Hubwerk", expanded = st.session_state["expander_hubwerk_open"]
     getriebestufen_hub = number_standard(
         "Getriebestufen Hubwerk",
         hubw["getriebestufen"],
+        hub_state.get("getriebestufen", hubw["getriebestufen"]),
         1,
         1,
         10,
@@ -120,23 +130,25 @@ with st.expander("Hubwerk", expanded = st.session_state["expander_hubwerk_open"]
 
     wirkungsgrad_motor_hub = number_standard("Wirkungsgrad des Hubmotors", 
                                              hubw["wirkungsgrad_motor"], 
+                                             hub_state.get("wirkungsgrad_motor_hub", hubw["wirkungsgrad_motor"]),
                                              0, 0.01, 1, 
                                              "wrkgd_mtr_hb", 
                                              "Wirkungsgrad des eingesetzten Hubmotors. Wird zur Berechnung des elektrischen Leistungsbedarfs verwendet.")
 
-    #Button zum Einklappen des Expanders
-    button_hub_zuklappen = st.button(
-        "Hubwerk Minimieren", "hubwerk_zuklappen"
-    )
-    if button_hub_zuklappen:
-          st.session_state["expander_hubwerk_open"] = False
-          st.rerun()
+    # #Button zum Einklappen des Expanders
+    # button_hub_zuklappen = st.button(
+    #     "Hubwerk Minimieren", "hubwerk_zuklappen"
+    # )
+    # if button_hub_zuklappen:
+    #       st.session_state["expander_hubwerk_open"] = False
+    #       st.rerun()
 
 # Katze
 with st.expander("Katze", expanded = st.session_state["expander_katze_open"]):
     gewicht_katze_kg = number_standard(
         "Gewicht der Katze [kg]",
         katze["gewicht_kg"],
+        katze_state.get("gewicht_kg", katze["gewicht_kg"]),
         0,
         1,
         100000,
@@ -146,6 +158,7 @@ with st.expander("Katze", expanded = st.session_state["expander_katze_open"]):
     geschwindigkeit_katze_m_min = number_standard(
         "Fahrgeschwindigkeit Katze [m/min]",
         katze["geschwindigkeit_m_min"],
+        katze_state.get("geschwindigkeit_m_pro_min", katze["geschwindigkeit_m_min"]),
         0,
         1,
         100,
@@ -155,6 +168,7 @@ with st.expander("Katze", expanded = st.session_state["expander_katze_open"]):
     beschleunigung_katze_m_s2 = number_standard(
         "Beschleunigung Katze [m/s²]",
         katze["beschleunigung_m_s2"],
+        katze_state.get("beschleunigung_m_pro_s2", katze["beschleunigung_m_s2"]),
         0,
         0.01,
         5,
@@ -164,6 +178,7 @@ with st.expander("Katze", expanded = st.session_state["expander_katze_open"]):
     anzahl_motoren_katze = number_standard(
         "Anzahl Motoren Katze",
         katze["anzahl_motoren"],
+        katze_state.get("anzahl_motoren", katze["anzahl_motoren"]),
         1,
         1,
         10,
@@ -174,6 +189,7 @@ with st.expander("Katze", expanded = st.session_state["expander_katze_open"]):
     wirkungsgrad_getr_stufe_katze = number_standard(
         "Wirkungsgrad Getriebestufe Katze",
         katze["wirkungsgrad_getr_stufe"],
+        katze_state.get("wirkungsgrad_getriebe", katze["wirkungsgrad_getr_stufe"]),
         0,
         0.001,
         1,
@@ -183,6 +199,7 @@ with st.expander("Katze", expanded = st.session_state["expander_katze_open"]):
     getriebestufen_katze = number_standard(
         "Getriebestufen Katze",
         katze["getriebestufen"],
+        katze_state.get("getriebestufen", katze["getriebestufen"]),
         1,
         1,
         10,
@@ -193,6 +210,7 @@ with st.expander("Katze", expanded = st.session_state["expander_katze_open"]):
     fahrwiderstand_katze_kg_t = number_standard(
         "Fahrwiderstand Katze [kg/t]",
         katze["fahrwiderstand_kg_t"],
+        katze_state.get("fahrwiderstand_kg_pro_t", katze["fahrwiderstand_kg_t"]),
         0,
         0.1,
         100,
@@ -219,22 +237,24 @@ with st.expander("Katze", expanded = st.session_state["expander_katze_open"]):
 
     wirkungsgrad_motor_katze = number_standard("Wirkungsgrad des Katzmotors", 
                                             katze["wirkungsgrad_motor"], 
+                                            katze_state.get("wirkungsgrad_motor_katze", katze["wirkungsgrad_motor"]),
                                             0, 0.01, 1,
                                             "wirkmotorkatze")
 
-    #Button zum Einklappen des Expanders
-    button_katze_zuklappen = st.button(
-        "Katze Minimieren", "katze_zuklappen"
-    )
-    if button_katze_zuklappen:
-          st.session_state["expander_katze_open"] = False
-          st.rerun()
+    # #Button zum Einklappen des Expanders
+    # button_katze_zuklappen = st.button(
+    #     "Katze Minimieren", "katze_zuklappen"
+    # )
+    # if button_katze_zuklappen:
+    #       st.session_state["expander_katze_open"] = False
+    #       st.rerun()
 
 # Kran
 with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open"]):
     gewicht_kran_kg = number_standard(
         "Kranfahrwerk Gewicht [kg]",
         kran["gewicht_kg"],
+        kranfahr_state.get("gewicht_kg", kran["gewicht_kg"]),
         0,
         1,
         500000,
@@ -244,6 +264,7 @@ with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open
     geschwindigkeit_kran_m_min = number_standard(
         "Kranfahrgeschwindigkeit [m/min]",
         kran["geschwindigkeit_m_min"],
+        kranfahr_state.get("geschwindigkeit_m_pro_min", kran["geschwindigkeit_m_min"]),
         0,
         1,
         100,
@@ -253,6 +274,7 @@ with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open
     beschleunigung_kran_m_s2 = number_standard(
         "Kranfahrbeschleunigung [m/s²]",
         kran["beschleunigung_m_s2"],
+        kranfahr_state.get("beschleunigung_m_pro_s2", kran["beschleunigung_m_s2"]),
         0,
         0.1,
         5,
@@ -262,6 +284,7 @@ with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open
     anzahl_motoren_kran = number_standard(
         "Anzahl Motoren Kran",
         kran["anzahl_motoren"],
+        kranfahr_state.get("anzahl_motoren", kran["anzahl_motoren"]),
         1,
         1,
         10,
@@ -272,6 +295,7 @@ with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open
     wirkungsgrad_getr_stufe_kran = number_standard(
         "Wirkungsgrad Getriebestufe Kran",
         kran["wirkungsgrad_getr_stufe"],
+        kranfahr_state.get("wirkungsgrad_getriebe", kran["wirkungsgrad_getr_stufe"]),
         0,
         0.01,
         1,
@@ -281,6 +305,7 @@ with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open
     wirkungsgrad_vorgelege = number_standard(
         "Wirkungsgrad Vorgelege",
         kran["wirkungsgrad_vorgelege"],
+        kranfahr_state.get("wirkungsgrad_vorgelege", kran["wirkungsgrad_vorgelege"]),
         0,
         0.01,
         1,
@@ -288,17 +313,20 @@ with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open
         "Wirkungsgrad des Vorgeleges. Berücksichtigt zusätzliche mechanische Verluste."
     )
     getriebestufen_kran = number_standard(
-        "Getriebestufen Kran",
+        "Anzahl Getriebestufen Kran",
         kran["getriebestufen"],
+        kranfahr_state.get("getriebestufen", kran["getriebestufen"]),
         1,
         1,
         10,
         "getrstufkran",
-        "Anzahl der Getriebestufen im Kranfahrwerk. Beeinflusst den Gesamtwirkungsgrad."
+        "Anzahl der Getriebestufen im Kranfahrwerk. Beeinflusst den Gesamtwirkungsgrad.",
+        0
     )
     fahrwiderstand_kran_kg_t = number_standard(
         "Fahrwiderstand Kran[kg/t]",
         kran["fahrwiderstand_kg_t"],
+        kranfahr_state.get("fahrwiderstand_kg_pro_t", kran["fahrwiderstand_kg_t"]),
         0,
         0.1,
         100,
@@ -326,66 +354,59 @@ with st.expander("Kranfahrwerk", expanded = st.session_state["expander_kran_open
     st.info(f"Intern berechnete Motorleistung für das Kranfahrwerk zur Orientierung: **{motor_kran:.2f} kW**")
 
     wirkungsgrad_motor_kran = number_standard("Wirkungsgrad des Kranmotors", 
-                                              kran["wirkungsgrad_motor"], 
-                                              0, 0.01, 1, 
-                                              "wrkgd_mtr_krn", 
-                                              "Wirkungsgrad des eingesetzten Kranmotors. Wird zur Berechnung des elektrischen Leistungsbedarfs verwendet.")
+        kran["wirkungsgrad_motor"], 
+        kranfahr_state.get("wirkungsgrad_motor_kran", kran["wirkungsgrad_motor"]),
+        0, 0.01, 1, 
+        "wrkgd_mtr_krn", 
+        "Wirkungsgrad des eingesetzten Kranmotors. Wird zur Berechnung des elektrischen Leistungsbedarfs verwendet.")
 
-    #Button zum Einklappen des Expanders
-    button_kran_zuklappen = st.button(
-        "Kran Minimieren", "kran_zuklappen"
+    # #Button zum Einklappen des Expanders
+    # button_kran_zuklappen = st.button(
+    #     "Kran Minimieren", "kran_zuklappen"
+    # )
+    # if button_kran_zuklappen:
+    #       st.session_state["expander_kran_open"] = False
+    #       st.rerun()
+
+success_feedback("krananlage", "wege")
+
+if st.session_state.get("speichern_krananlage"):
+# Alle eingegebenen Werte in den Session State speichern, damit sie auf den folgenden Seiten verfügbar sind
+    kran_state.update(
+        {
+            "hubwerk": {
+                "seilgewicht_kg": seilgewicht_kg,
+                "hub_geschwindigkeit_m_pro_min": hub_geschwindigkeit_m_min,
+                "hub_beschleunigung_m_pro_s2": hub_beschleunigung_m_s2,
+                "anzahl_motoren": anzahl_motoren_hub,
+                "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_hub,
+                "wirkungsgrad_seiltrieb": wirkungsgrad_seiltrieb,
+                "getriebestufen": getriebestufen_hub,
+                "wirkungsgrad_motor_hub": wirkungsgrad_motor_hub
+            },
+            "katze": {
+                "gewicht_kg": gewicht_katze_kg,
+                "geschwindigkeit_m_pro_min": geschwindigkeit_katze_m_min,
+                "beschleunigung_m_pro_s2": beschleunigung_katze_m_s2,
+                "anzahl_motoren": anzahl_motoren_katze,
+                "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_katze,
+                "getriebestufen": getriebestufen_katze,
+                "fahrwiderstand_kg_pro_t": fahrwiderstand_katze_kg_t,
+                "wirkungsgrad_motor_katze": wirkungsgrad_motor_katze
+            },
+            "kranfahrwerk": {
+                "gewicht_kg": gewicht_kran_kg,
+                "geschwindigkeit_m_pro_min": geschwindigkeit_kran_m_min,
+                "beschleunigung_m_pro_s2": beschleunigung_kran_m_s2,
+                "anzahl_motoren": anzahl_motoren_kran,
+                "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_kran,
+                "wirkungsgrad_vorgelege": wirkungsgrad_vorgelege,
+                "getriebestufen": getriebestufen_kran,
+                "fahrwiderstand_kg_pro_t": fahrwiderstand_kran_kg_t,
+                "wirkungsgrad_motor_kran": wirkungsgrad_motor_kran
+            },
+        }
     )
-    if button_kran_zuklappen:
-          st.session_state["expander_kran_open"] = False
-          st.rerun()
-
-# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
-col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
-with col1:
-    button = st.button("Speichern", "speichern_krananlage")
-
-    if button:
-    # Alle eingegebenen Werte in den Session State speichern, damit sie auf den folgenden Seiten verfügbar sind
-        kran_state.update(
-            {
-                "hubwerk": {
-                    "seilgewicht_kg": seilgewicht_kg,
-                    "hub_geschwindigkeit_m_pro_min": hub_geschwindigkeit_m_min,
-                    "hub_beschleunigung_m_pro_s2": hub_beschleunigung_m_s2,
-                    "anzahl_motoren": anzahl_motoren_hub,
-                    "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_hub,
-                    "wirkungsgrad_seiltrieb": wirkungsgrad_seiltrieb,
-                    "getriebestufen": getriebestufen_hub,
-                    "wirkungsgrad_motor_hub": wirkungsgrad_motor_hub
-                },
-                "katze": {
-                    "gewicht_kg": gewicht_katze_kg,
-                    "geschwindigkeit_m_pro_min": geschwindigkeit_katze_m_min,
-                    "beschleunigung_m_pro_s2": beschleunigung_katze_m_s2,
-                    "anzahl_motoren": anzahl_motoren_katze,
-                    "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_katze,
-                    "getriebestufen": getriebestufen_katze,
-                    "fahrwiderstand_kg_pro_t": fahrwiderstand_katze_kg_t,
-                    "wirkungsgrad_motor_katze": wirkungsgrad_motor_katze
-                },
-                "kranfahrwerk": {
-                    "gewicht_kg": gewicht_kran_kg,
-                    "geschwindigkeit_m_pro_min": geschwindigkeit_kran_m_min,
-                    "beschleunigung_m_pro_s2": beschleunigung_kran_m_s2,
-                    "anzahl_motoren": anzahl_motoren_kran,
-                    "wirkungsgrad_getriebe": wirkungsgrad_getr_stufe_kran,
-                    "wirkungsgrad_vorgelege": wirkungsgrad_vorgelege,
-                    "getriebestufen": getriebestufen_kran,
-                    "fahrwiderstand_kg_pro_t": fahrwiderstand_kran_kg_t,
-                    "wirkungsgrad_motor_kran": wirkungsgrad_motor_kran
-                },
-            }
-        )
-        st.session_state["krananlage_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
-
-if st.session_state.get("krananlage_saved", False):
-    with col2:       
-        st.success(f'Eingaben der Seite Krananlage erfolgreich gespeichert ✅') 
-
-    with col3:
-        success_feedback("krananlage", "wege")
+    st.session_state["krananlage_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
+    st.rerun() # Rerun, damit der Weiter-Button erscheint
+    

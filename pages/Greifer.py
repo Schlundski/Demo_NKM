@@ -48,6 +48,7 @@ if auswahl_greifer == viers["greiferart"]:
     gew_greifer_leer = number_standard(
         "Leergewicht des Greifers [kg]",
         viers["leergewicht_kg"],
+        greifer_state.get("leergewicht_kg", viers["leergewicht_kg"]),
         0, 100, 20_000,
         "leergew",
         "Eigengewicht des Greifers ohne Last. Relevant für Bewegungsenergie und mechanische Belastung"
@@ -55,6 +56,7 @@ if auswahl_greifer == viers["greiferart"]:
     vol_greifer = number_standard(
         "Greifervolumen [m³]",
         viers["greifervolumen_m3"],
+        greifer_state.get("volumen_m3", viers["greifervolumen_m3"]),
         0, 0.1, 15,
         "volgreif",
         "Volumen, das der Greifer pro Zyklus aufnehmen kann. Bestimmt die Zyklenanzahl und damit Spielzeit/Energie."
@@ -62,6 +64,7 @@ if auswahl_greifer == viers["greiferart"]:
     ges_greifen = number_standard(
         "Greifergeschwindigkeit beim Öffnen/Schließen [m/min]",
         viers["greifgeschwindigkeit_m_min"],
+        greifer_state.get("geschwindigkeit_m_pro_min", viers["greifgeschwindigkeit_m_min"]),
         0, 1, 200,
         "gesgreif",
         "Mittlere Öffnungs-/Schließgeschwindigkeit des Greifers. Beeinflusst die Zeit pro Zyklus."
@@ -69,6 +72,7 @@ if auswahl_greifer == viers["greiferart"]:
     bes_greifen = number_standard(
         "Greiferbeschleunigung beim Öffnen/Schließen [m/s²]",
         viers["greifbeschleunigung_m_s2"],
+        greifer_state.get("beschleunigung_m_pro_s2", viers["greifbeschleunigung_m_s2"]),
         0, 0.1, 10,
         "besgreif",
         "Beschleunigung beim Öffnen/Schließen. Wirkt sich auf die realistische Zykluszeit aus."
@@ -79,6 +83,7 @@ elif auswahl_greifer == hydr["greiferart"]:
     gew_greifer_leer = number_standard(
         "Leergewicht des Greifers [kg]",
         hydr["leergewicht_kg"],
+        greifer_state.get("leergewicht_kg", hydr["leergewicht_kg"]),
         0, 100, 20_000,
         "leergew",
         "Eigengewicht des Greifers ohne Last. Relevant für Bewegungsenergie und mechanische Belastung"
@@ -86,6 +91,7 @@ elif auswahl_greifer == hydr["greiferart"]:
     vol_greifer = number_standard(
         "Greifervolumen [m³]",
         hydr["greifervolumen_m3"],
+        greifer_state.get("volumen_m3", hydr["greifervolumen_m3"]),
         0, 0.1, 15,
         "volgreif",
         "Volumen, das der Greifer pro Zyklus aufnehmen kann. Bestimmt die Zyklenanzahl und damit Spielzeit/Energie."
@@ -103,6 +109,7 @@ elif auswahl_greifer == hydr["greiferart"]:
         oeffnungszeit_greifen = number_standard(
             "Öffnungszeit [s]",
             hydr["oeffnungszeit_s"],
+            greifer_state.get("oeffnungszeit_s", hydr["oeffnungszeit_s"]),
             0, 1, 30,
             "oeffnzeit",
             "Zeit für das vollständige Öffnen des Greifers. Bestimmt die Zykluszeit und damit den Energiebedarf."
@@ -110,6 +117,7 @@ elif auswahl_greifer == hydr["greiferart"]:
         schliesszeit_greifen = number_standard(
             "Schließzeit [s]",
             hydr["schliesszeit_s"],
+            greifer_state.get("schliesszeit_s", hydr["schliesszeit_s"]),
             0, 1, 30,
             "schliesszeit",
             "Zeit für das vollständige Schließen des Greifers. Bestimmt die Zykluszeit und damit den Energiebedarf."
@@ -119,6 +127,7 @@ elif auswahl_greifer == hydr["greiferart"]:
         ges_greifen = number_standard(
             "Greifergeschwindigkeit beim Öffnen/Schließen [m/min]",
             hydr["greifgeschwindigkeit_m_min"],
+            greifer_state.get("geschwindigkeit_m_pro_min", hydr["greifgeschwindigkeit_m_min"]),
             0, 1, 200,
             "gesgreif",
             "Mittlere Öffnungs-/Schließgeschwindigkeit des Greifers. Beeinflusst die Zeit pro Zyklus."
@@ -126,6 +135,7 @@ elif auswahl_greifer == hydr["greiferart"]:
         bes_greifen = number_standard(
             "Greiferbeschleunigung beim Öffnen/Schließen [m/s²]",
             hydr["greifbeschleunigung_m_s2"],
+            greifer_state.get("beschleunigung_m_pro_s2", hydr["greifbeschleunigung_m_s2"]),
             0, 0.1, 10,
             "besgreif",
             "Beschleunigung beim Öffnen/Schließen. Wirkt sich auf die realistische Zykluszeit aus."
@@ -134,6 +144,7 @@ elif auswahl_greifer == hydr["greiferart"]:
     p_hydr_motor = number_standard(
         "Motorleistung [kW]",
         hydr["motorleistung_kw"],
+        greifer_state.get("motorleistung_kw", hydr["motorleistung_kw"]),
         0, 1, 250,
         "motorleist",
         "Elektrische Leistung des Hydraulikmotors/Aggregats. Grundlage für die Energieabschätzung."
@@ -141,6 +152,7 @@ elif auswahl_greifer == hydr["greiferart"]:
     n_hydr_motor = number_standard(
         "Wirkungsgrad Hydraulik",
         hydr["wirkungsgrad"],
+        greifer_state.get("wirkungsgrad_hydraulik", hydr["wirkungsgrad"]),
         0, 0.01, 1,
         "wirkhyrd",
         "Gesamtwirkungsgrad (0-1) des hydraulischen Systems. Berücksichtigt Verluste im Aggregat."
@@ -148,6 +160,7 @@ elif auswahl_greifer == hydr["greiferart"]:
     volumenstrom = number_standard(
         "Volumenstrom [l/min]",
         hydr["volumenstrom_l_min"],
+        greifer_state.get("volumenstrom_l_pro_min", hydr["volumenstrom_l_min"]),
         0, 1, 150,
         "volstr",
         "Förderstrom der Hydraulikpumpe. Beeinflusst die erreichbare Geschwindigkeit und Leistung."
@@ -155,18 +168,16 @@ elif auswahl_greifer == hydr["greiferart"]:
     betriebsdruck = number_standard(
         "Betriebsdruck [bar]",
         hydr["betriebsdruck_bar"],
+        greifer_state.get("betriebsdruck_bar", hydr["betriebsdruck_bar"]),
         0, 1, 300,
         "betdruck",
         "Typischer Arbeitsdruck im Hydrauliksystem. Grundlage für Leistungs-/Energieabschätzung."
     )
 
 
-# Speichern-Button, Feedback Text und Weiter-Button nebeneinander
-col1, col2, col3 = st.columns([1,1,1], vertical_alignment="top")
-with col1:
-    button = st.button("Speichern", key="speichern_greifer")
+success_feedback("greifer", "krananlage")
 
-    if button:
+if st.session_state.get("speichern_greifer"):
         greifer_state.update(
         # alles in den Session-State speichern, damit es auf den folgenden Seiten verfügbar ist
         {
@@ -185,10 +196,4 @@ with col1:
         }
         )
         st.session_state["greifer_saved"] = True # Flag setzen, dass diese Seite gespeichert wurde
-
-if st.session_state.get("greifer_saved", False):
-    with col2:       
-        st.success(f'Eingaben der Seite Greifer erfolgreich gespeichert ✅') 
-
-    with col3:
-        success_feedback("greifer", "krananlage")
+        st.rerun() # Rerun, damit der Weiter-Button erscheint

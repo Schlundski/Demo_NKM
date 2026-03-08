@@ -16,7 +16,7 @@ from config.standards import hydr, viers, wege, ruecksp
 # Marker für Navigationsleiste aktivieren
 st.session_state.setdefault("marker_navigation", True)
 page_init("Auswertung", "📊", "wide")
-st.write(st.session_state)
+
 ## Container für diese Seite im Session State erstellen, sofern noch nicht vorhanden
 # Bestandsanlagen #
 ist_state = st.session_state.get("ist_anlage", {})
@@ -64,6 +64,8 @@ st.info(
     "transparent darzustellen.\n\n"
     "Die Berechnungen basieren auf den zuvor eingegebenen mechanischen, betrieblichen und standortspezifischen Daten."
 )
+
+st.write(st.session_state)
 
 auswahl_auswertung = st.radio("Auswertungsart:",["Eigenanlage-Analyse","Vergleich mit modernisierter Neu-Anlage"], 
                               key="radio_auswertung")
@@ -119,7 +121,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
                 0, 100, 2000,
                 "soll_ml_dcht_anlieferung",
             )
-            soll_muell_anlieferdauer = number_standard(
+            soll_muell_anlieferdauer = number_soll(
                 "Müll Anlieferdauer [h/d]",
                 ist_anlage_state["muell_anlieferdauer"],
                 1, 1, 24,
@@ -232,13 +234,13 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
                     soll_auswahl_parameter = "Schließ/Öffnungszeit"  # Standardwert setzen, falls ungültige Auswahl getroffen wird
 
                 if soll_auswahl_parameter == "Schließ/Öffnungszeit":
-                    soll_oeffnungszeit_greifen = number_standard(
+                    soll_oeffnungszeit_greifen = number_soll(
                         "Öffnungszeit [s]",
                         ist_greifer_state["oeffnungszeit_s"],
                         0, 1, 30,
                         "soll_oeffnzeit",
                     )
-                    soll_schliesszeit_greifen = number_standard(
+                    soll_schliesszeit_greifen = number_soll(
                         "Schließzeit [s]",
                         ist_greifer_state["schliesszeit_s"],
                         0, 1, 30,
@@ -630,7 +632,8 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
             if (soll_auswahl_greifer == "Vierseil-Greifer"):
                 soll_rueckspeisung_greifer = rueckspeisung_standard(
                     "Rückspeisung Greifer", 
-                    ist_rueckspeisung_state["fu_wirkungsgrad_greifer"] or ruecksp["fu_wirkungsgrad_greifer"], 
+                    ist_rueckspeisung_state["fu_wirkungsgrad_greifer"] or ruecksp["fu_wirkungsgrad_greifer"],
+                    ist_rueckspeisung_state.get("faktor_greifer", ruecksp["faktor_greifer"]),
                     0, 0.01, 1, 
                     "soll_rckspng_grfr", 
                     "Hat die Anlage eine Rückspeisung bei Greifer Öffnen/Schließen?", 
@@ -642,6 +645,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
             soll_rueckspeisung_hub = rueckspeisung_standard(
                 "Rückspeisung Hubfahrt",
                 ist_rueckspeisung_state["fu_wirkungsgrad_hub"] or ruecksp["fu_wirkungsgrad_hubfahrt"],
+                ist_rueckspeisung_state.get("faktor_hub", ruecksp["faktor_hubfahrt"]),
                 0, 0.01, 1,
                 "soll_rckspng_hb",
                 "Hat die Anlage eine Rückspeisung bei der Hubfahrt?",
@@ -651,6 +655,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
             soll_rueckspeisung_kran = rueckspeisung_standard(
                 "Rückspeisung Kranfahrt",
                 ist_rueckspeisung_state["fu_wirkungsgrad_kran"] or ruecksp["fu_wirkungsgrad_kranfahrt"],
+                ist_rueckspeisung_state.get("faktor_kran", ruecksp["faktor_kranfahrt"]),
                 0, 0.01, 1,
                 "soll_rckspng_krn",
                 "Hat die Anlage eine Rückspeisung bei der Kranfahrt?",
@@ -660,6 +665,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
             soll_rueckspeisung_katz = rueckspeisung_standard(
                 "Rückspeisung Katzfahrt",
                 ist_rueckspeisung_state["fu_wirkungsgrad_katze"] or ruecksp["fu_wirkungsgrad_katzfahrt"],
+                ist_rueckspeisung_state.get("faktor_katze", ruecksp["faktor_katzfahrt"]),
                 0, 0.01, 1,
                 "soll_rckspng_ktzfhrt",
                 "Hat die Anlage eine Rückspeisung bei der Katzfahrt?",
@@ -756,18 +762,15 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
     # Visualisierung der Berechnungen
     faktor = plot_slider_global()
 
-    st.write(st.session_state["ist_anlage"])
-    st.write(st.session_state["neu_anlage"])
-
     plot_vergleich_ldaten_rdiagramm("Energieverbrauch", "kWh",  
                         berechnungen_pro_tag(st.session_state["ist_anlage"])["verbrauch"],
                         berechnungen_pro_tag(st.session_state["neu_anlage"])["verbrauch"],
                         faktor
                         )
     plot_vergleich_ldaten_rdiagramm("Energierückspeisung", "kWh",
-                        -1* berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
-                        -1* berechnungen_pro_tag(st.session_state["neu_anlage"])["rueckspeisung"],
-                        faktor, "inverse"
+                        berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
+                        berechnungen_pro_tag(st.session_state["neu_anlage"])["rueckspeisung"],
+                        faktor,"normal"
                         )
     plot_vergleich_ldaten_rdiagramm(f"Approximierte Betriebskosten in {st.session_state['ist_anlage']['anlage']['anlage_standort']}", "EUR€",
                         berechnungen_pro_tag(st.session_state["ist_anlage"])["kosten"],
@@ -786,7 +789,7 @@ else:
                         faktor
                         )
     plot_ldaten_rdiagramm("Energierückspeisung", "kWh",
-                        -1* berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
+                        berechnungen_pro_tag(st.session_state["ist_anlage"])["rueckspeisung"],
                         faktor
                         )
     plot_ldaten_rdiagramm(f"Approximierte Betriebskosten in {st.session_state['ist_anlage']['anlage']['anlage_standort']}", "EUR€",
