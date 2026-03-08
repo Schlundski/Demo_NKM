@@ -65,7 +65,6 @@ st.info(
     "Die Berechnungen basieren auf den zuvor eingegebenen mechanischen, betrieblichen und standortspezifischen Daten."
 )
 
-st.write(st.session_state)
 
 auswahl_auswertung = st.radio("Auswertungsart:",["Eigenanlage-Analyse","Vergleich mit modernisierter Neu-Anlage"], 
                               key="radio_auswertung")
