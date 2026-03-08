@@ -370,10 +370,10 @@ def render_rechenweg():
                     {
                         "Parameter": ["t_acc", "s_acc", "t_konst", "t_ges"],
                         "Wert": [
-                            fmt_num(stw["Beschleunigungszeit"], "s", 3),
-                            fmt_num(stw["Beschleunigungsweg"], "m", 3),
-                            fmt_num(stw["Kontinuierliche Zeit"], "s", 3),
-                            fmt_num(stw["Summe der Zeit"], "s", 3),
+                            fmt_num(stw["beschleunigungszeit"], "s", 3),
+                            fmt_num(stw["beschleunigungsweg"], "m", 3),
+                            fmt_num(stw["kontinuierliche_zeit"], "s", 3),
+                            fmt_num(stw["summe_der_zeit"], "s", 3),
                         ],
                     }
                 )
