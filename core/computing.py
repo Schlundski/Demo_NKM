@@ -131,7 +131,7 @@ def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, mu
     """ Berechnen der mechanischen Leistungswerte des Hubwerkes. Ausgegeben wird ein Dict mit folgenden Keys:
         motorauswahl
         gesamtbeschleunigungsleistung_voll
-        beharrungsleistung voll
+        beharrungsleistung_voll
         gesamtbeschleunigungsleistung_leer
         beharrungsleistung_leer
     """
@@ -169,7 +169,7 @@ def mechleistunghubwerk(gewicht_seile, gewicht_greifer_leer, greifer_volumen, mu
     return {
         "motorauswahl": motor_auswahl,
         "gesamtbeschleunigungsleistung_voll": voll_motor_leistung_beschleunigung_gesamt,
-        "beharrungsleistung voll": voll_motor_leistung_beharrung,
+        "beharrungsleistung_voll": voll_motor_leistung_beharrung,
         "gesamtbeschleunigungsleistung_leer": leer_motor_leistung_beschleunigung_gesamt,
         "beharrungsleistung_leer": leer_motor_leistung_beharrung,
     }
@@ -250,7 +250,7 @@ def mechleistunggreifervierseil(hubvorgang_beharrung_leistung, hubvorgang_beschl
     beschl_greifer = hubvorgang_beschl_leistung / 3
 
     return {"beharrungsleistung": beharrung_greifer,
-            "Beschleunigungsleistung": beschl_greifer}
+            "beschleunigungsleistung": beschl_greifer}
 
 def berechnungen_pro_tag(dict):
     # region Variablen Deklarieren zum Abrufen der dict-Daten
@@ -267,7 +267,7 @@ def berechnungen_pro_tag(dict):
     # Vordeklaration, damit "possibly unbound"-probleme vermieden werden
 
     # Mechanik Greifer
-    df_mechleist_oeffnenschliessen_vierseil = {"beharrungsleistung": 0.0, "Beschleunigungsleistung": 0.0}
+    df_mechleist_oeffnenschliessen_vierseil = {"beharrungsleistung": 0.0, "beschleunigungsleistung": 0.0}
     df_mechleist_oeffnenschliessen_hydraulik = {"leistung_beharrung": 0.0}
 
     # Mechanische Energien Greifer
@@ -385,7 +385,7 @@ def berechnungen_pro_tag(dict):
                                            kranfahrwerk_geschwindigkeit_m_pro_min, kranfahrwerk_fahrwiderstand_kg_pro_t, kranfahrwerk_anzahl_motoren,
                                            kranfahrwerk_wirkungsgrad_getriebe, kranfahrwerk_getriebestufen, df_spielzeiten_kran_beschick["beschleunigungszeit"])
     if greifer_typ == "Vierseil-Greifer":
-        df_mechleist_oeffnenschliessen_vierseil = mechleistunggreifervierseil(df_mechleist_hub_einlager["beharrungsleistung voll"], df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_voll"])
+        df_mechleist_oeffnenschliessen_vierseil = mechleistunggreifervierseil(df_mechleist_hub_einlager["beharrungsleistung_voll"], df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_voll"])
     elif greifer_typ == "Hydraulikgreifer":
         df_mechleist_oeffnenschliessen_hydraulik = greiferhydraulik(greifer_betriebsdruck_bar, greifer_volumenstrom_l_pro_min)
     # endregion
@@ -416,7 +416,7 @@ def berechnungen_pro_tag(dict):
 
     df_mechenergie_hub_einlager_voll = (
         df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_voll"] * df_spielzeiten_hub["beschleunigungszeit"]
-        + df_mechleist_hub_einlager["beharrungsleistung voll"] * df_spielzeiten_hub["kontinuierliche_zeit"]
+        + df_mechleist_hub_einlager["beharrungsleistung_voll"] * df_spielzeiten_hub["kontinuierliche_zeit"]
     )
     df_mechenergie_hub_einlager_leer = (
         df_mechleist_hub_einlager["gesamtbeschleunigungsleistung_leer"] * df_spielzeiten_hub["beschleunigungszeit"]
@@ -424,7 +424,7 @@ def berechnungen_pro_tag(dict):
     )
     df_mechenergie_hub_beschick_voll = (
         df_mechleist_hub_beschick["gesamtbeschleunigungsleistung_voll"] * df_spielzeiten_hub["beschleunigungszeit"]
-        + df_mechleist_hub_beschick["beharrungsleistung voll"] * df_spielzeiten_hub["kontinuierliche_zeit"]
+        + df_mechleist_hub_beschick["beharrungsleistung_voll"] * df_spielzeiten_hub["kontinuierliche_zeit"]
     )
     df_mechenergie_hub_beschick_leer = (
         df_mechleist_hub_beschick["gesamtbeschleunigungsleistung_leer"] * df_spielzeiten_hub["beschleunigungszeit"]
@@ -455,7 +455,7 @@ def berechnungen_pro_tag(dict):
     # region Greifer
     if greifer_typ == "Vierseil-Greifer":
         df_mechenergie_greifer_oeffnenschliessen_vierseil = (
-                df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"] 
+                df_mechleist_oeffnenschliessen_vierseil["beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"] 
                 + df_mechleist_oeffnenschliessen_vierseil["beharrungsleistung"] * df_spielzeiten_greifer["kontinuierliche_zeit"] 
             )
         
@@ -629,7 +629,7 @@ def berechnungen_pro_tag(dict):
         )
         df_elenergie_greifer_vierseil_schliessen = (
             df_mechenergie_greifer_oeffnenschliessen_vierseil / dict_hub["wirkungsgrad_motor_hub"]
-            - (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            - (df_mechleist_oeffnenschliessen_vierseil["beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
             * dict_rueckspeisung["faktor_greifer"] * dict_rueckspeisung["fu_wirkungsgrad_greifer"]
         )
         df_elenergie_greifer_vierseil_oeffnen_rueckspeisung = (
@@ -637,7 +637,7 @@ def berechnungen_pro_tag(dict):
             * dict_rueckspeisung["faktor_greifer"] * dict_rueckspeisung["fu_wirkungsgrad_greifer"]
         )
         df_elenergie_greifer_vierseil_schliessen_rueckspeisung = (
-            (df_mechleist_oeffnenschliessen_vierseil["Beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
+            (df_mechleist_oeffnenschliessen_vierseil["beschleunigungsleistung"] * df_spielzeiten_greifer["beschleunigungszeit"]) / dict_hub["wirkungsgrad_motor_hub"]
             * dict_rueckspeisung["faktor_greifer"] * dict_rueckspeisung["fu_wirkungsgrad_greifer"]
         )
     elif greifer_typ == "Hydraulikgreifer":

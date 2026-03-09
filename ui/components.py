@@ -30,6 +30,7 @@ def number_standard(
         use_std = st.checkbox("Standard", value=False, key=f"use_default_{key}")
 
     if use_std:
+        wert = standard  # Wenn Standard ausgewählt ist, wird der Standardwert verwendet
         key2 = f"value_{key}_standard"
     else:
         key2 = f"value_{key}"

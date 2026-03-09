@@ -40,6 +40,8 @@ st.caption(
 # ------------------------------------------------------------
 # Helper (Pylance/Typing-friendly)
 # ------------------------------------------------------------
+
+##Zahlenwerte sicher in Int konvertieren
 def to_int(x: Any, default: int = 0) -> int:
     """Robust: None/''/— -> default, sonst int(float(x))."""
     try:
@@ -51,7 +53,7 @@ def to_int(x: Any, default: int = 0) -> int:
     except Exception:
         return default
 
-
+##Zahlenwerte sicher in float konvertieren
 def as_float(x: Any, default: float | None = None) -> float | None:
     """Robust: None/''/— -> default, sonst float(x)."""
     try:
@@ -64,6 +66,7 @@ def as_float(x: Any, default: float | None = None) -> float | None:
         return default
 
 
+##Zahlenwerte auf 3 Nachkommastellen kürzen und zu String konvertieren; Einheit anhängen
 def fmt_num(x: Any, unit: str = "", digits: int = 3, fallback: str = "—") -> str:
     v = as_float(x, None)
     if v is None or (isinstance(v, float) and (math.isnan(v) or math.isinf(v))):
@@ -72,6 +75,7 @@ def fmt_num(x: Any, unit: str = "", digits: int = 3, fallback: str = "—") -> s
     return f"{s} {unit}".rstrip()
 
 
+##Verschachtelte Dictionaries zu unverschachtelten Listen entpacken für tabellarische Darstellung
 def flatten_dict(d: dict, parent_key: str = "") -> list[dict]:
     rows: list[dict] = []
     for k, v in d.items():
@@ -83,6 +87,7 @@ def flatten_dict(d: dict, parent_key: str = "") -> list[dict]:
     return rows
 
 
+##Dictionary-Pfade dur .-Trennung schreibbar machen und Wert zurückgeben
 def dict_get(dct: dict | None, path: str, default: Any = "—") -> Any:
     """Sicheres Holen aus verschachtelten Dicts via 'a.b.c'-Pfad."""
     if not isinstance(dct, dict):
@@ -99,7 +104,9 @@ def dict_get(dct: dict | None, path: str, default: Any = "—") -> Any:
 # ------------------------------------------------------------
 # Daten laden
 # ------------------------------------------------------------
-@st.cache_data(show_spinner=False)
+
+##CSV-Dateien einmal auslesen
+@st.cache_data(show_spinner=False)      ##Nachfolgende Methode ohne Animation cachen -> CSV nur einmal laden
 def load_strommix_csv(path: str) -> tuple[pd.DataFrame, pd.Series | None]:
     """
     Liest eure CSV (;) ein.
@@ -108,6 +115,7 @@ def load_strommix_csv(path: str) -> tuple[pd.DataFrame, pd.Series | None]:
     df = pd.read_csv(path, sep=";", engine="python")
     df.columns = [c.strip() for c in df.columns]
 
+    #Sonderfall: CO2-Faktor in CSV separat speichern
     co2_row = None
     if "Land" in df.columns:
         mask = df["Land"].astype(str).str.strip().eq("CO2Faktor")
@@ -120,13 +128,16 @@ def load_strommix_csv(path: str) -> tuple[pd.DataFrame, pd.Series | None]:
     for c in numeric_cols:
         df[c] = pd.to_numeric(df[c], errors="coerce")
 
+    #Anteil am Strommix aller Energieträger in neue Spalte
     mix_cols = [c for c in ["Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges"] if c in df.columns]
     if mix_cols:
         df["Summe Strommix [%]"] = df[mix_cols].sum(axis=1, skipna=True)
 
+    #Preisspalte auf 2 Nachkommastellen runden
     if "Preis in c/kWh" in df.columns:
         df["Preis in c/kWh"] = df["Preis in c/kWh"].round(2)
 
+    #Länderspalte alphabetisch sortieren
     if "Land" in df.columns:
         df = df.sort_values("Land")
 
@@ -136,22 +147,26 @@ def load_strommix_csv(path: str) -> tuple[pd.DataFrame, pd.Series | None]:
 # ------------------------------------------------------------
 # Renderer
 # ------------------------------------------------------------
+
+##Standartwerte als Tabelle mit Tabs darstellen
 def render_standards(standards: dict):
     st.subheader("Standardwerte")
     st.write("Diese Werte sind firmeninterne Erfahrungs- und Durchschnittswerte und dienen nur als Orientierung")
 
     cats = list(standards.keys())
-    tabs = st.tabs(cats)
+    tabs = st.tabs([cat.capitalize() for cat in cats])
 
     for tab, cat in zip(tabs, cats):
         with tab:
             val = standards[cat]
 
-            if isinstance(val, dict) and cat == "Greifer":
+            #Dropdown zur Greifermodellauswahl
+            if isinstance(val, dict) and cat == "greifer":
                 greifer_names = list(val.keys())
-                sel = st.selectbox("Greifer-Modell", greifer_names, key="src_greifer_select")
+                sel = st.selectbox("Greifer-Modell", greifer_names, key="src_greifer_select", help="Beispielmodelle zur erhebung von Standartwerten")
                 df = pd.DataFrame([{"Parameter": p, "Wert": w} for p, w in val[sel].items()])
                 st.dataframe(df, use_container_width=True, hide_index=True)
+            #Alle anderen Tabs ohne Dropdown
             else:
                 if isinstance(val, dict):
                     df = pd.DataFrame([{"Parameter": p, "Wert": w} for p, w in val.items()])
@@ -159,20 +174,22 @@ def render_standards(standards: dict):
                 else:
                     st.write(val)
 
+    #Tabelle auch ohne Tabs anzeigbar
     with st.expander("Alles als flache Gesamtliste anzeigen"):
         flat = flatten_dict(standards)
         st.dataframe(pd.DataFrame(flat), use_container_width=True, hide_index=True)
 
-
+##Alle eingegebenen Werte tabellarisch Darstellen und ggf. Differenzen berechnen
 def render_aktuelle_werte_ist_neu():
     st.subheader("🔎 Aktuell eingesetzte Werte (IST vs. NEU/SOLL)")
 
     ist_anlage = st.session_state.get("ist_anlage", {})
     neu_anlage = st.session_state.get("neu_anlage", {})
 
-    tabs = st.tabs(["IST", "NEU/SOLL", "Vergleich"])
+    outer_tabs = st.tabs(["IST", "NEU/SOLL", "Vergleich"])
 
-    def make_table(dct: dict):
+    # Hilfsfunktion, um alle Daten als DataFrame zu erzeugen
+    def make_table(dct: dict) -> pd.DataFrame:
         rows = [
             # Anlage
             ("Anlage", "Standort", dict_get(dct, "anlage.anlage_standort")),
@@ -180,10 +197,10 @@ def render_aktuelle_werte_ist_neu():
             ("Anlage", "Anzahl Trichter", dict_get(dct, "anlage.anzahl_trichter")),
             ("Anlage", "Verbrennung je Trichter [kg/h]", dict_get(dct, "anlage.verbrennung_trichter_kg")),
             ("Anlage", "Energiekosten [ct/kWh]", dict_get(dct, "anlage.energie_kosten")),
-            ("Anlage", "Müll Anlieferung [kg/h]", dict_get(dct, "anlage.müll_anlieferung_h_kg")),
-            ("Anlage", "Müll Anlieferdauer [h/d]", dict_get(dct, "anlage.müll_anlieferdauer")),
-            ("Anlage", "Müll Dichte Beschickung [kg/m³]", dict_get(dct, "anlage.müll_dichte_beschickung_kg_pro_m3")),
-            ("Anlage", "Müll Dichte Anlieferung [kg/m³]", dict_get(dct, "anlage.müll_dichte_anlieferung_kg_pro_m3")),
+            ("Anlage", "Müll Anlieferung [kg/h]", dict_get(dct, "anlage.muell_anlieferung_h_kg")),
+            ("Anlage", "Müll Anlieferdauer [h/d]", dict_get(dct, "anlage.muell_anlieferdauer")),
+            ("Anlage", "Müll Dichte Beschickung [kg/m³]", dict_get(dct, "anlage.muell_dichte_beschickung_kg_pro_m3")),
+            ("Anlage", "Müll Dichte Anlieferung [kg/m³]", dict_get(dct, "anlage.muell_dichte_anlieferung_kg_pro_m3")),
             # Greifer
             ("Greifer", "Typ", dict_get(dct, "greifer.typ")),
             ("Greifer", "Leergewicht [kg]", dict_get(dct, "greifer.leergewicht_kg")),
@@ -201,35 +218,54 @@ def render_aktuelle_werte_ist_neu():
         ]
         return pd.DataFrame(rows, columns=["Kategorie", "Parameter", "Wert"])
 
-    with tabs[0]:
-        st.dataframe(make_table(ist_anlage), use_container_width=True, hide_index=True)
+    #Kategorien, die als untertabs Dargestellt werden
+    categories = ["Anlage", "Greifer", "Wege"]
 
-    with tabs[1]:
-        st.dataframe(make_table(neu_anlage), use_container_width=True, hide_index=True)
+    # --- Tab: IST ---
+    with outer_tabs[0]:
+        inner_tabs = st.tabs(categories)
+        df_ist = make_table(ist_anlage)
+        for i, cat in enumerate(categories):
+            with inner_tabs[i]:
+                df = df_ist[df_ist["Kategorie"] == cat].drop(columns="Kategorie")
+                st.dataframe(df, use_container_width=True, hide_index=True)
 
-    with tabs[2]:
+    # --- Tab: NEU/SOLL ---
+    with outer_tabs[1]:
+        inner_tabs = st.tabs(categories)
+        df_neu = make_table(neu_anlage)
+        for i, cat in enumerate(categories):
+            with inner_tabs[i]:
+                df = df_neu[df_neu["Kategorie"] == cat].drop(columns="Kategorie")
+                st.dataframe(df, use_container_width=True, hide_index=True)
+
+    # --- Tab: Vergleich ---
+    with outer_tabs[2]:
         ist_df = make_table(ist_anlage).rename(columns={"Wert": "IST"})
         neu_df = make_table(neu_anlage).rename(columns={"Wert": "NEU/SOLL"})
         cmp_df = ist_df.merge(neu_df, on=["Kategorie", "Parameter"], how="outer")
 
+        #Berechnung von Differenzen, "—" falls keine Zahlenwerte
         def diff(a: Any, b: Any):
             try:
-                a_num = float(a)
-                b_num = float(b)
-                return b_num - a_num
+                return float(b) - float(a)
             except Exception:
                 return "—"
 
         cmp_df["Δ (NEU-IST)"] = [diff(a, b) for a, b in zip(cmp_df["IST"], cmp_df["NEU/SOLL"])]
-        st.dataframe(cmp_df, use_container_width=True, hide_index=True)
+
+        inner_tabs = st.tabs(categories)
+        for i, cat in enumerate(categories):
+            with inner_tabs[i]:
+                df = cmp_df[cmp_df["Kategorie"] == cat].drop(columns="Kategorie")
+                st.dataframe(df, use_container_width=True, hide_index=True)
 
         with st.expander("Hinweis"):
             st.markdown(
                 "- `Δ` wird nur berechnet, wenn beide Werte numerisch sind.\n"
                 "- Fehlende Werte erscheinen als „—“.\n"
-                "- Wenn Sie weitere Felder anzeigen wollen: in `make_table()` einfach ergänzen."
+                "- Tabelle wird noch vervollständigt."
             )
-
 
 def render_rechenweg():
     st.subheader("🧮 Rechenweg (Formeln + eingesetzte Werte)")
@@ -237,6 +273,7 @@ def render_rechenweg():
     ist = st.session_state.get("ist_anlage", None)
     neu = st.session_state.get("neu_anlage", None)
 
+    #Absicherung, falls keine Dictionaries angelegt wurden. Sollte nicht möglich sein
     if not isinstance(ist, dict) or not ist:
         st.info("Keine IST-Daten im Session State gefunden (ist_anlage). Bitte erst auf den Eingabeseiten Werte speichern.")
         return
@@ -264,11 +301,11 @@ def render_rechenweg():
         # --- Basisgrößen (sicher ziehen) ---
         n_trichter = as_float(anlage.get("anzahl_trichter"), None)
         verb_trichter = as_float(anlage.get("verbrennung_trichter_kg"), None)  # kg/h pro Trichter
-        anliefer_h = as_float(anlage.get("müll_anlieferung_h_kg"), None)  # kg/h
-        anlieferdauer = as_float(anlage.get("müll_anlieferdauer"), None)  # h/d
+        anliefer_h = as_float(anlage.get("muell_anlieferung_h_kg"), None)  # kg/h
+        anlieferdauer = as_float(anlage.get("muell_anlieferdauer"), None)  # h/d
 
-        rho_beschick = as_float(anlage.get("müll_dichte_beschickung_kg_pro_m3"), None)
-        rho_anliefer = as_float(anlage.get("müll_dichte_anlieferung_kg_pro_m3"), None)
+        rho_beschick = as_float(anlage.get("muell_dichte_beschickung_kg_pro_m3"), None)
+        rho_anliefer = as_float(anlage.get("muell_dichte_anlieferung_kg_pro_m3"), None)
 
         V = as_float(greifer.get("volumen_m3"), None)
 
@@ -323,7 +360,7 @@ def render_rechenweg():
             if None in (n_trichter, verb_trichter, anliefer_h, V, rho_anliefer, rho_beschick, anlieferdauer):
                 st.warning("Nicht alle Eingangsgrößen vorhanden (Anlage/Müll/Greifer).")
             else:
-                df_muell = muellberechnung(
+                muell_dict = muellberechnung(
                     to_int(n_trichter, 0),
                     float(verb_trichter),
                     float(anliefer_h),
@@ -332,21 +369,27 @@ def render_rechenweg():
                     float(rho_anliefer),
                     float(anlieferdauer),
                 )
-                st.table(
-                    {
-                        "Größe": [
-                            "Mülleinlagerung [kg/Zyklus]",
-                            "Zyklen Einlagerung [1/d]",
-                            "Zyklen Trichter gesamt [1/d]",
-                        ],
-                        "Wert": [
-                            fmt_num(df_muell["Mülleinlagerung kg / Zyklus"], "kg", 1),
-                            fmt_num(df_muell["Anzahl Zyklen Mülleinlagerung / d"], "1/d", 2),
-                            fmt_num(df_muell["Anzahl Zyklen Trichterbeschickung gesamt / d"], "1/d", 2),
-                        ],
-                    }
-                )
 
+                df_muell = pd.DataFrame({
+                    "Größe": [
+                        "Mülleinlagerung [kg/Zyklus]",
+                        "Zyklen Einlagerung [1/d]",
+                        "Zyklen Trichter gesamt [1/d]",
+                    ],
+                    "Wert": [
+                        muell_dict["muelleinlagerung_kg_pro_zyklus"],
+                        muell_dict["anzahl_zyklen_muelleinlagerung_pro_d"],
+                        muell_dict["anzahl_zyklen_trichterbeschickung_gesamt_pro_d"],
+                    ]
+                })
+
+                # --- Werte formatieren ---
+                df_muell["Wert"] = df_muell["Wert"].apply(lambda x: fmt_num(x, "", 2))
+
+                # --- Tabelle anzeigen ---
+                st.markdown("##### Werte")
+                st.dataframe(df_muell, use_container_width=True, hide_index=True)
+                
         # ------------------------------------------------------------
         # Spielzeiten
         # ------------------------------------------------------------
@@ -394,46 +437,53 @@ def render_rechenweg():
             if None in (m_seil, m_greifer_leer, V, rho_anliefer, v_hub_mmin, eta_seil, eta_hub_getr) or not stw_hub:
                 st.warning("Hubwerk: fehlende Eingangsgrößen.")
             else:
-                df_hub = mechleistunghubwerk(
+                hub_dict = mechleistunghubwerk(
                     gewicht_seile=float(m_seil),
                     gewicht_greifer_leer=float(m_greifer_leer),
                     greifer_volumen=float(V),
                     muell_dichte=float(rho_anliefer),
                     geschwindigkeit_mmin=float(v_hub_mmin),
-                    beschleunigung_zeit=float(stw_hub["Beschleunigungszeit"]),
+                    beschleunigung_zeit=float(stw_hub["beschleunigungszeit"]),
                     wirkungsgrad_seiltrieb=float(eta_seil),
                     wirkungsgrad_getriebestufe=float(eta_hub_getr),
                     getriebestufen=int(hub_stufen),
                     motor_anzahl=int(hub_motoren),
-                )
+                    )
 
-                # Einsetzen für "voll" (Einlagerung)
-                v_ms = float(v_hub_mmin) / 60.0
-                eta_ges = (float(eta_hub_getr) ** int(hub_stufen)) * float(eta_seil)
-                m_voll = float(m_seil) + (float(V) * float(rho_anliefer) + float(m_greifer_leer))
-                tacc = float(stw_hub["Beschleunigungszeit"])
+                df_hub = pd.DataFrame({
+                    "Größe": [
+                        "Beharrungsleistung voll [kW]",
+                        "Beschleunigungsleistung voll [kW]",
+                        "Beharrungsleistung leer [kW]",
+                        "Beschleunigungsleistung leer [kW]",
+                    ],
+                    "Wert": [
+                        hub_dict["beharrungsleistung_voll"],
+                        hub_dict["gesamtbeschleunigungsleistung_voll"],
+                        hub_dict["beharrungsleistung_leer"],
+                        hub_dict["gesamtbeschleunigungsleistung_leer"],
+                    ]
+                })
 
-                st.latex(
-                    rf"P_\mathrm{{beh}} = \frac{{{m_voll:.0f}\cdot 9.81 \cdot {v_ms:.4f}}}{{{eta_ges:.4f}}}\cdot\frac{{1}}{{1000}}"
-                    rf" = {df_hub['Beharrungsleistung voll']:.3f}\ \mathrm{{kW}}"
-                )
-                st.latex(
-                    rf"P_\mathrm{{acc}} = \frac{{0.5\cdot {m_voll:.0f}\cdot {v_ms:.4f}^2}}{{{tacc:.4f}\cdot {eta_ges:.4f}}}\cdot\frac{{1}}{{1000}}"
-                    rf" = {df_hub['Gesamtbeschleunigungsleistung voll']:.3f}\ \mathrm{{kW}}"
-                )
+                # --- Werte formatieren ---
+                df_hub["Wert"] = df_hub["Wert"].apply(lambda x: fmt_num(x, "", 2))
 
+                # --- Tabelle anzeigen ---
+                st.markdown("##### Werte")
+                st.dataframe(df_hub, use_container_width=True, hide_index=True)
+                
         # ------------------------------------------------------------
-        # Mechanik: Katze & Kran
+        # Mechanik: Katze
         # ------------------------------------------------------------
-        with st.expander("Katzfahrt & Kranfahrt – Leistungen", expanded=False):
+        with st.expander("Katzfahrt – Leistungen", expanded=False):
             st.latex(r"P_\mathrm{beh}=\frac{f \cdot m \cdot g \cdot v}{\eta}")
             st.latex(r"P_\mathrm{acc,mittel}=\frac{0.5 \cdot m \cdot v^2}{t_\mathrm{acc}\cdot \eta}")
-            st.caption("Hinweis: Fahrwiderstand als kgf/t → f = (kgf/t)/1000 (dimensionslos).")
+            st.caption("Hinweis: Fahrwiderstand f in [kgf/t] → f = (kgf/t)/1000")
 
             if None in (m_seil, m_greifer_leer, V, rho_anliefer, m_katze, v_katz_mmin, fw_katz, eta_katz_getr) or not stw_katz:
                 st.warning("Katzfahrt: fehlende Eingangsgrößen.")
             else:
-                df_katz = mechleistungkatzfahrt(
+                katz_dict = mechleistungkatzfahrt(
                     gewicht_seile=float(m_seil),
                     gewicht_greifer_leer=float(m_greifer_leer),
                     greifer_volumen=float(V),
@@ -445,24 +495,44 @@ def render_rechenweg():
                     wirkungsgrad_getriebestufe=float(eta_katz_getr),
                     motorzahl=int(katz_motoren),
                     # ✅ Signature erwartet int -> cast
-                    beschleunigungszeit=to_int(stw_katz["Beschleunigungszeit"], 0),
+                    beschleunigungszeit=to_int(stw_katz["beschleunigungszeit"], 0),
                 )
-                st.table(
-                    {
-                        "Katzfahrt": ["P_beh (voll)", "P_acc (voll)", "P_beh (leer)", "P_acc (leer)"],
-                        "kW": [
-                            fmt_num(df_katz["Beharrungsleistung"], "kW", 3),
-                            fmt_num(df_katz["Beschleunigungsleistungen"], "kW", 3),
-                            fmt_num(df_katz["Beharrungsleistung_leer"], "kW", 3),
-                            fmt_num(df_katz["Beschleunigungsleistungen_leer"], "kW", 3),
-                        ],
-                    }
-                )
+
+                df_katz = pd.DataFrame({
+                    "Größe": [
+                        "Beharrungsleistung voll [kW]",
+                        "Beschleunigungsleistung voll [kW]",
+                        "Beharrungsleistung leer [kW]",
+                        "Beschleunigungsleistung leer [kW]",
+                    ],
+                    "Wert": [
+                        katz_dict["beharrungsleistung"],
+                        katz_dict["beschleunigungsleistungen"],
+                        katz_dict["beharrungsleistung_leer"],
+                        katz_dict["beschleunigungsleistungen_leer"],
+                    ]
+                })
+
+                # --- Werte formatieren ---
+                df_katz["Wert"] = df_katz["Wert"].apply(lambda x: fmt_num(x, "", 2))
+
+                # --- Tabelle anzeigen ---
+                st.markdown("##### Werte")
+                st.dataframe(df_katz, use_container_width=True, hide_index=True)
+
+
+        # ------------------------------------------------------------
+        # Mechanik: Kran
+        # ------------------------------------------------------------
+        with st.expander("Kranfahrt – Leistungen", expanded=False):
+            st.latex(r"P_\mathrm{beh}=\frac{f \cdot m \cdot g \cdot v}{\eta}")
+            st.latex(r"P_\mathrm{acc,mittel}=\frac{0.5 \cdot m \cdot v^2}{t_\mathrm{acc}\cdot \eta}")
+            st.caption("Hinweis: Fahrwiderstand f in [kgf/t] → f = (kgf/t)/1000")
 
             if None in (m_seil, m_greifer_leer, V, rho_anliefer, m_katze, m_kran, v_kran_mmin, fw_kran, eta_kran_getr) or not stw_kran:
                 st.warning("Kranfahrt: fehlende Eingangsgrößen.")
             else:
-                df_kran = kranfahrt(
+                kran_dict = kranfahrt(
                     gewicht_greifer_leer=float(m_greifer_leer),
                     greifer_volumen=float(V),
                     muell_dichte=float(rho_anliefer),
@@ -475,19 +545,31 @@ def render_rechenweg():
                     wirkungsgrad_getriebestufe=float(eta_kran_getr),
                     getriebestufen=int(kran_stufen),
                     # ✅ Signature erwartet int -> cast
-                    beschleunigungszeit=to_int(stw_kran["Beschleunigungszeit"], 0),
+                    beschleunigungszeit=to_int(stw_kran["beschleunigungszeit"], 0),
                 )
-                st.table(
-                    {
-                        "Kranfahrt": ["P_beh (voll)", "P_acc (voll)", "P_beh (leer)", "P_acc (leer)"],
-                        "kW": [
-                            fmt_num(df_kran["Beharrungsleistung"], "kW", 3),
-                            fmt_num(df_kran["Beschleunigungsleistungen"], "kW", 3),
-                            fmt_num(df_kran["Beharrungsleistung_leer"], "kW", 3),
-                            fmt_num(df_kran["Beschleunigungsleistungen_leer"], "kW", 3),
-                        ],
-                    }
-                )
+
+                df_kran = pd.DataFrame({
+                    "Größe": [
+                        "Beharrungsleistung voll [kW]",
+                        "Beschleunigungsleistung voll [kW]",
+                        "Beharrungsleistung leer [kW]",
+                        "Beschleunigungsleistung leer [kW]",
+                    ],
+                    "Wert": [
+                        kran_dict["beharrungsleistung"],
+                        kran_dict["beschleunigungsleistungen"],
+                        kran_dict["beharrungsleistung_leer"],
+                        kran_dict["beschleunigungsleistungen_leer"],
+
+                    ]
+                })
+                
+                # --- Werte formatieren ---
+                df_kran["Wert"] = df_kran["Wert"].apply(lambda x: fmt_num(x, "", 2))
+
+                # --- Tabelle anzeigen ---
+                st.markdown("##### Werte")
+                st.dataframe(df_kran, use_container_width=True, hide_index=True)
 
         # ------------------------------------------------------------
         # Greifer: Vierseil vs Hydraulik
@@ -505,53 +587,69 @@ def render_rechenweg():
                     st.warning("Hydraulikgreifer: p oder Q fehlt.")
                 else:
                     # ✅ Signature erwartet int -> cast
-                    df_h = greiferhydraulik(
+                    h_dict = greiferhydraulik(
                         betriebsdruck=to_int(p, 0),
                         volumenstrom=to_int(q, 0),
                     )
-                    p_hyd = df_h["Leistung Beharrung"]
-                    st.latex(rf"P_\mathrm{{hydr}}=\frac{{{p:.1f}\cdot {q:.1f}}}{{600}} = {p_hyd:.3f}\ \mathrm{{kW}}")
-                    if eta_h is not None and eta_h > 0:
-                        st.latex(
-                            rf"P_\mathrm{{el}}=\frac{{P_\mathrm{{hydr}}}}{{\eta}}=\frac{{{p_hyd:.3f}}}{{{eta_h:.3f}}} = {(p_hyd/eta_h):.3f}\ \mathrm{{kW}}"
-                        )
-                    else:
-                        st.caption(
-                            "Hinweis: Wirkungsgrad Hydraulik nicht gesetzt oder 0 → elektrische Leistung kann nicht sauber umgerechnet werden."
-                        )
+
+                    df_h = pd.DataFrame ({
+                        "Größe": [
+                            "Hydraulikleistung [kW]",
+                        ],
+                        "Wert": [
+                            h_dict["leistung_beharrung"],
+                        ],
+                    })
+                   
+                    # --- Werte formatieren ---
+                    df_h["Wert"] = df_h["Wert"].apply(lambda x: fmt_num(x, "", 2))
+
+                    # --- Tabelle anzeigen ---
+                    st.markdown("##### Werte")
+                    st.dataframe(df_h, use_container_width=True, hide_index=True)
 
             elif greifer_typ == "Vierseil-Greifer":
                 st.caption("Erfahrungswert: Greiferleistung ≈ 1/3 der Hubwerksleistung (beharrend und beschleunigend).")
-                st.latex(r"P_\mathrm{Greifer} = \frac{1}{3} P_\mathrm{Hub}")
+                st.latex(r"P_\mathrm{Greifer} = \frac{P_\mathrm{Hub}}{3}")
 
                 if None in (m_seil, m_greifer_leer, V, rho_anliefer, v_hub_mmin, eta_seil, eta_hub_getr) or not stw_hub:
                     st.warning("Vierseil: Hubwerk-Werte fehlen, um den 1/3-Ansatz zu zeigen.")
                 else:
-                    df_hub = mechleistunghubwerk(
+                    hub_dict = mechleistunghubwerk(
                         gewicht_seile=float(m_seil),
                         gewicht_greifer_leer=float(m_greifer_leer),
                         greifer_volumen=float(V),
                         muell_dichte=float(rho_anliefer),
                         geschwindigkeit_mmin=float(v_hub_mmin),
-                        beschleunigung_zeit=float(stw_hub["Beschleunigungszeit"]),
+                        beschleunigung_zeit=float(stw_hub["beschleunigungszeit"]),
                         wirkungsgrad_seiltrieb=float(eta_seil),
                         wirkungsgrad_getriebestufe=float(eta_hub_getr),
                         getriebestufen=int(hub_stufen),
                         motor_anzahl=int(hub_motoren),
                     )
-                    g = mechleistunggreifervierseil(
-                        df_hub["Beharrungsleistung voll"],
-                        df_hub["Gesamtbeschleunigungsleistung voll"],
+
+                    v_dict = mechleistunggreifervierseil(
+                        hub_dict["beharrungsleistung_voll"],
+                        hub_dict["gesamtbeschleunigungsleistung_voll"],
                     )
-                    st.table(
-                        {
-                            "Greifer (1/3 Hub)": ["P_beh", "P_acc"],
-                            "kW": [
-                                fmt_num(g["Beharrungsleistung"], "kW", 3),
-                                fmt_num(g["Beschleunigungsleistung"], "kW", 3),
-                            ],
-                        }
-                    )
+
+                    df_v = pd.DataFrame ({
+                        "Größe": [
+                            "Beharrungsleistung [kW]",
+                            "Beschleunigungsleistung [kW]",
+                        ],
+                        "Wert": [
+                            v_dict["beharrungsleistung"],
+                            v_dict["beschleunigungsleistung"],
+                        ]
+                    })
+                    # --- Werte formatieren ---
+                    df_v["Wert"] = df_v["Wert"].apply(lambda x: fmt_num(x, "", 2))
+
+                    # --- Tabelle anzeigen ---
+                    st.markdown("##### Werte")
+                    st.dataframe(df_v, use_container_width=True, hide_index=True)
+
             else:
                 st.info("Unbekannter Greifertyp oder noch nicht gewählt.")
 
@@ -561,7 +659,7 @@ def render_rechenweg():
         with tabs[1]:
             render_for(neu, "NEU/SOLL")
 
-    st.caption("Quelle für Formeln: Firmeninterne Berechnungsmethoden und Erfahrungswerte aus der Praxis.")
+    st.caption("Quelle für Formeln: Physikalische Grundsätze, Firmeninterne Berechnungsmethoden und Erfahrungswerte aus der Praxis.")
 
 
 def render_strommix_table():
@@ -572,15 +670,13 @@ def render_strommix_table():
     col1, col2 = st.columns([1, 1])
     with col1:
         country = st.selectbox("Land auswählen", ["(alle)"] + df["Land"].tolist(), key="src_country_select")
-    with col2:
-        show_sources = st.toggle("Quellen/Kommentare unter Tabelle anzeigen", value=True)
 
     view = df.copy()
     if country != "(alle)":
         view = view.loc[view["Land"] == country].copy()
 
     source_text = None
-    if show_sources and country != "(alle)" and "Quellen" in view.columns and not view.empty:
+    if country != "(alle)" and "Quellen" in view.columns and not view.empty:
         source_text = view.iloc[0].get("Quellen", None)
 
     ordered = [
@@ -610,13 +706,12 @@ def render_strommix_table():
 
     st.dataframe(view.style.format(fmt_map, na_rep="—"), use_container_width=True, hide_index=True)
 
-    # Deine Quellen (wie gewünscht: nicht als Spalte nötig, sondern unter der Tabelle)
     st.caption("Quelle Strompreise:")
     st.caption("     https://de.statista.com/statistik/daten/studie/151260/umfrage//strompreise-fuer-industriekunden-in-europa/")
     st.caption("Quelle Strommix:")
     st.caption("     https://lowcarbonpower.org/de/, Stand 2024")
 
-    if show_sources and source_text:
+    if source_text:
         st.caption("Hinweis/Quellen (CSV-Zeile):")
         st.write(source_text)
 
@@ -630,7 +725,7 @@ def render_strommix_table():
         for k, v in co2.items():
             num = pd.to_numeric(v, errors="coerce")
             if pd.notna(num):
-                items.append({"Energieträger": k, "CO₂-Faktor (wie in CSV)": float(num)})
+                items.append({"Energieträger": k, "CO₂-Faktor": float(num)})
 
         st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
         st.caption('Quelle CO₂-Faktoren außer "Sonstiges":')
@@ -641,7 +736,6 @@ def render_strommix_table():
         st.caption(
             "     https://www.bafa.de/SharedDocs/Downloads/DE/Energie/eew_infoblatt_co2_faktoren_2022.pdf?__blob=publicationFile&v=6, Tabelle 2"
         )
-
 
 # ------------------------------------------------------------
 # Render page
