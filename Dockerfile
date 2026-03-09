@@ -8,22 +8,20 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# System deps
-# RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# App rein
 COPY . .
 
-# Non-root User
 ARG UID=10001
-RUN adduser --disabled-password --gecos "" --home "/nonexistent" --shell "/sbin/nologin" --no-create-home --uid "${UID}" appuser
+RUN adduser --disabled-password --gecos "" --home "/home/appuser" --shell "/bin/sh" --uid "${UID}" appuser \
+    && mkdir -p /home/appuser/.streamlit \
+    && chown -R appuser:appuser /home/appuser /app
+
+ENV HOME=/home/appuser
+
 USER appuser
 
-# Richtiger Port für Streamlit?
 EXPOSE 8501
 
-# hier wird streamlit gestartet, mit den entsprechenden Optionen
 CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
