@@ -7,7 +7,7 @@ from ui.components import number_standard
 from common.page_init import page_init
 from common.flow import success_feedback
 # Standardwerte
-from config.standards import hydr, viers
+from config.standards import hydr, viers, wege
 
 ## Seiteneinstellungen, Hintergrund und Login-Überprüfung
 page_init("Greiferdaten", "🪝", "centered")
@@ -25,6 +25,7 @@ ges_greifen = hydr["greifgeschwindigkeit_m_min"]
 bes_greifen = hydr["greifbeschleunigung_m_s2"]
 auswahl_parameter = "Schließ/Öffnungszeit"
 
+
 ## Container im Session State 
 ist_state = st.session_state.setdefault("ist_anlage", {})
 greifer_state = ist_state.setdefault("greifer", {})
@@ -37,11 +38,16 @@ st.info("Auf dieser Seite wählen Sie den Greifertyp und erfassen die wichtigste
 
 # Radio Buttons erstellen für Greiferauswahl
 
+if greifer_state.get("typ", "Vierseil-Greifer") == "Hydraulikgreifer":
+    index = 1
+else:    
+    index = 0
+
 greifer_Arten = [viers["greiferart"], hydr["greiferart"]]
 auswahl_greifer = st.radio("Greiferart:", greifer_Arten, key="radio_greifer_Arten",
                            help="Wählen Sie den verwendeten Greifertyp. \
                             Je nach Typ unterscheiden sich die relevanten Eingabeparameter \
-                            und die Energieberechnung.")
+                            und die Energieberechnung.", index=index)
 
 # Vierseil-Greifer
 if auswahl_greifer == viers["greiferart"]:
