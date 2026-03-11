@@ -65,9 +65,17 @@ st.info(
     "Die Berechnungen basieren auf den zuvor eingegebenen mechanischen, betrieblichen und standortspezifischen Daten."
 )
 
-
-auswahl_auswertung = st.radio("Auswertungsart:",["Eigenanlage-Analyse","Vergleich mit modernisierter Neu-Anlage"], 
-                              key="radio_auswertung")
+# region Auswahl & Konfiguration Neuanlage
+if "radio_auswertung" not in st.session_state:
+    st.session_state.radio_auswertung = "Eigenanlage-Analyse"
+options = ["Eigenanlage-Analyse", "Vergleich mit modernisierter Neu-Anlage"]
+st.subheader("Auswertungsart")
+auswahl_auswertung = st.radio(
+    "",
+    options,
+    index=options.index(st.session_state.radio_auswertung)
+)
+st.session_state.radio_auswertung = auswahl_auswertung
 
 if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
     # Parameterauswahl
@@ -176,7 +184,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
             else: 
                 standard_index = 1
             soll_auswahl_greifer = st.radio("Greiferart:", soll_greifer_arten, 
-                                    key="soll_radio_greifer_arten", index=standard_index)
+                                    key="soll_radio_greifer_arten")
             if soll_auswahl_greifer not in soll_greifer_arten:
                 soll_auswahl_greifer = viers["greiferart"]  # Standardwert setzen, falls ungültige Auswahl getroffen wird
 
@@ -757,6 +765,7 @@ if auswahl_auswertung == "Vergleich mit modernisierter Neu-Anlage":
                     "fu_wirkungsgrad_katze": soll_rueckspeisung_katz[0]
             }
         )
+    #endregion Auswahl & Konfiguration Neuanlage
 
     # Visualisierung der Berechnungen
     faktor = plot_slider_global()

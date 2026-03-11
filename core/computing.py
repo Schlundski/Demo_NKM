@@ -801,15 +801,18 @@ def berechnungen_pro_tag(dict):
 
     # endregion Tagesberechnung Beschickung
 
-    # Gesamtenergie in kWh
+    # region Gesamtenergie in kWh
 
     df_elenergie_verbrauch_kwh      = (df_elenergie_beschick_verbrauch_d + df_elenergie_einlager_verbrauch_d) / 3600
     df_elenergie_rueckspeisung_kwh  = (df_elenergie_beschick_rueckspeisung_d + df_elenergie_einlager_rueckspeisung_d) / 3600
     
+    # endregion Gesamtenergie in kWh
+
     # region Tagesberechnungen Energiekosten nach Region
 
     df_elenergie_kosten_eur = df_elenergie_verbrauch_kwh * anlage_energie_kosten / 100  # Euro für gesamtverbrauch
 
+    # endregion Tagesberechnungen Energiekosten nach Region
 
     return {
         "verbrauch": df_elenergie_verbrauch_kwh,

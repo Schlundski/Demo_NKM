@@ -15,6 +15,7 @@ def success_feedback(this_page, next_page):
             if st.button("Weiter", key=f"weiter_{this_page}"):
                 st.session_state[f"{this_page}_saved"] = False
                 st.switch_page(f"pages/{next_page}.py")
+                st.stop()
     with col3:
         if st.session_state.get(f"{this_page}_saved"):
             st.success("Daten erfolgreich gespeichert!", icon="✅")

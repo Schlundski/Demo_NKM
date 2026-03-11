@@ -1,16 +1,24 @@
-## Hier findet die Autorisierung statt, ist tatsächlich recht simpel und funktioniert sehr gut
+## Hier findet die Autorisierung statt
 
 # Importieren nötiger Module
 import streamlit as st
+import os
+
 # Seiteneinstellungen
 st.set_page_config(layout = "centered")
 
 def check_login():
-    if st.secrets.get("login_enabled", True): ## Soll überhaupt ein Login erfolgen? 
+
+    login_enabled = os.getenv(
+        "LOGIN_ENABLED",
+        st.secrets.get("login_enabled", "True")
+    ).lower() in ("true", "1", "yes")
+    
+    if login_enabled: ## Soll überhaupt ein Login erfolgen? 
         # secrets.toml lesen (lokal oder über streamlit-cloud)
         auth_section = st.secrets.get("auth", st.secrets)
-        USER = auth_section.get("username")
-        PASS = auth_section.get("password")
+        USER =  os.getenv("USERNAME", auth_section.get("username", "admin")) 
+        PASS =  os.getenv("PASSWORD", auth_section.get("password", "admin"))
 
         if not USER or not PASS:
             st.error("Login ist nicht konfiguriert. Bitte secrets.toml / Cloud-Secrets setzen.")

@@ -15,6 +15,18 @@ page_init("Wege", "📐", "centered")
 ## Container im Session State für die Wegedaten erstellen, sofern noch nicht vorhanden
 ist_state = st.session_state.setdefault("ist_anlage", {})
 wege_state = ist_state.setdefault("wege", {})
+
+#Referenzweg des Greifers zurücksetzen, um bei Wechsel des Greifertyps den richtigen Standartwert zu laden
+greifer_typ = ist_state.get("greifer", {}).get("typ")
+if greifer_typ == "Hydraulikgreifer":
+    default = wege["oeffnen_schliessen_m_hydraulik"]
+else:
+    default = wege["oeffnen_schliessen_m_vierseil"]
+# reset wenn Greifertyp gewechselt hat
+if wege_state.get("greifer_typ") != greifer_typ:
+    wege_state["weg_oeffnen_schliessen_m"] = default
+    wege_state["greifer_typ"] = greifer_typ
+
 # Dynamischer Variablen für die Trichterwege, da die Anzahl der Trichter variabel ist
 weg_trichter = {}
 anlage = ist_state.get("anlage", {})
@@ -66,7 +78,7 @@ if ist_state["greifer"]["typ"] == "Hydraulikgreifer":
         wege_state.get("weg_oeffnen_schliessen_m", wege["oeffnen_schliessen_m_hydraulik"]),
         0,
         1,
-        10,
+        20,
         "wg_ofnschl_m",
         "Typischer Bewegungsweg beim Öffnen/Schließen. Wird zur Abschätzung der Zeit-/Energieanteile dieser Bewegung verwendet.\n" \
         "Bei Hydraulikgreifern wird der Weg der Schaufelspitzen verwendet, bei Vierseil-Greifern der die Strecke der Zugseile.",
