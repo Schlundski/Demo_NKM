@@ -4,7 +4,7 @@ import streamlit as st
 
 # Hintergrund hinzufügen, schaut professioneller aus
 
-def _img_to_data_uri(path: str) -> str:
+def _img_to_data_uri(path: str) -> str: # Hilfsfunktion, um Bilddatei in Data-URI umzuwandeln (String mit daten)
     p = Path(path)
     ext = p.suffix.lower().lstrip(".")
     if ext == "jpg":
@@ -12,7 +12,6 @@ def _img_to_data_uri(path: str) -> str:
 
     data = base64.b64encode(p.read_bytes()).decode("utf-8")
     return f"data:image/{ext};base64,{data}"
-
 
 def set_background_auto_theme(
     bg_light_path: str,

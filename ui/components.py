@@ -288,7 +288,7 @@ def zeitraum_suffix_from_factor(faktor: float) -> str:
 
     return "Zeitraum"
 
-def fmt_kg_de(value_kg: float) -> str:
+def fmt_kg_de(value_kg: float) -> str: # Formatierung von kg-Werten mit deutschem Komma und Punkt usw.
     return f"{value_kg:,.2f} kg".replace(",", "X").replace(".", ",").replace("X", ".")
 
 def plot_slider_global():
@@ -342,32 +342,32 @@ def plot_vergleich_aufteilung_co2(standort: str, kWh_ist_proTag: float, kWh_neu_
 
     ENERGIE_SPALTEN = ["Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges"]
 
-    # --- Zeile für das Land holen ---
+    # Zeile für das Land holen
     row_df = df_laender.loc[df_laender["Land"] == standort]
     if row_df.empty:
         st.error(f"Land '{standort}' nicht gefunden.")
         return
     land_row = row_df.iloc[0]
 
-    # --- CO2-Faktor-Zeile holen ---
+    # CO2-Faktor-Zeile holen
     co2_df = df_laender.loc[df_laender["Land"] == "CO2Faktor"]
     if co2_df.empty:
         st.error("Zeile 'CO2Faktor' nicht gefunden.")
         return
     co2_row = co2_df.iloc[0]
 
-    # --- Werte in floats ---
+    # Werte in floats
     anteile_pct = pd.to_numeric(land_row[ENERGIE_SPALTEN], errors="coerce").fillna(0.0)   # %
     co2_faktoren = pd.to_numeric(co2_row[ENERGIE_SPALTEN], errors="coerce").fillna(0.0)  # gCO2/kWh
 
-    # --- CO2 je Quelle (g/Tag) ---
+    # CO2 je Quelle (g/Tag)
     def co2_g_pro_tag(kwh_pro_tag: float) -> pd.Series:
         return kwh_pro_tag * (anteile_pct / 100.0) * co2_faktoren
 
     co2_ist_g_tag = co2_g_pro_tag(kWh_ist_proTag)
     co2_neu_g_tag = co2_g_pro_tag(kWh_neu_proTag)
 
-    # --- Skalierung auf Zeitraum ---
+    # Skalierung auf Zeitraum
     co2_ist_g = co2_ist_g_tag * float(zeitraum_faktor)
     co2_neu_g = co2_neu_g_tag * float(zeitraum_faktor)
 
@@ -375,11 +375,11 @@ def plot_vergleich_aufteilung_co2(standort: str, kWh_ist_proTag: float, kWh_neu_
     gesamt_neu_kg = float(co2_neu_g.sum()) / 1000.0
     diff_kg = gesamt_ist_kg - gesamt_neu_kg
 
-    suffix = zeitraum_suffix_from_factor(zeitraum_faktor)  # "Tag", "Woche", "Monat", "Jahr", "20 Jahre", ...
+    suffix = zeitraum_suffix_from_factor(zeitraum_faktor)  # "Tag", "Woche", "Monat", "Jahr", "20 Jahre"
 
 
     st.header(f"CO₂-Aufteilung pro {suffix} in {standort}")
-    # --- Plot (immer Aufteilung) ---
+    # Plot(immer Aufteilung)
     fig = go.Figure()
     for quelle in ENERGIE_SPALTEN:
         fig.add_trace(go.Bar(
@@ -398,7 +398,7 @@ def plot_vergleich_aufteilung_co2(standort: str, kWh_ist_proTag: float, kWh_neu_
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- Kennzahlen (Labels dynamisch) ---
+    # Kennzahlen (Labels dynamisch)
     c1, c2, c3 = st.columns(3)
     c1.metric(f"IST CO₂ / {suffix}", fmt_kg_de(gesamt_ist_kg))
     c2.metric(f"NEU CO₂ / {suffix}", fmt_kg_de(gesamt_neu_kg))
@@ -441,31 +441,31 @@ def plot_aufteilung_co2(standort: str, kwh_ist_pro_tag: float, zeitraum_faktor: 
 
     ENERGIE_SPALTEN = ["Wasserkraft", "Solar", "Wind", "Atom", "Erdgas", "Kohle", "Öl", "Sonstiges"]
 
-    # --- zeile fuer das land holen ---
+    # zeile für das land holen
     row_df = df_laender.loc[df_laender["Land"] == standort]
     if row_df.empty:
         st.error(f"Land '{standort}' nicht gefunden.")
         return
     land_row = row_df.iloc[0]
 
-    # --- co2-faktor-zeile holen ---
+    # co2-faktor-zeile holen
     co2_df = df_laender.loc[df_laender["Land"] == "CO2Faktor"]
     if co2_df.empty:
         st.error("Zeile 'CO2Faktor' nicht gefunden.")
         return
     co2_row = co2_df.iloc[0]
 
-    # --- werte in floats ---
+    # werte in floats
     anteile_pct = pd.to_numeric(land_row[ENERGIE_SPALTEN], errors="coerce").fillna(0.0)   # %
     co2_faktoren = pd.to_numeric(co2_row[ENERGIE_SPALTEN], errors="coerce").fillna(0.0)  # gco2/kwh
 
-    # --- co2 je quelle (g/tag) ---
+    # co2 je quelle (g/tag)
     def co2_g_pro_tag(kwh_pro_tag: float) -> pd.Series:
         return kwh_pro_tag * (anteile_pct / 100.0) * co2_faktoren
 
     co2_ist_g_tag = co2_g_pro_tag(kwh_ist_pro_tag)
 
-    # --- skalierung auf zeitraum ---
+    # skalierung auf zeitraum
     co2_ist_g = co2_ist_g_tag * float(zeitraum_faktor)
 
     gesamt_ist_kg = float(co2_ist_g.sum()) / 1000.0
@@ -474,7 +474,7 @@ def plot_aufteilung_co2(standort: str, kwh_ist_pro_tag: float, zeitraum_faktor: 
 
     st.header(f"CO₂-Aufteilung pro {suffix} in {standort}")
 
-    # --- plot (immer aufteilung) ---
+    # plot (immer aufteilung)
     fig = go.Figure()
     for quelle in ENERGIE_SPALTEN:
         fig.add_trace(go.Bar(
@@ -493,7 +493,7 @@ def plot_aufteilung_co2(standort: str, kwh_ist_pro_tag: float, zeitraum_faktor: 
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- kennzahl ---
+    # kennzahl
     st.metric(f"IST CO2 / {suffix}", fmt_kg_de(gesamt_ist_kg))
     
 ## Anzeige Navigationsleiste

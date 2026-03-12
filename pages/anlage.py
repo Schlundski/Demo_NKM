@@ -137,6 +137,3 @@ if st.session_state.get("speichern_anlage"):
     )
     st.session_state["anlage_saved"] = True
     st.rerun() # Rerun, damit der Weiter-Button erscheint
-
-
-st.stop()
