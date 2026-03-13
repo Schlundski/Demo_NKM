@@ -19,3 +19,4 @@ def success_feedback(this_page, next_page):
     with col3:
         if st.session_state.get(f"{this_page}_saved"):
             st.success("Daten erfolgreich gespeichert!", icon="✅")
+            st.toast(f"{this_page} gespeichert ✅", icon="✅")
