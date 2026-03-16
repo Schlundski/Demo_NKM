@@ -49,7 +49,7 @@ def to_int(x: Any, default: int = 0) -> int:
             return default
         if isinstance(x, str) and x.strip() in ("", "—"):
             return default
-        return int(float(x))
+        return int(x)
     except Exception:
         return default
 
@@ -287,11 +287,11 @@ def render_aktuelle_werte_ist_neu():
         anz_trichter = to_int(dict_get(dct, "anlage.anzahl_trichter"))
         trichter_dict = dict_get(dct, "wege.weg_trichter_m", {})
         for i in range(anz_trichter):
-            rows.append([
+            rows.append((
                     "Wege",
                     f"Referenzweg Trichter {i+1} [m]",
                     trichter_dict.get(i, "—")
-            ])
+            ))
         rows.extend([
             ("Wege", "Öffnen/Schließen [m]", dict_get(dct, "wege.weg_oeffnen_schliessen_m")),
         ])
@@ -451,12 +451,12 @@ def render_rechenweg():
             else:
                 muell_dict = muellberechnung(
                     to_int(n_trichter, 0),
-                    float(verb_trichter),
-                    float(anliefer_h),
-                    float(V),
-                    float(rho_beschick),
-                    float(rho_anliefer),
-                    float(anlieferdauer),
+                    as_float(verb_trichter),
+                    as_float(anliefer_h),
+                    as_float(V),
+                    as_float(rho_beschick),
+                    as_float(rho_anliefer),
+                    as_float(anlieferdauer),
                 )
 
                 df_muell = pd.DataFrame({
@@ -496,7 +496,7 @@ def render_rechenweg():
                 if None in (v_mmin_f, a_f, s_f) or a_f == 0:
                     st.warning(f"{name}: fehlende Werte oder a=0.")
                     return None
-                stw = spielzeitenberechnung(float(v_mmin_f), float(a_f), float(s_f))
+                stw = spielzeitenberechnung(as_float(v_mmin_f), as_float(a_f), as_float(s_f))
                 st.markdown(f"**{name}**")
                 df = pd.DataFrame({
                     "Parameter": ["Beschleunigungszeit (t_acc) [s]", "Beschleunigungsweg (s_acc) [m]", "Zeit konstanter Bewegung (t_konst) [s]", "Gesamte Zeit (t_ges) [s]"],
@@ -527,14 +527,14 @@ def render_rechenweg():
                 st.warning("Hubwerk: fehlende Eingangsgrößen.")
             else:
                 hub_dict = mechleistunghubwerk(
-                    gewicht_seile=float(m_seil),
-                    gewicht_greifer_leer=float(m_greifer_leer),
-                    greifer_volumen=float(V),
-                    muell_dichte=float(rho_anliefer),
-                    geschwindigkeit_mmin=float(v_hub_mmin),
-                    beschleunigung_zeit=float(stw_hub["beschleunigungszeit"]),
-                    wirkungsgrad_seiltrieb=float(eta_seil),
-                    wirkungsgrad_getriebestufe=float(eta_hub_getr),
+                    gewicht_seile=as_float(m_seil),
+                    gewicht_greifer_leer=as_float(m_greifer_leer),
+                    greifer_volumen=as_float(V),
+                    muell_dichte=as_float(rho_anliefer),
+                    geschwindigkeit_mmin=as_float(v_hub_mmin),
+                    beschleunigung_zeit=as_float(stw_hub["beschleunigungszeit"]),
+                    wirkungsgrad_seiltrieb=as_float(eta_seil),
+                    wirkungsgrad_getriebestufe=as_float(eta_hub_getr),
                     getriebestufen=int(hub_stufen),
                     motor_anzahl=int(hub_motoren),
                     )
@@ -573,15 +573,15 @@ def render_rechenweg():
                 st.warning("Katzfahrt: fehlende Eingangsgrößen.")
             else:
                 katz_dict = mechleistungkatzfahrt(
-                    gewicht_seile=float(m_seil),
-                    gewicht_greifer_leer=float(m_greifer_leer),
-                    greifer_volumen=float(V),
-                    muell_dichte=float(rho_anliefer),
-                    gewicht_katze=float(m_katze),
-                    geschwindigkeit_mmin=float(v_katz_mmin),
-                    fahrwerkwiderstand=float(fw_katz),
+                    gewicht_seile=as_float(m_seil),
+                    gewicht_greifer_leer=as_float(m_greifer_leer),
+                    greifer_volumen=as_float(V),
+                    muell_dichte=as_float(rho_anliefer),
+                    gewicht_katze=as_float(m_katze),
+                    geschwindigkeit_mmin=as_float(v_katz_mmin),
+                    fahrwerkwiderstand=as_float(fw_katz),
                     getriebestufen=int(katz_stufen),
-                    wirkungsgrad_getriebestufe=float(eta_katz_getr),
+                    wirkungsgrad_getriebestufe=as_float(eta_katz_getr),
                     motorzahl=int(katz_motoren),
                     # ✅ Signature erwartet int -> cast
                     beschleunigungszeit=to_int(stw_katz["beschleunigungszeit"], 0),
@@ -622,16 +622,16 @@ def render_rechenweg():
                 st.warning("Kranfahrt: fehlende Eingangsgrößen.")
             else:
                 kran_dict = kranfahrt(
-                    gewicht_greifer_leer=float(m_greifer_leer),
-                    greifer_volumen=float(V),
-                    muell_dichte=float(rho_anliefer),
-                    gewicht_katze=float(m_katze),
-                    gewicht_kran=float(m_kran),
-                    gewicht_seile=float(m_seil),
-                    geschwindigkeit_mmin=float(v_kran_mmin),
-                    fahrwiderstand=float(fw_kran),
+                    gewicht_greifer_leer=as_float(m_greifer_leer),
+                    greifer_volumen=as_float(V),
+                    muell_dichte=as_float(rho_anliefer),
+                    gewicht_katze=as_float(m_katze),
+                    gewicht_kran=as_float(m_kran),
+                    gewicht_seile=as_float(m_seil),
+                    geschwindigkeit_mmin=as_float(v_kran_mmin),
+                    fahrwiderstand=as_float(fw_kran),
                     motoranzahl=int(kran_motoren),
-                    wirkungsgrad_getriebestufe=float(eta_kran_getr),
+                    wirkungsgrad_getriebestufe=as_float(eta_kran_getr),
                     getriebestufen=int(kran_stufen),
                     # ✅ Signature erwartet int -> cast
                     beschleunigungszeit=to_int(stw_kran["beschleunigungszeit"], 0),
@@ -704,14 +704,14 @@ def render_rechenweg():
                 st.warning("Vierseil: Hubwerk-Werte fehlen, um den 1/3-Ansatz zu zeigen.")
             else:
                 hub_dict = mechleistunghubwerk(
-                    gewicht_seile=float(m_seil),
-                    gewicht_greifer_leer=float(m_greifer_leer),
-                    greifer_volumen=float(V),
-                    muell_dichte=float(rho_anliefer),
-                    geschwindigkeit_mmin=float(v_hub_mmin),
-                    beschleunigung_zeit=float(stw_hub["beschleunigungszeit"]),
-                    wirkungsgrad_seiltrieb=float(eta_seil),
-                    wirkungsgrad_getriebestufe=float(eta_hub_getr),
+                    gewicht_seile=as_float(m_seil),
+                    gewicht_greifer_leer=as_float(m_greifer_leer),
+                    greifer_volumen=as_float(V),
+                    muell_dichte=as_float(rho_anliefer),
+                    geschwindigkeit_mmin=as_float(v_hub_mmin),
+                    beschleunigung_zeit=as_float(stw_hub["beschleunigungszeit"]),
+                    wirkungsgrad_seiltrieb=as_float(eta_seil),
+                    wirkungsgrad_getriebestufe=as_float(eta_hub_getr),
                     getriebestufen=int(hub_stufen),
                     motor_anzahl=int(hub_motoren),
                 )
@@ -841,7 +841,7 @@ def render_strommix_table():
         for k, v in co2.items():
             num = pd.to_numeric(v, errors="coerce")
             if pd.notna(num):
-                items.append({"Energieträger": k, "CO₂-Faktor": float(num)})
+                items.append({"Energieträger": k, "CO₂-Faktor": as_float(num)})
 
         st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
         st.caption('Quelle CO₂-Faktoren außer "Sonstiges":')
