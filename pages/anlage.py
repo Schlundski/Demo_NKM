@@ -100,8 +100,9 @@ anlage_standort = selectbox_standard(
     wert=anlage_state.get("anlage_standort"),
     auswahl=df_laender["Land"].tolist(),
     key="anl_standort",
-    helptext="Land/Region der Anlage. Daraus werden Strompreis und CO₂-Faktoren abgeleitet."
+    helptext="Land/Region der Anlage. Daraus werden Strompreis und CO₂-Faktoren abgeleitet.",
 )
+
 
 # Automatischer Tarifvorschlag basierend auf Standort
 auswahl_land = cast(pd.Series, df_laender.loc[df_laender["Land"] == anlage_standort, "Preis in c/kWh"]) 
@@ -114,8 +115,8 @@ energie_kosten = number_standard(
     0,
     0.1,
     200,
-    "enrgy_kostn",
-    "Strompreis für die Berechnung der Betriebskosten. Vorschlag wird aus der Ländertabelle übernommen, kann aber manuell angepasst werden.",
+    f"enrgy_kostn_{anlage_standort}",
+    "Strompreis für die Berechnung der Betriebskosten. Der Standardwertdurchschnittswert kann ausgewählt werden oder der Preis manuell angepasst werden.",
 )
 
 success_feedback("anlage", "greifer")

@@ -55,7 +55,7 @@ def selectbox_standard(
         wert = None,
         auswahl = ["nicht definiert"],
         key="not_defined",
-        helptext=None
+        helptext=None,
         ):
 
     "Unser UI Standart für Texteingaben, returned nur den Eingabe- bzw. Standartwert"
@@ -79,7 +79,7 @@ def selectbox_standard(
         placeholder = "Deutschland",
         index = index_converted,
         disabled = True if use_std else False,
-        key = key2
+        key = key2,
     )
 
     return ausgabe
